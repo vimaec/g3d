@@ -2,6 +2,8 @@
 
 G3D is a simple, efficient, generic binary format for storing and transmitting 3D meshes inspired by Assimp, FBX, OBJ, and 3DS.
 
+To see the official specification take a look at the [g3d.h](https://github.com/ara3d/g3d/blob/master/g3d.h) header file. 
+
 ## Overview 
 
 G3D was designed to be:
@@ -31,18 +33,6 @@ Every attribute descriptor maps to a unique string representation similar to a U
 
 This string representation makes it easier to define attribute descriptors and to understand them when debugging. 
 
-## Why not use a 3D Scene file like FBX, Collada, Alembic, USD, Assimp, or glTF?
-
-Existing 3D scene file formats store more than just geometry and as a result make writing efficient and fully conformant serializers 
-and deserializers a very daunting task. A conformant G3D parser is very easy to write in any language.
-
-## Why not use OBJ, 3DS, PLY, or STL?
-
-Older geometry file formats are limited in the type of data attributes that can be stored, causing a loss of data when round-tripping. 
-They also require additional data processing when serializing and deserializing to get the data to or from a format that 
-most 3D tools and rendering engines require. The G3D format can accept natively most data from 3ds Max, FBX, Assimp, and other tools without requiring additional 
-processing. 
-
 ## About Map Channels and Indirect Referencing 
 
 In 3ds Max, FBX, and OBJ files it is possible to associate data with UVs, Normals, and Vertex Colors directly with face corners (aka polygon vertices)
@@ -56,7 +46,7 @@ repeated but has the advantage of not requiring indirect memory addressing. The 
 map_channel_index attributes. According to 3ds Max a map channel the map_channel_index is associated with corners, and consists of integers. The map_channel_data 
 has no association and consists of triplets of single precision floating point values. 
     
-## BFAST - Binary Format for Array Streaming and Transmission
+# BFAST - Binary Format for Array Streaming and Transmission
 
 The underlying binary format of the G3D file conforms to the [BFAST serialization format](https://github.com/ara3d/bfast), which is a simple and efficient binary
 format for serializing collections of byte arrays. BFAST provides an interface that allows arrays of binary data to be serialized
@@ -65,9 +55,24 @@ and deserialized quickly and easily.
 Each array in the BFAST container has the following purpose:
 * Array 0: meta-information strng in JSON format
 * Array 1: array of N attribute descriptors (each is 32 bytes)
-* Array 2 to 2n + 2: paris of arrays for each attribute: a data buffers and an index buffers (which is potentially and quite frequently zero length)
+* Array 2 to n + 2: an array for each attribute 
 
-Recommended reading:
+# FAQ
+
+## Why not use a 3D Scene file like FBX, Collada, Alembic, USD, Assimp, or glTF?
+
+Existing 3D scene file formats store more than just geometry and as a result make writing efficient and fully conformant serializers 
+and deserializers a very daunting task. A conformant G3D parser is very easy to write in any language.
+
+## Why not use a 3D geometry file like OBJ, PLY, or STL?
+
+Many of the older geometry file formats are limited in the type of data attributes that can be stored, causing a loss of data when round-tripping. 
+They also require additional data processing when serializing and deserializing to get the data to or from a format that 
+most 3D tools and rendering engines require. The G3D format can accept natively most data from 3ds Max, FBX, Assimp, and other tools with 
+minimal processing. 
+
+# Recommended reading:
+
 * http://assimp.sourceforge.net/lib_html/structai_mesh.html
 * http://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_5EDC0280_E000_4B0B_88DF_5D215A589D5E_htm
 * https://help.autodesk.com/cloudhelp/2017/ENU/Max-SDK/cpp_ref/class_mesh.html
