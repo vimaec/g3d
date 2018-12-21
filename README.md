@@ -4,12 +4,21 @@ G3D is a simple, efficient, generic binary format for storing and transmitting 3
 
 To see the official specification take a look at the [g3d.h](https://github.com/ara3d/g3d/blob/master/g3d.h) header file. 
 
-## Overview 
+# Overview 
+
+## Design Goals
 
 G3D was designed to be:
 1. sufficiently generic to be able to transfer meshes between most formats and 3D tools without loss 
 2. minimize the amount of data processing that serializers and deserializers must perform 
 3. facilitate writing new compliant serializers / deserializers in different languages or contexts 
+
+## Use Case
+
+The G3D was developed by Ara 3D to allow geometry data to be transferred as efficiently as possibly and without loss between: 3ds Max, Unity, Unreal, FBX, 
+OBJ and various tools written in different languages. It serves as the core geometry representation for different Ara 3D tools and libraries.
+
+# Structure
 
 ## Attributes 
 
@@ -46,7 +55,7 @@ repeated but has the advantage of not requiring indirect memory addressing. The 
 map_channel_index attributes. According to 3ds Max a map channel the map_channel_index is associated with corners, and consists of integers. The map_channel_data 
 has no association and consists of triplets of single precision floating point values. 
     
-# BFAST - Binary Format for Array Streaming and Transmission
+## BFAST - Binary Format for Array Streaming and Transmission
 
 The underlying binary format of the G3D file conforms to the [BFAST serialization format](https://github.com/ara3d/bfast), which is a simple and efficient binary
 format for serializing collections of byte arrays. BFAST provides an interface that allows arrays of binary data to be serialized
