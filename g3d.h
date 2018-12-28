@@ -1,10 +1,17 @@
+/*
+    G3D Data Format
+    Copyright 2018, Ara 3D, Inc.
+    Usage licensed under terms of MIT Licenese
+*/
 #pragma once
 
 #include <vector>
 #include <sstream>
 #include <map>
 
-#define G3D_VERSION { 0, 9, 0, "2018-12-20" }
+#include <ara3d\bfast\bfast.h>
+
+#define G3D_VERSION { 0, 9, 0, "2018.12.24" }
 
 namespace g3d
 {
@@ -45,7 +52,8 @@ namespace g3d
     // The type of the attribute
     enum AttributeType 
     {
-        attr_custom, 
+        attr_unknown,
+        attr_user,
         attr_coordinate,
         attr_index,
         attr_faceindex,
@@ -60,11 +68,12 @@ namespace g3d
         attr_smoothing,
         attr_crease,
         attr_hole,
-        attr_invisibility, 
+        attr_visibility, 
         attr_selection,
         attr_pervertex,
         attr_mapchannel_data,
         attr_mapchannel_index,
+        attr_custom,
         attr_invalid,
     };
 
@@ -91,32 +100,32 @@ namespace g3d
             return (DataType)_data_type; 
         }
 
-        /// The number of primitive values 
+        /// The number of primitive values associated with each element 
         int data_arity() const {
             return _data_arity;
         }
         
-        //
+        /// What part of the geometry each tuple of data values is associated with 
         Association association() const { 
             return (Association)_association; 
         }
         
+        /// The semantic of the attribute (e.g. normals, uv)
         AttributeType attribute_type() const { 
             return (AttributeType)_attribute_type; 
         }
 
+        /// Each attribute of the same kind of semantic has to have a distinguishing index (e.g. uv0, uv1, etc.)
         int32_t attribute_type_index() const {
             return _attribute_type_index;
-        }
+        }    
 
-        int32_t data_arity() const {
-            return _data_arity;
-        }
-
+        /// The size of each data element in bytes (not counting the arity).
         int32_t data_type_size() const {
             return data_type_size(data_type());
         }
 
+        /// Retrieves the 
         static int32_t data_type_size(DataType dt) {
             switch (dt) {
                 case dt_uint8:      return 1;
@@ -137,13 +146,16 @@ namespace g3d
             }
         }
 
-        static map<string, int32_t> reverse_map(const map<int32_t, string>& m) {
-            map<string, int32_t> r;
+        /// Given a map from keys to values, creates a new map from values to keys 
+        template<typename K, typename V>
+        static map<V, K> reverse_map(const map<K, V>& m) {
+            map<V, K> r;
             for (const auto& kv : m)
                 r[kv.second] = kv.first;
             return r;
         }
 
+        /// Returns a lookup table of data-type enumerations to strings 
         static const map<int32_t, string>& data_types_to_strings() {
             static map<int32_t, string> names = {
                 { dt_uint8,     "uint8" },
@@ -190,7 +202,8 @@ namespace g3d
 
         static map<int32_t, string> attribute_types_to_strings() {
             static map<int32_t, string> names = {
-                { attr_custom,          "custom" },
+                { attr_unknown,         "unknown" },
+                { attr_user,            "user" },
                 { attr_coordinate,      "coordinate" },
                 { attr_index,           "index" },
                 { attr_faceindex,       "faceindex" },
@@ -205,9 +218,10 @@ namespace g3d
                 { attr_smoothing,       "smoothing" },
                 { attr_crease,          "crease" },
                 { attr_hole,            "hole" },
-                { attr_invisibility,    "invisibility" },
+                { attr_visibility,      "visibility" },
                 { attr_selection,       "selection" },
                 { attr_pervertex,       "pervertex" },
+                { attr_custom,          "custom" },
                 { attr_invalid,         "invalid" }
             };
             return names;
@@ -251,10 +265,10 @@ namespace g3d
         }
 
         string attribute_type_string() const {
-            return attribute_type_to_string(data_type());
+            return attribute_type_to_string(attribute_type());
         }
 
-        const string& to_string() const {
+        string to_string() const {
             ostringstream oss;
             oss << "g3d"
                 << ":" << association_string()
@@ -342,8 +356,8 @@ namespace g3d
     // A class for creating an attribute that reference external data
     template<typename T>
     struct AttributeBuilderRef : AttributeBuilderTypedBase<T> {
-        AttributeBuilderRef(AttributeDescriptor descriptor, T* begin, T* end)
-            : attribute(descriptor, begin, end)
+        AttributeBuilderRef(AttributeDescriptor descriptor, size_t size, T* data)
+            : attribute(descriptor, data, data + size)
         {
         }
         virtual Attribute* GetAttribute() {
@@ -356,10 +370,10 @@ namespace g3d
     template<typename T>
     struct AttributeBuilderOwn : AttributeBuilderTypedBase<T> {
         AttributeBuilderOwn(AttributeDescriptor descriptor, size_t size, T* data = nullptr)
-            : vector(size), attribute(descriptor, buffer.data(), buffer.data() + size)
+            : buffer(size), attribute(descriptor, buffer.data(), buffer.data() + size)
         { 
             if (data)
-                memcpy_s(begin(), size, data(), size);
+                memcpy_s(buffer.data(), size * sizeof(T), data, size * sizeof(T));
         }
         virtual Attribute* GetAttribute() {
             return &attribute;
@@ -380,8 +394,7 @@ namespace g3d
         int _polygon_size;
 
         G3d(int vertex_count, int face_count, int corner_count, int polygon_size = 3) 
-        {
-            
+        {            
         }
 
         ~G3d() {
@@ -389,35 +402,49 @@ namespace g3d
                 delete kv.second;   
         }
 
+        void to_file(string path) {
+            bfast::Bfast b;
+            // TODO: add better meta-information
+            string meta = "{ filetype: \"g3d\" }";
+            b.add_string(meta);
+            vector<AttributeDescriptor> descriptors;
+            for (auto kv : builders) {
+                auto& desc = kv.second->GetAttribute()->descriptor;
+                descriptors.push_back(desc);
+            }
+            auto desc_ptr = descriptors.data();
+            b.add_array(desc_ptr, desc_ptr + descriptors.size());
+            for (auto kv : builders) {
+                auto* attr = kv.second->GetAttribute();
+                b.add_array(attr->_begin, attr->_end);
+            }
+            b.copy_to_file(path);
+        }
+
         template<typename T>
-        AttributeBuilderTypedBase<T>* add_attribute(const AttributeDescriptor& desc, size_t size, T* data = nullptr) {
-            // TODO: check that the map channels are not already present ... 
+        AttributeBuilderTypedBase<T>* add_attribute(const AttributeDescriptor& desc, int size, T* data = nullptr) {
             auto name = desc.to_string();
-            if (builders.find(name) != builder.end())
+            if (builders.find(name) != builders.end())
                 throw runtime_error("Attribute descriptor already exists");
             if (data) {
                 auto r = new AttributeBuilderRef<T>(desc, size, data);
-                builders.push_back(r);
+                builders[name] = r;
                 return r;
             }
             else {
-                auto r = new AttributeBuilderVector<T>(desc, size, data);
-                builders.push_back(r);
+                auto r = new AttributeBuilderOwn<T>(desc, size, data);
+                builders[name] = r;
                 return r;
             }
         }
 
         template<typename T>
-        AttributeBuilderTypedBase<T>* add_attribute(const string& desc, size_t size, T* data = nullptr) {
+        AttributeBuilderTypedBase<T>* add_attribute(const string& desc, int size, T* data = nullptr) {
             return add_attribute(AttributeDescriptor::from_string(desc), size, data);
         }
-        
-        AttributeBuilderTypedBase<float>* add_vertices(int size, float* data = nullptr) {
-            return add_attribute("g3d:vertex:coordinate:0:float32:3", size, data);
-        }
 
-        AttributeBuilderTypedBase<float>* add_vertices_as_float4(int size, float* data = nullptr) {
-            return add_attribute("g3d:vertex:coordinate:0:float32:4", size, data);
+        AttributeBuilderTypedBase<float>* add_vertices(int size, float* data = nullptr) {
+            return add_attribute("g3d:vertex:coordinate:0:float32:3", size * 3, data);
         }
 
         AttributeBuilderTypedBase<int32_t>* add_indexes(int size, int32_t* data = nullptr) {
@@ -425,15 +452,15 @@ namespace g3d
         }
 
         AttributeBuilderTypedBase<float>* add_uvs(int size, float* data = nullptr) {
-            return add_attribute("g3d:vertex:uv:0:float32:2", size, data);
+            return add_attribute("g3d:vertex:uv:0:float32:2", size * 2, data);
         }
 
         AttributeBuilderTypedBase<float>* add_uv2s(int size, float* data = nullptr) {
-            return add_attribute("g3d:vertex:uv:1:float32:2", size, data);
+            return add_attribute("g3d:vertex:uv:1:float32:2", size * 2, data);
         }
 
         AttributeBuilderTypedBase<float>* add_vertex_normals(int size, float* data = nullptr) {
-            return add_attribute("g3d:vertex:uv:0:float32:3", size, data);
+            return add_attribute("g3d:vertex:uv:0:float32:3", size * 3, data);
         }
 
         AttributeBuilderTypedBase<float>* add_material_ids(int size, float* data = nullptr) {
@@ -452,7 +479,7 @@ namespace g3d
             return add_attribute(desc, size, data);
         }
 
-        void add_map_channel(int id, float* texture_vertices, size_t num_texture_vertices, int* texture_indices, size_t num_texture_faces) {
+        void add_map_channel(int id, float* texture_vertices, int num_texture_vertices, int* texture_indices, int num_texture_faces) {
             add_map_channel_data(id, num_texture_vertices * 3, texture_vertices);
             add_map_channel_index(id, num_texture_faces * 3, texture_indices);
         }
