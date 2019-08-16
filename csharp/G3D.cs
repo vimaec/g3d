@@ -1,4 +1,4 @@
-﻿/*
+﻿    /*
     G3D Geometry Format Library
     Copyright 2019, VIMaec LLC.
     Copyright 2018, Ara 3D Inc.
@@ -10,87 +10,144 @@
 
 using System;
 using System.Collections.Generic;
-using System.IO;
-using System.Linq;
 
 namespace Vim.G3D
 {
     public class G3D
     {
-        public Dictionary<string, Attribute> Attributes { get; }
+        public int CornersPerFace { get; }
+        public bool IsPolyMesh => CornersPerFace < 0;
+
+        public int NumVertices { get; }
+        public int NumFaces { get; }
+        public int NumCorners { get; } // Also the number of half-edges 
+        public int NumGroups { get; }
+        public int NumObjects { get; }
+
+        // Commonly accessed attributes 
+        public Attribute Vertices;
+        public Attribute Indices;
+        public Attribute FaceIndices;
+        public Attribute FaceSizes;
+        public Attribute VertexNormal;
+        public Attribute FaceNormal;
+        public Attribute UV;
+
+        public List<Attribute> Attributes = new List<Attribute>();
+
         public Header Header { get; }
+
+        private int AssignAttribute(Attribute attr, int expectedCount)
+        {
+            if (expectedCount >= 0 && attr.Count != expectedCount)
+                throw new Exception($"Attribute {attr.Name} size {attr.Count} not match the expected size {expectedCount}");
+            return attr.Count;
+        }
 
         public G3D(IEnumerable<Attribute> attributes, Header header = null)
         {
-            Attributes = attributes.ToDictionary(a => a.Name, a => a);
             Header = header;
-        }        
-    }
 
-    public static class G3DExtensions
-    { 
-        public G3D(IEnumerable<IAttribute> attributes, string header = null, bool validate = false)
-        {
-            Header = header;
-            Attributes = attributes;
+            NumFaces = -1;
+            NumCorners = -1;
+            NumGroups = -1;
+            NumObjects = -1;
 
             foreach (var attr in attributes)
             {
-                _AssignIfPossible(attr, ref m_vertexAttribute, AttributeTypeEnum.attr_vertex);
-                _AssignIfPossible(attr, ref m_indexAttribute, AttributeTypeEnum.attr_index);
-                _AssignIfPossible(attr, ref m_faceSizeAttribute, AttributeTypeEnum.attr_facesize);
-                _AssignIfPossible(attr, ref m_faceIndexAttribute, AttributeTypeEnum.attr_faceindex);
-                _AssignIfPossible(attr, ref m_materialIdAttribute, AttributeTypeEnum.attr_materialid);
+                Attributes.Add(attr);
+
+                switch (attr.Descriptor.Association)
+                {
+                    case AssociationEnum.assoc_none:
+                        break;
+                    case AssociationEnum.assoc_edge:
+                    case AssociationEnum.assoc_corner:
+                        NumCorners = AssignAttribute(attr, NumCorners);
+                        break;
+                    case AssociationEnum.assoc_face:
+                        NumFaces = AssignAttribute(attr, NumFaces);
+                        break;
+                    case AssociationEnum.assoc_group:
+                        NumGroups = AssignAttribute(attr, NumGroups);
+                        break;
+                    case AssociationEnum.assoc_object:
+                        NumObjects = AssignAttribute(attr, NumObjects);
+                        break;
+                }
+
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_position && attr.Descriptor.Association == AssociationEnum.assoc_corner)
+                {
+                    Vertices = Vertices ?? attr;
+                }
+
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_index && attr.Descriptor.Association == AssociationEnum.assoc_corner)
+                {
+                    Indices = Indices ?? attr;
+                }
+
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_size && 
+                    (attr.Descriptor.Association == AssociationEnum.assoc_face || attr.Descriptor.Association == AssociationEnum.assoc_object)
+                {
+                    FaceSizes = FaceSizes ?? attr;
+                }
+
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_normal && attr.Descriptor.Association == AssociationEnum.assoc_face)
+                {
+                    FaceNormal = FaceNormal ?? attr;
+                }
+
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_normal && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
+                {
+                    VertexNormal = VertexNormal ?? attr;
+                }
+
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_uv && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
+                {
+                    UV = UV ?? attr;
+                }
             }
 
-            if (m_vertexAttribute == null)
-                throw new Exception("Vertex attribute is not present");
+            if (NumVertices < 0)
+                throw new Exception("No position data found");
 
-            if (validate)
-                this.Validate();
-        }
+            if (NumCorners < 0)
+                NumCorners = NumVertices;
 
-        private static void _AssignIfPossible(IAttribute attr, ref IAttribute target, AttributeTypeEnum at)
-        {
-            if (attr == null) return;
-            if (attr.Descriptor.AttributeType == at)
+            if (NumObjects < 0)
+                NumObjects = 1;
+
+            CornersPerFace = -1;
+
+            // Are the face sizes specified? 
+            if (FaceSizes != null)
             {
-                if (target != null) throw new Exception("Attribute is already assigned");
-                target = attr;
+                // Same FaceSize for whole mesh
+                if (FaceSizes.Descriptor.Association == AssociationEnum.assoc_object)
+                {
+                    CornersPerFace = FaceSizes.CastData<int>()[0];
+                }
+                else
+                {
+                    CornersPerFace = -1;
+                }
             }
-        }
+            else
+            {
+                // By default we assume triangular meshes
+                CornersPerFace = 3;
+            }
 
-        public static G3D Create(IList<Memory<byte>> buffers)
-        {
-            if (buffers.Count < 2)
-                throw new Exception("Expected at least two data buffers in file: header, and attribute descriptor array");                
+            if (NumFaces < 0)
+            { 
+                if (CornersPerFace < 0)
+                    throw new Exception("Internal error: expected number of corners to be determined at least from number of positions");
 
-            var header = buffers[0].ToBytes().ToUtf8();
-            var descriptors = buffers[1].Span.ToStructs<AttributeDescriptor>().ToArray();
-            buffers = buffers.Skip(2).ToList();
-            if (descriptors.Length != buffers.Count)
-                throw new Exception("Incorrect number of descriptors");
+                if (NumCorners % CornersPerFace != 0)
+                    throw new Exception($"Couldn't determine number of faces, and expected number of corners to be divisble by {CornersPerFace}");
 
-            // TODO: this guy is going to be hard to process 
-            // I have raw bytes, and I have to cast it to the correct type.
-            // That correct type depends on the type flag stored in the descriptor 
-            return new G3D(buffers.Zip(descriptors, G3DExtensions.ToAttribute), header);
-        }
-
-        // TODO: all of these copies make me die a little bit inside
-        public static G3D Create(byte[] bytes)
-            => Create(new Memory<byte>(bytes));
-
-        public static G3D Create(Memory<byte> bytes)
-            => Create(BFast.ToBFastBuffers(bytes));
-
-        public static G3D ReadFile(string filePath)
-            => Create(File.ReadAllBytes(filePath));
-
-        public static G3D Create(IEnumerable<IAttribute> attributes)
-            => new G3D(attributes);
-
-        public static G3D Create(params IAttribute[] attributes)
-            => new G3D(attributes);
+                NumFaces = NumCorners / CornersPerFace;
+            }
+        }        
     }
 }

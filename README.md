@@ -1,85 +1,85 @@
 # G3D
 
-G3D is a simple, efficient, generic binary format for storing and transmitting 3D meshes inspired by Assimp, FBX, OBJ, and 3DS.
+G3D is a simple, efficient, generic binary format for storing and transmitting geometry. G3D can  represent triangular meshes, quadrilateral meshes, polygonal meshes, point clouds, and line segments.  
 
-To see the official specification take a look at the [g3d.h](https://github.com/ara3d/g3d/blob/master/g3d.h) header file. 
+The G3D format was developed to allow geometry and associated attribute data to be efficiently serialized, deserialized, and rendered in different languages and on different platforms. 
 
-# Overview 
+# Format 
 
-## Design Goals
+## BFAST - Binary Format for Array Streaming and Transmission
 
-G3D was designed to be:
-1. sufficiently generic to be able to transfer meshes between most formats and 3D tools without loss 
-2. minimize the amount of data processing that serializers and deserializers must perform 
-3. facilitate writing new compliant serializers / deserializers in different languages or contexts 
+The underlying binary format of a G3D file conforms to the [BFAST serialization format](https://github.com/vimaecbfast), which is a simple and efficient binary format for serializing collections of byte arrays. BFAST provides an interface that allows named arrays of binary data to be serialized
+and deserialized quickly and easily.
 
-## Use Case
+The first named buffer in the BFAST container is reserved for meta-information about the file encoded in JSON format. It has the name "meta". Each subsequent buffer uses the attribute descriptor string as a name. 
 
-The G3D was developed by Ara 3D to allow geometry data to be transferred as efficiently as possibly and without loss between: 3ds Max, Unity, Unreal, FBX, 
-OBJ and various tools written in different languages. It serves as the core geometry representation for different Ara 3D tools and libraries.
+## Meta-Information
 
-# Structure
+The first buffer of a G3D file is a JSON object where each field value must be a string. There is no requirement for the names and the values of the fields. 
 
 ## Attributes 
 
-G3D is organized as a collection of attribute channels. Each attributes describe what part of the mesh they are associated with:
-* point
-* face
-* corner
-* edge
-* whole object 
+G3D is organized as a collection of attribute buffers. Each attributes describe what part of the incoming geometry they are associated with:
 
-Attributes also have a "type" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements.
+* point     // vertex data
+* corner    // face-vertex data
+* face      // per polygon data
+* edge      // per half-edge data 
+* group     // polygonal group - assumes a contiguous sequence of indices in the index buffer 
+* object    // whole object data - for example face-size of 4 with whole object indicates a quad mesh
+* material  // per material data
 
-Attributes are groups of one or more data values. The number of data values per associate element is called the "arity". 
-The individual data values can be integers, unsigned integers, or floating point values of various widths from 1 to 128 bytes.
-There is no 1 byte floating point, but there is a 2 byte floating point, which requires additional libraries (e.g. OpenEXR) in 
-order to parse. 
+Attributes also have a "semamtic" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements, or Three.JS buffer attributes. There are a number of predefined semantic values with reserved names, but applications are free to define custom semantic values. The only required semantic in a G3D file is "position". Here is a list of some of the predefined semantics: 
 
-Every attribute descriptor maps to a unique string representation similar to a URN: 
+* unknown,       // no known attribute type
+* position,      // vertex buffer 
+* index,         // index buffer
+* indexoffset,   // an offset into the index buffer (used with groups and with faces)
+* vertexoffset,  // the offset into the vertex buffer (used only with groups, and must have offset.)
+* normal,        // computed normal information (per face, group, corner, or vertex)
+* binormal,      // computed binormal information 
+* tangent,       // computed tangent information 
+* materialid,    // material id
+* visibility,    // visibility data (e.g. 
+* size,          // number of indices per face or group
+* uv,            // UV (sometimes more than 1, e.g. Unity supports up to 8)
+* color,         // usually vertex color, but could be edge color as well
+* smoothing,     // identifies smoothing groups (e.g. ala 3ds Max and OBJ files)
+* weight,        // in 3ds Max this is called selection 
+* mapchannel,    // 3ds Max map channel (assoc of none => map verts, assoc of corner => map faces)
+* id,            // used to identify what object each face part came from 
+* joint,         // used to identify what a joint a skin is associated with 
+* boxes,         // used to identify bounding boxes
+* spheres,       // used to identify bounding spheres
+* user,          // identifies user specific data (in 3ds Max this could be "per-vertex-data")
+
+Attributes are stored in 512-byte aligned data-buffers arranged as arrays of scalars or fixed width vectors. The individual data values can be integers, unsigned integers, or floating point values of various widths from 1 to 8 bytes. The data-types are:
+
+* int8
+* int16
+* int32
+* int64
+* uint8
+* uint16
+* uint32
+* uint64
+* float32
+* float64
+
+The number of primitives per data element is called the "arity" and can be any integer value greater than zero. 
+
+## Encoding Strings
+
+While there is no explicit string type, one could encode string data by using a data-type uint8 with an arity of a fixed value (say 255) to store short strings. 
+
+## Attribute Descriptor String
+
+Every attribute descriptor has a one to one mapping to a string representation similar to a URN: 
     
-    `g3d:<association>:<attribute_type>:<attribute_type_index>:<data_type>:<data_arity>`
+    `g3d:<association>:<semantic>:<data_type>:<data_arity>`
 
-This string representation makes it easier to define attribute descriptors and to understand them when debugging. 
-
-## About Map Channels and Indirect Referencing 
-
-In 3ds Max, FBX, and OBJ files it is possible to associate data with UVs, Normals, and Vertex Colors directly with face corners (aka polygon vertices)
-instead of the more common approach of just associating it directly with vertices. 
-
-In 3ds Max this is done using map channels, and in FBX it is done using "indirect referencing". This means that this data has an index buffer
-which is the same length as the geometry index buffer, but is used for accessing the relevant data. 
-
-In G3D data this can be accomplished by directly associating data with face corners. This has the disdavantage of causing the data to be potentially 
-repeated but has the advantage of not requiring indirect memory addressing. The other option is to use a pair of map_channel_data and 
-map_channel_index attributes. According to 3ds Max a map channel the map_channel_index is associated with corners, and consists of integers. The map_channel_data 
-has no association and consists of triplets of single precision floating point values. 
-    
-## BFAST - Binary Format for Array Streaming and Transmission
-
-The underlying binary format of the G3D file conforms to the [BFAST serialization format](https://github.com/ara3d/bfast), which is a simple and efficient binary
-format for serializing collections of byte arrays. BFAST provides an interface that allows arrays of binary data to be serialized
-and deserialized quickly and easily.
-
-Each array in the BFAST container has the following purpose:
-* Array 0: meta-information strng in JSON format
-* Array 1: array of N attribute descriptors (each is 32 bytes)
-* Array 2 to n + 2: an array for each attribute 
-
-# FAQ
-
-## Why not use a 3D Scene file like FBX, Collada, Alembic, USD, Assimp, or glTF?
-
-Existing 3D scene file formats store more than just geometry and as a result make writing efficient and fully conformant serializers 
-and deserializers a very daunting task. A conformant G3D parser is very easy to write in any language.
-
-## Why not use a 3D geometry file like OBJ, PLY, or STL?
-
-Many of the older geometry file formats are limited in the type of data attributes that can be stored, causing a loss of data when round-tripping. 
-They also require additional data processing when serializing and deserializing to get the data to or from a format that 
-most 3D tools and rendering engines require. The G3D format can accept natively most data from 3ds Max, FBX, Assimp, and other tools with 
-minimal processing. 
-
+This attribute descriptor string is the name of the buffer. 
+  
 # Recommended reading:
 
 * http://assimp.sourceforge.net/lib_html/structai_mesh.html

@@ -7,14 +7,9 @@ namespace Vim.G3D
     /// </summary>
     public class Validator
     {
-        public Validator(G3D g3d, Schema schema = null)
+        public Validator(G3D g3d, Schema schema)
         {
-            // TODO: run through and check for absolute errors or warnings
-            // Missing channels? Extra channels? Indexed channels that are not monotonically increasing?
-            // Channel counts that don't add up? 
-            // No position channel.
-            // Certain semantics that have unexpected types or associations. 
-            // Unrecognized semantic 
+            foreach (var attribute in g3d.)
         }
 
         public List<string> Warnings = new List<string>();

@@ -1,5 +1,6 @@
 /*
     G3D Data Format
+    Copyright 2019, VIMaec LLC
     Copyright 2018, Ara 3D, Inc.
     Usage licensed under terms of MIT Licenese
 */

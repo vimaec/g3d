@@ -59,9 +59,9 @@ namespace Vim.G3D
             { "normalindex", "g3d:corner:index:0:int32:1" },
             { "textureindex", "g3d:corner:index:0:int32:1" },
             { "facesize", "g3d:face:size:0:int32:1" },
-            { "faceoffset", "g3d:face:offset:0:int32:1" },
+            { "faceoffset", "g3d:face:indexoffset:0:int32:1" },
             { "smoothing", "g3d:face:smoothing:0:int32:1" },
-            { "group", "g3d:group:id:0:string:1" },
+            { "groupname", "g3d:group:id:0:string:1" },
         };
 
         /// <summary>
