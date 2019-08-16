@@ -6,9 +6,9 @@ The G3D format was developed to allow geometry and associated attribute data to 
 
 # Format 
 
-## BFAST - Binary Format for Array Streaming and Transmission
+## BFAST Container
 
-The underlying binary format of a G3D file conforms to the [BFAST serialization format](https://github.com/vimaecbfast), which is a simple and efficient binary format for serializing collections of byte arrays. BFAST provides an interface that allows named arrays of binary data to be serialized
+The underlying binary layout of a G3D file conforms to the [BFAST serialization format](https://github.com/vimaecbfast), which is a simple and efficient binary format for serializing collections of byte arrays. BFAST provides an interface that allows named arrays of binary data to be serialized
 and deserialized quickly and easily.
 
 The first named buffer in the BFAST container is reserved for meta-information about the file encoded in JSON format. It has the name "meta". Each subsequent buffer uses the attribute descriptor string as a name. 
