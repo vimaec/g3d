@@ -38,7 +38,7 @@
     public enum SemanticEnum
     {
         sem_unknown,       // no known attribute type
-        sem_position,        // vertex buffer 
+        sem_position,      // vertex buffer 
         sem_index,         // index buffer
         sem_indexoffset,   // an offset into the index buffer (used with groups and with faces)
         sem_vertexoffset,  // the offset into the vertex buffer (used only with groups, and must have offset. For UnitySubmeshess)
@@ -47,7 +47,7 @@
         sem_tangent,       // computed tangent information 
         sem_materialid,    // material id
         sem_visibility,    // visibility data (e.g. 
-        sem_size,         // number of indices per face or group
+        sem_size,          // number of indices per face or group
         sem_uv,            // UV (sometimes more than 1, e.g. Unity supports up to 8)
         sem_color,         // usually vertex color, but could be edge color as well
         sem_smoothing,     // identifies smoothing groups (e.g. ala 3ds Max and OBJ files)
@@ -56,7 +56,7 @@
         sem_id,            // used to identify what object each face part came from 
         sem_joint,         // used to identify what a joint a skin is associated with 
         sem_boxes,         // used to identify bounding boxes
-        sem_spheres,        // used to identify bounding spheres
+        sem_spheres,       // used to identify bounding spheres
         sem_user,          // identifies user specific data (in 3ds Max this could be "per-vertex-data")
     };
 }
