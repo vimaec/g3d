@@ -14,7 +14,7 @@
         public const string VertexColorWithAlpha = "g3d:vertex:color:float32:4";
         public const string Tangent = "g3d:vertex:tangent:float32:3";
         public const string Bitangent = "g3d:vertex:bitangent:float32:3";
-        public const string Tangent4 = "g3d:vertex:tangent:float32:4";
+        public const string TangentVector4 = "g3d:vertex:tangent:float32:4";
         public const string GroupIndices = "g3d:group:indexoffset:int:1";
         public const string GroupSizes = "g3d:group:size:int:1";
     }
