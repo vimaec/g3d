@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Linq;
 using System.Runtime.InteropServices;
 
 namespace Vim.G3d
 {
-    public class Attribute : INamedBuffer
+    public class BinaryAttribute : INamedBuffer
     {
-        public Attribute(AttributeDescriptor desc, IBuffer data)
+        public BinaryAttribute(AttributeDescriptor desc, IBuffer data)
         {
             Descriptor = desc;
             Data = data;
@@ -24,10 +25,45 @@ namespace Vim.G3d
 
     public class Attribute<T> : INamedBuffer where T: struct
     {
-        public Attribute(Attribute attr)
-            => _Attribute = attr;
+        public static void TypeCheck(params Type[] types)
+        {
+            if (!types.Any(t => typeof(T) == t))
+                throw new Exception($"Incompatible type {typeof(T)} expected {string.Join<Type>(",", types)}");
+        }
 
-        public Attribute _Attribute { get; }
+        public Attribute(BinaryAttribute attr)
+        {
+            switch (attr.Descriptor.DataType)
+            {
+                case DataTypeEnum.dt_float32:
+                    TypeCheck(typeof(float));
+                    break;
+                case DataTypeEnum.dt_float64:
+                    TypeCheck(typeof(double));
+                    break;
+                case DataTypeEnum.dt_int8:
+                case DataTypeEnum.dt_uint8:
+                    TypeCheck(typeof(byte), typeof(sbyte));
+                    break;
+                case DataTypeEnum.dt_int16:
+                case DataTypeEnum.dt_uint16:
+                    TypeCheck(typeof(short), typeof(ushort));
+                    break;
+                case DataTypeEnum.dt_int32:
+                case DataTypeEnum.dt_uint32:
+                    TypeCheck(typeof(int), typeof(uint));
+                    break;
+                case DataTypeEnum.dt_int64:
+                case DataTypeEnum.dt_uint64:
+                    TypeCheck(typeof(long), typeof(ulong));
+                    break;
+                default:
+                    throw new Exception("Unrecognized data type");
+            }
+            _Attribute = attr;
+        }
+
+        public BinaryAttribute _Attribute { get; }
         public Span<T> Data => _Attribute.CastData<T>();
         public string Name => _Attribute.Name;
         public Span<byte> Bytes => _Attribute.Bytes;
@@ -36,27 +72,25 @@ namespace Vim.G3d
 
     public static class AttributeExtensions
     {
-        public static Attribute ToAttribute(this INamedBuffer buffer)
-            => new Attribute(AttributeDescriptor.Parse(buffer.Name), buffer);
+        public static BinaryAttribute ToAttribute(this INamedBuffer buffer)
+            => new BinaryAttribute(AttributeDescriptor.Parse(buffer.Name), buffer);
 
-        public static Span<T> CastData<T>(this Attribute attr) where T : struct
+        public static Span<T> CastData<T>(this BinaryAttribute attr) where T : struct
             => MemoryMarshal.Cast<byte, T>(attr.Bytes);
 
         public static T[] ToArray<T>(this Attribute<T> attr) where T : struct
-            => attr == null ? null : attr.Data.ToArray();
+            => attr?.Data.ToArray();
 
         public static IBuffer ToBuffer<T>(this T[] data) where T : struct
             => data.AsMemory().ToBuffer();
 
-        public static Attribute ToAttribute<T>(this T[] data, string name) where T : struct
-            => data.ToNamedBuffer(name).ToAttribute().AsType<T>()
+        public static Attribute<T> ToAttribute<T>(this T[] data, string name) where T : struct
+            => data.ToBinaryAttribute(name).AsType<T>();
 
-        public Attribute<T> AsType<T>(this Attribute att) where T : struct
-            => new Attribute<T>(att);
+        public static BinaryAttribute ToBinaryAttribute<T>(this T[] data, string name) where T : struct
+            => data.ToNamedBuffer(name).ToAttribute();
 
-        /*
-        public Attribute<T> ToAttribute<T>(this T[] data, AssociationEnum assoc, SemanticEnum sem, DataTypeEnum dt, int arity) where T: struct
-            => new Att
-            */
+        public static Attribute<T> AsType<T>(this BinaryAttribute attr) where T : struct
+            => new Attribute<T>(attr);
     }
 }

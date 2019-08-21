@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using Assimp;
 
-namespace Vim.G3d.IO
+namespace Vim.G3d
 {
     public static class AssimpExtensions
     {

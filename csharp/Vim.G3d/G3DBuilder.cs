@@ -8,13 +8,16 @@ namespace Vim.G3d
     public class G3DBuilder
     {
         public Header Header { get; set; }
-        public readonly List<Attribute> Attributes = new List<Attribute>();
+        public readonly List<BinaryAttribute> Attributes = new List<BinaryAttribute>();
 
         public G3D ToG3D()
             => new G3D(Attributes, Header);
 
-        public void AddAttribute(Attribute attr)
+        public void AddAttribute(BinaryAttribute attr)
             => Attributes.Add(attr);
+
+        public void AddAttribute<T>(Attribute<T> attr) where T: struct
+            => AddAttribute(attr._Attribute);
 
         public void AddIndices(int[] indices)
             => AddAttribute(indices.ToAttribute(CommonAttributes.Indices));

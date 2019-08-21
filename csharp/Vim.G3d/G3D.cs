@@ -35,18 +35,18 @@ namespace Vim.G3d
         public Attribute<float> UV;
         public Attribute<float> UVW;
 
-        public List<Attribute> Attributes = new List<Attribute>();
+        public List<BinaryAttribute> Attributes = new List<BinaryAttribute>();
 
         public Header Header { get; }
 
-        private int AssignAttribute(Attribute attr, int expectedCount)
+        private int AssignAttribute(BinaryAttribute attr, int expectedCount)
         {
             if (expectedCount >= 0 && attr.Count != expectedCount)
                 throw new Exception($"Attribute {attr.Name} size {attr.Count} not match the expected size {expectedCount}");
             return attr.Count;
         }
 
-        public G3D(IEnumerable<Attribute> attributes, Header header = null)
+        public G3D(IEnumerable<BinaryAttribute> attributes, Header header = null)
         {
             Header = header;
 
@@ -80,33 +80,33 @@ namespace Vim.G3d
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_position && attr.Descriptor.Association == AssociationEnum.assoc_corner)
                 {
-                    Vertices = Vertices ?? attr;
+                    Vertices = Vertices ?? attr.AsType<float>();
                 }
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_index && attr.Descriptor.Association == AssociationEnum.assoc_corner)
                 {
-                    Indices = Indices ?? attr;
+                    Indices = Indices ?? attr.AsType<int>();
                 }
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_size && 
                     (attr.Descriptor.Association == AssociationEnum.assoc_face || attr.Descriptor.Association == AssociationEnum.assoc_object))
                 {
-                    FaceSizes = FaceSizes ?? attr;
+                    FaceSizes = FaceSizes ?? attr.AsType<int>();
                 }
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_normal && attr.Descriptor.Association == AssociationEnum.assoc_face)
                 {
-                    FaceNormal = FaceNormal ?? attr;
+                    FaceNormal = FaceNormal ?? attr.AsType<float>();
                 }
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_normal && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
                 {
-                    VertexNormal = VertexNormal ?? attr;
+                    VertexNormal = VertexNormal ?? attr.AsType<float>();
                 }
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_uv && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
                 {
-                    UV = UV ?? attr;
+                    UV = UV ?? attr.AsType<float>();
                 }
             }
 
@@ -127,7 +127,7 @@ namespace Vim.G3d
                 // Same FaceSize for whole mesh
                 if (FaceSizes.Descriptor.Association == AssociationEnum.assoc_object)
                 {
-                    CornersPerFace = FaceSizes.CastData<int>()[0];
+                    CornersPerFace = FaceSizes.Data[0];
                 }
                 else
                 {

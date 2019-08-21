@@ -4,4 +4,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
 
+  <ItemGroup>
+    <PackageReference Include="NUnit" Version="3.12.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.14.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Vim.G3d.AssimpAdapter\Vim.G3d.AssimpAdapter.csproj" />
+    <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
+  </ItemGroup>
+
 </Project>

@@ -3,6 +3,7 @@ using UnityEngine;
 
 namespace Vim.G3d.Unity
 {
+    /*
     public class UnityAttributes
     {
         public Attribute<Vector3> Position;
@@ -43,7 +44,7 @@ namespace Vim.G3d.Unity
 
         public static UnityAttributes ToAttributes(this Mesh mesh)
         {
-            var g3d = new G3d();
+            var g3d = new G3D();
             g3d.Position = mesh.vertices = g3d.Position.ToArray();
             mesh.triangles = g3d.Indices.ToArray();
             mesh.colors = g3d.Colors.ToArray();
@@ -60,4 +61,5 @@ namespace Vim.G3d.Unity
             return mesh;
         }
     }
+    */
 }
