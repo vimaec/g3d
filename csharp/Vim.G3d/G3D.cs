@@ -1,11 +1,10 @@
-﻿    /*
+﻿/*
     G3D Geometry Format Library
     Copyright 2019, VIMaec LLC.
     Copyright 2018, Ara 3D Inc.
     Usage licensed under terms of MIT License
 
     The G3D format is a simple, generic, and efficient representation of geometry data. 
-    For more information see 
 */
 
 using System;
@@ -25,13 +24,16 @@ namespace Vim.G3d
         public int NumObjects { get; }
 
         // Commonly accessed attributes 
-        public Attribute Vertices;
-        public Attribute Indices;
-        public Attribute FaceIndices;
-        public Attribute FaceSizes;
-        public Attribute VertexNormal;
-        public Attribute FaceNormal;
-        public Attribute UV;
+        public Attribute<float> Vertices;
+        public Attribute<int> Indices;
+        public Attribute<int> FaceIndices;
+        public Attribute<int> FaceSizes;
+        public Attribute<int> GroupIndices;
+        public Attribute<int> GroupSizes;
+        public Attribute<float> VertexNormal;
+        public Attribute<float> FaceNormal;
+        public Attribute<float> UV;
+        public Attribute<float> UVW;
 
         public List<Attribute> Attributes = new List<Attribute>();
 

@@ -31,6 +31,32 @@ namespace Vim.G3d.Unity
             mesh.normals = g3d.Normals.ToArray();
             mesh.tangents = g3d.Tangents.ToArray();
             mesh.uv = g3d.UVs[0].ToArray();
+            mesh.uv2 = g3d.UVs[1].ToArray();
+            mesh.uv3 = g3d.UVs[2].ToArray();
+            mesh.uv4 = g3d.UVs[3].ToArray();
+            mesh.uv5 = g3d.UVs[4].ToArray();
+            mesh.uv6 = g3d.UVs[5].ToArray();
+            mesh.uv7 = g3d.UVs[6].ToArray();
+            mesh.uv8 = g3d.UVs[7].ToArray();
+            return mesh;
+        }
+
+        public static UnityAttributes ToAttributes(this Mesh mesh)
+        {
+            var g3d = new G3d();
+            g3d.Position = mesh.vertices = g3d.Position.ToArray();
+            mesh.triangles = g3d.Indices.ToArray();
+            mesh.colors = g3d.Colors.ToArray();
+            mesh.normals = g3d.Normals.ToArray();
+            mesh.tangents = g3d.Tangents.ToArray();
+            mesh.uv = g3d.UVs[0].ToArray();
+            mesh.uv2 = g3d.UVs[1].ToArray();
+            mesh.uv3 = g3d.UVs[2].ToArray();
+            mesh.uv4 = g3d.UVs[3].ToArray();
+            mesh.uv5 = g3d.UVs[4].ToArray();
+            mesh.uv6 = g3d.UVs[5].ToArray();
+            mesh.uv7 = g3d.UVs[6].ToArray();
+            mesh.uv8 = g3d.UVs[7].ToArray();
             return mesh;
         }
     }

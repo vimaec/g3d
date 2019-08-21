@@ -9,4 +9,8 @@
     <PackageReference Include="geometry3Sharp" Version="1.0.324" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
+  </ItemGroup>
+
 </Project>

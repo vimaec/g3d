@@ -24,11 +24,15 @@ namespace Vim.G3d
 
     public class Attribute<T> : INamedBuffer where T: struct
     {
+        public Attribute(Attribute attr)
+            => _Attribute = attr;
+
         public Attribute _Attribute { get; }
         public Span<T> Data => _Attribute.CastData<T>();
         public string Name => _Attribute.Name;
         public Span<byte> Bytes => _Attribute.Bytes;
-    }    
+        public AttributeDescriptor Descriptor => _Attribute.Descriptor;
+    }        
 
     public static class AttributeExtensions
     {
@@ -41,11 +45,18 @@ namespace Vim.G3d
         public static T[] ToArray<T>(this Attribute<T> attr) where T : struct
             => attr == null ? null : attr.Data.ToArray();
 
-        public IBuffer ToBuffer<T>(this T[] data) where T : struct
-            => data.AsMemory();
+        public static IBuffer ToBuffer<T>(this T[] data) where T : struct
+            => data.AsMemory().ToBuffer();
 
+        public static Attribute ToAttribute<T>(this T[] data, string name) where T : struct
+            => data.ToNamedBuffer(name).ToAttribute().AsType<T>()
+
+        public Attribute<T> AsType<T>(this Attribute att) where T : struct
+            => new Attribute<T>(att);
+
+        /*
         public Attribute<T> ToAttribute<T>(this T[] data, AssociationEnum assoc, SemanticEnum sem, DataTypeEnum dt, int arity) where T: struct
-        {
-        }
+            => new Att
+            */
     }
 }
