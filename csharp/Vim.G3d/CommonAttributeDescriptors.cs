@@ -1,6 +1,6 @@
 ﻿namespace Vim.G3d
 {
-    public static class CommonAttributeDescriptors
+    public static class CommonAttributes
     {
         public const string Position = "g3d:vertex:position:float32:3";
         public const string Indices = "g3d:corner:index:int32:1";

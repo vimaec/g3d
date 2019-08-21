@@ -12,7 +12,10 @@ namespace Vim.G3d
         public void AddAttribute(Attribute attr)
             => Attributes.Add(attr);
 
-        public void AddIndices(int[] indices) 
-            => AddAttribute(indices.ToA
+        public void AddIndices(int[] indices)
+            => AddAttribute(indices.ToAttribute(CommonAttributes.Indices);
+
+        public void AddVertices(float[] vertices)
+            => AddAttribute()
     }
 }

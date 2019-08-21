@@ -37,7 +37,7 @@ namespace Vim.G3d.IO
         public static G3D ToG3D(Mesh mesh)
         {
             var bldr = new G3DBuilder();
-            var verts = mesh.Vertices.ToFloats();
+            var verts = mesh.Vertices.ToFloats();            
             var indices = mesh.GetIndices();
             var bitangents = mesh.HasTangentBasis ? mesh.BiTangents.ToFloats() : null;
             var tangents = mesh.HasTangentBasis ? mesh.Tangents.ToFloats() : null;
