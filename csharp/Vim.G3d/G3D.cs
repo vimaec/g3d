@@ -9,6 +9,8 @@
 
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 
 namespace Vim.G3d
 {
@@ -150,6 +152,19 @@ namespace Vim.G3d
 
                 NumFaces = NumCorners / CornersPerFace;
             }
-        }        
+        }
+
+        public static G3D Read(string filePath)
+            => BFast.Read(filePath).ToG3D();
+
+        public IEnumerable<INamedBuffer> ToBuffers()
+            => new[] { Header.ToString().ToNamedBuffer("meta") } // First buffer is named "meta"
+            .Concat(Attributes.Select(attr => attr.ToNamedBuffer())); // All other attributes are subsequent buffers 
+
+        public void Write(Stream stream)
+            => BFast.WriteBFast(ToBuffers(), stream);
+
+        public void Write(string filePath)
+            => Write(File.OpenWrite(filePath));
     }
 }

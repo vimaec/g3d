@@ -20,6 +20,11 @@ namespace Vim.G3d
         public string BoundingBox;
         public string Origin;
 
+        public Header(string data)
+        {
+            // TODO: parse the header data. 
+        }
+
         public override string ToString() =>
             $@"{{
                 ""G3D"": ""{G3DVersion}"",

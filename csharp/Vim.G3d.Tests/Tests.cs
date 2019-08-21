@@ -13,11 +13,17 @@ namespace Vim.G3d.Tests
         [Test]
         public static void TestAssimp()
         {
-            var file = Path.Combine(InputDataPath, "models-nonbsd", "OBJ", "rifle.obj");
+            var file = Path.Combine(InputDataPath, "models", "STL", "wuson.stl");
             using (var context = new Assimp.AssimpContext())
             {
                 context.ImportFile(file);
             }
+        }
+
+        public static void Main()
+        {
+            TestAssimp();
+            Console.WriteLine("Test");
         }
     }
 }
