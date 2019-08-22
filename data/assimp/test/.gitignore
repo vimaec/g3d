@@ -1,3 +1,7 @@
 # Ignore Unit Test Output files
 
 *_out.*
+
+# Reinclude the OBJ files that are ignored by the top-level OBJ 
+
+!*.obj
