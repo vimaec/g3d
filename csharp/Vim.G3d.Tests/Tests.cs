@@ -36,6 +36,15 @@ $@"       #animations = {scene.AnimationCount}
                     }
 
 
+        public static void OutputG3DStats(G3D g)
+        {
+            Console.WriteLine($"Number of attributes = {g.Attributes.Count}");
+            foreach (var attr in g.Attributes)
+            {
+                Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.Count}");
+            }
+        }
+
         public static string InputDataPath => Path.Combine(TestContext.CurrentContext.TestDirectory,
             "..", "..", "..", "..", "..", // yes 5, count em, 5  
             "data", "assimp", "test");
@@ -54,7 +63,8 @@ $@"       #animations = {scene.AnimationCount}
                     OutputMeshStats(m);
                     
                     // TODO: output g3d stats
-                    // var g3d = m.ToG3D();
+                    var g3d = m.ToG3D();
+                    OutputG3DStats(g3d);
                 }
             }
         }
