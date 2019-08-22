@@ -18,6 +18,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.AssimpAdapter", "Vi
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.UnityAdapter", "Vim.G3d.UnityAdapter\Vim.G3d.UnityAdapter.csproj", "{87B59381-CE66-4330-8C53-A5BB109C264C}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Assembly-CSharp", "Vim.G3d.Unity\Assembly-CSharp.csproj", "{3A402AD2-947B-D7FB-204B-56E272BE110D}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -40,9 +42,16 @@ Global
 		{87B59381-CE66-4330-8C53-A5BB109C264C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{87B59381-CE66-4330-8C53-A5BB109C264C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{87B59381-CE66-4330-8C53-A5BB109C264C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{3A402AD2-947B-D7FB-204B-56E272BE110D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3A402AD2-947B-D7FB-204B-56E272BE110D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3A402AD2-947B-D7FB-204B-56E272BE110D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3A402AD2-947B-D7FB-204B-56E272BE110D}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{3A402AD2-947B-D7FB-204B-56E272BE110D} = {DFAE32B0-8259-468D-8F87-B41E8F417015}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {BDB2B268-E779-465A-8C37-901BC46A2E11}
