@@ -61,8 +61,6 @@ $@"       #animations = {scene.AnimationCount}
                 foreach (var m in scene.Meshes)
                 {
                     OutputMeshStats(m);
-                    
-                    // TODO: output g3d stats
                     var g3d = m.ToG3D();
                     OutputG3DStats(g3d);
                 }

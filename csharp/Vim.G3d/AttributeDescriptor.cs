@@ -26,15 +26,13 @@ namespace Vim.G3d
 
             DataTypeSize = GetDataTypeSize(DataType);
             DataElementSize = DataTypeSize * DataArity;
-
-            Debug.Assert(Validate());
         }
 
         /// <summary>
         /// Generates a URN representation of the attribute descriptor
         /// </summary>
         public override string ToString()
-            => $"g3d:{SemanticString}:{AssociationString}:{DataTypeString}:{DataArity}";
+            => $"g3d:{AssociationString}:{SemanticString}:{DataTypeString}:{DataArity}";
 
         /// <summary>
         /// Parses a URN representation of the attribute descriptor to generate an actual attribute descriptor 
