@@ -39,19 +39,48 @@ $@"       #animations = {scene.AnimationCount}
         public static void OutputG3DStats(G3D g)
         {
             Console.WriteLine($"Number of attributes = {g.Attributes.Count}");
+            Console.WriteLine("Header");
+            Console.WriteLine(g.Header);
             foreach (var attr in g.Attributes)
             {
                 Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.Count}");
             }
+            Console.WriteLine($"{g.CornersPerFace} corners per face");
         }
 
         public static string InputDataPath => Path.Combine(TestContext.CurrentContext.TestDirectory,
             "..", "..", "..", "..", "..", // yes 5, count em, 5  
             "data", "assimp", "test");
 
+        public static string TestOutputFolder => Path.Combine(Path.GetTempPath(), "g3d-test");
+
+        public static int MeshCount = 0;
+
+        public static void TestG3D(G3D g3d, string baseName)
+        {
+            OutputG3DStats(g3d);
+
+            var buffers = g3d.ToBuffers();
+            var i = 0;
+            foreach (var buffer in buffers)
+            {
+                Console.WriteLine("Buffer {i++} " + buffer.Name);
+            }
+
+            var outputFile = Path.Combine(TestOutputFolder, MeshCount++ + Path.GetFileName(baseName) + ".g3d");
+            g3d.Write(outputFile);
+
+            var tmp = G3D.Read(outputFile);
+            OutputG3DStats(tmp);
+
+            // TODO: compare tmp and g3d
+        }
+
         [Test]
         public static void TestAssimp()
         {
+            Directory.CreateDirectory(TestOutputFolder);
+
             Console.WriteLine(InputDataPath);
             var file = Path.Combine(InputDataPath, "models", "STL", "wuson.stl");
             using (var context = new AssimpContext())
@@ -62,7 +91,7 @@ $@"       #animations = {scene.AnimationCount}
                 {
                     OutputMeshStats(m);
                     var g3d = m.ToG3D();
-                    OutputG3DStats(g3d);
+                    TestG3D(g3d, file);
                 }
             }
         }

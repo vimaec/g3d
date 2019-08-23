@@ -20,7 +20,7 @@ namespace Vim.G3d
         public string BoundingBox;
         public string Origin;
 
-        public Header(string data)
+        public Header(string data = null)
         {
             // TODO: parse the header data. 
         }

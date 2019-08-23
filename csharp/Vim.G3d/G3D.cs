@@ -50,7 +50,7 @@ namespace Vim.G3d
 
         public G3D(IEnumerable<BinaryAttribute> attributes, Header header = null)
         {
-            Header = header;
+            Header = header ?? new Header();
 
             NumFaces = -1;
             NumCorners = -1;
@@ -61,7 +61,7 @@ namespace Vim.G3d
             {
                 Attributes.Add(attr);
 
-                switch (attr.Descriptor.Association)
+                switch (attr.Descriptor.Association)    
                 {
                     case AssociationEnum.assoc_none:
                         break;
@@ -159,7 +159,7 @@ namespace Vim.G3d
 
         public IEnumerable<INamedBuffer> ToBuffers()
             => new[] { Header.ToString().ToNamedBuffer("meta") } // First buffer is named "meta"
-            .Concat(Attributes.Select(attr => attr.ToNamedBuffer())); // All other attributes are subsequent buffers 
+            .Concat(Attributes); // All other attributes are subsequent buffers 
 
         public void Write(Stream stream)
             => BFast.WriteBFast(ToBuffers(), stream);
