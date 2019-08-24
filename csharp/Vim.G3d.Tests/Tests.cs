@@ -1,7 +1,9 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Diagnostics;
 using System.IO;
 using Assimp;
+using g3;
 
 namespace Vim.G3d.Tests
 {
@@ -35,6 +37,19 @@ $@"       #animations = {scene.AnimationCount}
     #bitangents = {mesh.BiTangents?.Count}");
                     }
 
+        public static T TimeLoadingFile<T>(string fileName, Func<string, T> func)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            try
+            {
+                return func(fileName);
+            }
+            finally
+            {
+                Console.WriteLine($"Time to open {Path.GetFileName(fileName)} is {sw.ElapsedMilliseconds}msec");
+            }
+        }
 
         public static void OutputG3DStats(G3D g)
         {
@@ -51,31 +66,31 @@ $@"       #animations = {scene.AnimationCount}
             "..", "..", "..", "..", "..", // yes 5, count em, 5  
             "data", "assimp", "test");
 
-        public static string TestOutputFolder => Path.Combine(Path.GetTempPath(), "g3d-test");
-
-        public static int MeshCount = 0;
+        public static string TestOutputFolder => Path.Combine(InputDataPath, "..", "..", "g3d");
 
         public static void TestG3D(G3D g3d, string baseName)
         {
             Console.WriteLine("Testing G3D " + baseName);
             OutputG3DStats(g3d);
 
-            /*
-            var buffers = g3d.ToBuffers();
-            var i = 0;
-            foreach (var buffer in buffers)
-            {
-                Console.WriteLine(@"Buffer {i++} " + buffer.Name);
-            }
-            */
-
-            var outputFile = Path.Combine(TestOutputFolder, MeshCount++ + Path.GetFileName(baseName) + ".g3d");
+            var outputFile = Path.Combine(TestOutputFolder, Path.GetFileName(baseName) + ".g3d");
             g3d.Write(outputFile);
 
-            var tmp = G3D.Read(outputFile);
+            var tmp = TimeLoadingFile(outputFile, G3D.Read);
             OutputG3DStats(tmp);
+        }
 
-            // TODO: compare tmp and g3d
+        public static void CompareTiming(string fileName)
+        {
+            using (var context = new AssimpContext())
+            {
+                var scene = TimeLoadingFile(fileName, context.ImportFile);
+                var m = scene.Meshes[0];
+                var g3d = m.ToG3D();
+                var outputFile = Path.Combine(TestOutputFolder, Path.GetFileName(fileName) + ".g3d");
+                g3d.Write(outputFile);
+                TimeLoadingFile(outputFile, G3D.Read);
+            }
         }
 
         public static string[] TestFiles =
@@ -102,6 +117,20 @@ $@"       #animations = {scene.AnimationCount}
             @"models\Collada\duck.dae",
         };
 
+        [Test, Explicit("Performance")]
+        public static void TestPerformance()
+        {
+            Directory.CreateDirectory(TestOutputFolder);
+
+            Console.WriteLine(InputDataPath);
+
+            foreach (var f in TestFiles)
+            {
+                var file = Path.Combine(InputDataPath, f);
+                CompareTiming(file); 
+            }
+        }
+
         [Test]
         public static void TestAssimp()
         {
@@ -111,18 +140,17 @@ $@"       #animations = {scene.AnimationCount}
 
             foreach (var f in TestFiles)
             {
-                Console.WriteLine("Parsing " + f);
                 var file = Path.Combine(InputDataPath, f);
                 using (var context = new AssimpContext())
                 {
-                    var scene = context.ImportFile(file);
+                    var scene = TimeLoadingFile(file, context.ImportFile);
                     OutputSceneStats(scene);
-                    foreach (var m in scene.Meshes)
-                    {
-                        OutputMeshStats(m);
-                        var g3d = m.ToG3D();
-                        TestG3D(g3d, file);
-                    }
+
+                    // We only grab the first mesh. 
+                    var m = scene.Meshes[0];
+                    OutputMeshStats(m);
+                    var g3d = m.ToG3D();
+                    TestG3D(g3d, file);
                 }
             }
         }
