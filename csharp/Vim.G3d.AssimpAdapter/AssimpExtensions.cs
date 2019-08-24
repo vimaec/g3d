@@ -34,12 +34,20 @@ namespace Vim.G3d
             return r;
         }
 
+        public static bool IsTriangularMesh(Mesh mesh)
+            => mesh.Faces.All(f => f.IndexCount == 3);
+
         public static G3D ToG3D(this Mesh mesh)
         {
             var bldr = new G3DBuilder();
 
             bldr.AddVertices(mesh.Vertices.ToFloats());
-            bldr.AddIndices(mesh.GetIndices());
+
+            // Is it triangular or polygonal 
+            if (IsTriangularMesh(mesh))
+                bldr.AddIndices(mesh.GetIndices());
+            else
+                bldr.AddIndicesByFace(mesh.Faces.Select((f => f.Indices)));
 
             if (mesh.HasTangentBasis)
                 bldr.AddBitangent(mesh.BiTangents.ToFloats());

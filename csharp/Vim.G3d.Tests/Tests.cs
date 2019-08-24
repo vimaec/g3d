@@ -39,8 +39,7 @@ $@"       #animations = {scene.AnimationCount}
         public static void OutputG3DStats(G3D g)
         {
             Console.WriteLine($"Number of attributes = {g.Attributes.Count}");
-            Console.WriteLine("Header");
-            Console.WriteLine(g.Header);
+            //Console.WriteLine("Header");
             foreach (var attr in g.Attributes)
             {
                 Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.Count}");
@@ -58,14 +57,17 @@ $@"       #animations = {scene.AnimationCount}
 
         public static void TestG3D(G3D g3d, string baseName)
         {
+            Console.WriteLine("Testing G3D " + baseName);
             OutputG3DStats(g3d);
 
+            /*
             var buffers = g3d.ToBuffers();
             var i = 0;
             foreach (var buffer in buffers)
             {
-                Console.WriteLine("Buffer {i++} " + buffer.Name);
+                Console.WriteLine(@"Buffer {i++} " + buffer.Name);
             }
+            */
 
             var outputFile = Path.Combine(TestOutputFolder, MeshCount++ + Path.GetFileName(baseName) + ".g3d");
             g3d.Write(outputFile);
@@ -76,22 +78,51 @@ $@"       #animations = {scene.AnimationCount}
             // TODO: compare tmp and g3d
         }
 
+        public static string[] TestFiles =
+        {
+            @"models-nonbsd\3DS\jeep1.3ds",
+            @"models-nonbsd\3DS\mar_rifle.3ds",
+            @"models-nonbsd\dxf\rifle.dxf",
+            @"models-nonbsd\FBX\2013_ASCII\duck.fbx",
+            @"models-nonbsd\FBX\2013_ASCII\jeep1.fbx",
+            // Binary fails assimp import
+            //@"models-nonbsd\FBX\2013_BINARY\duck.fbx",
+            //@"models-nonbsd\FBX\2013_BINARY\jeep1.fbx",
+            @"models-nonbsd\OBJ\rifle.obj",
+            @"models-nonbsd\OBJ\segment.obj",
+            @"models-nonbsd\PLY\ant-half.ply",
+            @"models\IFC\AC14-FZK-Haus.ifc",
+            @"models\PLY\wuson.ply",
+            @"models\STL\wuson.stl",
+            @"models\STL\Spider_ascii.stl",
+            @"models\STL\Spider_binary.stl",
+            @"models\glTF\CesiumMilkTruck\CesiumMilkTruck.gltf",
+            @"models\glTF2\2CylinderEngine-glTF-Binary\2CylinderEngine.glb",
+            @"models\DXF\wuson.dxf",
+            @"models\Collada\duck.dae",
+        };
+
         [Test]
         public static void TestAssimp()
         {
             Directory.CreateDirectory(TestOutputFolder);
 
             Console.WriteLine(InputDataPath);
-            var file = Path.Combine(InputDataPath, "models", "STL", "wuson.stl");
-            using (var context = new AssimpContext())
+
+            foreach (var f in TestFiles)
             {
-                var scene = context.ImportFile(file);
-                OutputSceneStats(scene);
-                foreach (var m in scene.Meshes)
+                Console.WriteLine("Parsing " + f);
+                var file = Path.Combine(InputDataPath, f);
+                using (var context = new AssimpContext())
                 {
-                    OutputMeshStats(m);
-                    var g3d = m.ToG3D();
-                    TestG3D(g3d, file);
+                    var scene = context.ImportFile(file);
+                    OutputSceneStats(scene);
+                    foreach (var m in scene.Meshes)
+                    {
+                        OutputMeshStats(m);
+                        var g3d = m.ToG3D();
+                        TestG3D(g3d, file);
+                    }
                 }
             }
         }

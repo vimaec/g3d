@@ -1,4 +1,6 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Vim.G3d
 {
@@ -21,6 +23,32 @@ namespace Vim.G3d
 
         public void AddIndices(int[] indices)
             => AddAttribute(indices.ToAttribute(CommonAttributes.Indices));
+
+        /// <summary>
+        /// Computes the face indices and the face sizes.
+        /// Use this if dealing with a polygonal mesh. 
+        /// </summary>
+        public void AddIndicesByFace(IEnumerable<IEnumerable<int>> faces)
+        {
+            var faceSizes = new List<int>();
+            var faceIndices = new List<int>();
+            var indices = new List<int>();
+            var currentIndex = 0;
+            foreach (var f in faces)
+            {
+                var nFaceSize = 0;
+                faceIndices.Add(currentIndex);
+                foreach (var i in f)
+                {
+                    nFaceSize++;
+                    indices.Add(currentIndex++);
+                }
+                faceSizes.Add(nFaceSize);
+            }
+            AddIndices(indices.ToArray());
+            AddFaceIndices(faceIndices.ToArray());
+            AddFaceSizes(faceSizes.ToArray());
+        }
 
         public void AddVertices(float[] vertices)
             => AddAttribute(vertices.ToAttribute(CommonAttributes.Position));
