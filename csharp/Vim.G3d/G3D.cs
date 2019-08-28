@@ -36,6 +36,7 @@ namespace Vim.G3d
         public Attribute<float> FaceNormal;
         public Attribute<float> UV;
         public Attribute<float> UVW;
+        public Attribute<float> Color;
 
         public List<BinaryAttribute> Attributes = new List<BinaryAttribute>();
 
@@ -50,6 +51,7 @@ namespace Vim.G3d
 
         public G3D(IEnumerable<BinaryAttribute> attributes, Header header = null)
         {
+            // TODO: Add an API to easily look up attributes
             Header = header ?? new Header();
 
             NumFaces = -1;
@@ -80,7 +82,7 @@ namespace Vim.G3d
                         break;
                 }
 
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_position && attr.Descriptor.Association == AssociationEnum.assoc_corner)
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_position && (attr.Descriptor.Association == AssociationEnum.assoc_corner || attr.Descriptor.Association == AssociationEnum.assoc_vertex))
                 {
                     Vertices = Vertices ?? attr.AsType<float>();
                 }
@@ -109,6 +111,11 @@ namespace Vim.G3d
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_uv && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
                 {
                     UV = UV ?? attr.AsType<float>();
+                }
+
+                if (attr.Descriptor.Semantic == SemanticEnum.sem_color && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
+                {
+                    Color = Color ?? attr.AsType<float>();
                 }
             }
 
