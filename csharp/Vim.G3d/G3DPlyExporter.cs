@@ -10,52 +10,51 @@ namespace Vim.G3d
     {
         public static void WritePly(this G3D g, string filePath)
         {
+            BinaryWriter writer = new BinaryWriter(new FileStream(filePath, FileMode.Create), Encoding.ASCII);
+            g.WritePly(writer);
+        }
+
+        public static void WritePly(this G3D g, BinaryWriter writer)
+        {
             var vertices = g.Vertices.ToArray();
             var indices = g.Indices.ToArray();
             var faceSize = g.FaceSizes.ToArray();
-            var colours = g.Color?.ToArray();
-
-            BinaryWriter writer = new BinaryWriter(new FileStream(filePath, FileMode.Create), Encoding.ASCII);
+            var colours = g.VertexColor?.ToArray();
 
             //Write the header
-            writer.Write(StringToByteArray("ply\n"));
-            writer.Write(StringToByteArray("format ascii 1.0\n"));
-            writer.Write(StringToByteArray("element vertex " + vertices.Length / 3 + "\n"));
-            writer.Write(StringToByteArray("property float x\n"));
-            writer.Write(StringToByteArray("property float y\n"));
-            writer.Write(StringToByteArray("property float z\n"));
+            writer.WriteAscii("ply\n");
+            writer.WriteAscii("format ascii 1.0\n");
+            writer.WriteAscii("element vertex " + vertices.Length / 3 + "\n");
+            writer.WriteAscii("property float x\n");
+            writer.WriteAscii("property float y\n");
+            writer.WriteAscii("property float z\n");
             if (colours != null)
             {
-                writer.Write(StringToByteArray("property uint8 red\n"));
-                writer.Write(StringToByteArray("property uint8 green\n"));
-                writer.Write(StringToByteArray("property uint8 blue\n"));
+                writer.WriteAscii("property uint8 red\n");
+                writer.WriteAscii("property uint8 green\n");
+                writer.WriteAscii("property uint8 blue\n");
             }
-            writer.Write(StringToByteArray("element face " + faceSize.Length + "\n"));
-            writer.Write(StringToByteArray("property list uint8 int32 vertex_indices\n"));
-            writer.Write(StringToByteArray("end_header\n"));
+            writer.WriteAscii("element face " + faceSize.Length + "\n");
+            writer.WriteAscii("property list uint8 int32 vertex_indices\n");
+            writer.WriteAscii("end_header\n");
 
             // Write the vertices
             if (colours != null)
             {
                 for (var i = 0; i < vertices.Length / 3; i++)
                 {
-                    writer.Write(StringToByteArray(
-                        vertices[i * 3 + 0] + " " +
-                        vertices[i * 3 + 1] + " " +
-                        vertices[i * 3 + 2] + " " +
-                        (byte)Math.Max(Math.Min(colours[i * 3 + 0] * 255.0f, 255.0f), 0.0f) + " " +
-                        (byte)Math.Max(Math.Min(colours[i * 3 + 1] * 255.0f, 255.0f), 0.0f) + " " +
-                        (byte)Math.Max(Math.Min(colours[i * 3 + 2] * 255.0f, 255.0f), 0.0f) + "\n"));
+                    writer.WriteAscii($"{vertices[i * 3 + 0]} {vertices[i * 3 + 1]} {vertices[i * 3 + 2]} ");
+                    writer.WriteAscii(
+                        $"{(byte)Math.Max(Math.Min(colours[i * 3 + 0] * 255.0f, 255.0f), 0.0f)} " +
+                        $"{(byte)Math.Max(Math.Min(colours[i * 3 + 1] * 255.0f, 255.0f), 0.0f)} " +
+                        $"{(byte)Math.Max(Math.Min(colours[i * 3 + 2] * 255.0f, 255.0f), 0.0f)}\n\n");
                 }
             }
             else
             {
                 for (var i = 0; i < vertices.Length / 3; i++)
                 {
-                    writer.Write(StringToByteArray(
-                        vertices[i * 3 + 0] + " " +
-                        vertices[i * 3 + 1] + " " +
-                        vertices[i * 3 + 2] + "\n"));
+                    writer.WriteAscii($"{vertices[i * 3 + 0]} {vertices[i * 3 + 1]} {vertices[i * 3 + 2]}\n");
                 }
             }
 
@@ -63,22 +62,23 @@ namespace Vim.G3d
             var index = 0;
             for (var i = 0; i < faceSize.Length; i++)
             {
-                writer.Write(StringToByteArray(faceSize[i] + " "));
+                writer.WriteAscii(faceSize[i] + " ");
                 for (var j = 0; j < faceSize[i]; j++)
                 {
-                    writer.Write(StringToByteArray(indices[index++] + " "));
+                    writer.WriteAscii(indices[index++] + " ");
                 }
 
-                writer.Write(StringToByteArray("\n"));
+                writer.WriteAscii("\n");
             }
 
             //Close the binary writer
             writer.Close();
         }
 
-        private static byte[] StringToByteArray(string theString)
+        private static void WriteAscii(this BinaryWriter writer, string theString)
         {
-            return System.Text.Encoding.ASCII.GetBytes(theString);
+            var buffer = System.Text.Encoding.ASCII.GetBytes(theString);
+            writer.Write(buffer);
         }
     }
 }

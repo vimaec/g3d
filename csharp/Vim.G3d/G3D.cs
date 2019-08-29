@@ -36,7 +36,7 @@ namespace Vim.G3d
         public Attribute<float> FaceNormal;
         public Attribute<float> UV;
         public Attribute<float> UVW;
-        public Attribute<float> Color;
+        public Attribute<float> VertexColor;
 
         public List<BinaryAttribute> Attributes = new List<BinaryAttribute>();
 
@@ -115,7 +115,7 @@ namespace Vim.G3d
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_color && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
                 {
-                    Color = Color ?? attr.AsType<float>();
+                    VertexColor = VertexColor ?? attr.AsType<float>();
                 }
             }
 
