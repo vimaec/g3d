@@ -37,7 +37,7 @@ namespace Vim.G3d
             // Write the vertices
             if (colours != null)
             {
-                for (int i = 0; i < vertices.Length / 3; i++)
+                for (var i = 0; i < vertices.Length / 3; i++)
                 {
                     writer.Write(StringToByteArray(
                         vertices[i * 3 + 0] + " " +
@@ -50,7 +50,7 @@ namespace Vim.G3d
             }
             else
             {
-                for (int i = 0; i < vertices.Length / 3; i++)
+                for (var i = 0; i < vertices.Length / 3; i++)
                 {
                     writer.Write(StringToByteArray(
                         vertices[i * 3 + 0] + " " +
@@ -60,11 +60,11 @@ namespace Vim.G3d
             }
 
             // Write the face indices
-            int index = 0;
-            for (int i = 0; i < faceSize.Length; i++)
+            var index = 0;
+            for (var i = 0; i < faceSize.Length; i++)
             {
                 writer.Write(StringToByteArray(faceSize[i] + " "));
-                for (int j = 0; j < faceSize[i]; j++)
+                for (var j = 0; j < faceSize[i]; j++)
                 {
                     writer.Write(StringToByteArray(indices[index++] + " "));
                 }
