@@ -126,5 +126,28 @@ $@"       #animations = {scene.AnimationCount}
                 }
             }
         }
+
+        [Test]
+        public static void TestPlyWriter()
+        {
+            var fileName = @"models\PLY\wuson.ply";
+            fileName = Path.Combine(InputDataPath, fileName);
+
+            var outputFileName = @"wuson.ply";
+            outputFileName = Path.Combine(TestOutputFolder, outputFileName);
+
+            using (var context = new AssimpContext())
+            {
+                var scene = context.ImportFile(fileName);
+
+                if (scene.Meshes.Count != 1)
+                {
+                    throw new Exception("Expected 1 mesh in file.");
+                }
+
+                var g3d = scene.Meshes[0].ToG3D();
+                g3d.WritePly(outputFileName);
+            }
+        }
     }
 }

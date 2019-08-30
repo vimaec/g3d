@@ -110,9 +110,15 @@ namespace Vim.G3d
 
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_uv && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
                 {
-                    UV = UV ?? attr.AsType<float>();
+                    if (attr.Descriptor.DataArity == 2)
+                    {
+                        UV = UV ?? attr.AsType<float>();
+                    }
+                    else if (attr.Descriptor.DataArity == 3)
+                    {
+                        UVW = UVW ?? attr.AsType<float>();
+                    }
                 }
-
                 if (attr.Descriptor.Semantic == SemanticEnum.sem_color && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
                 {
                     VertexColor = VertexColor ?? attr.AsType<float>();
