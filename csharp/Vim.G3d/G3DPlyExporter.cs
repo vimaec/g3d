@@ -20,6 +20,11 @@ namespace Vim.G3d
             var indices = g.Indices.ToArray();
             var faceSize = g.FaceSizes.ToArray();
             var colours = g.VertexColor?.ToArray();
+            var normals = g.VertexNormal?.ToArray();
+            var uvs = g.UV?.ToArray() ?? g.UVW?.ToArray();
+            var uvArity = g.UV != null ? 2 : g.UVW != null ? 3 : 0;
+
+            var numFaces = faceSize != null ? faceSize.Length : (indices.Length / 3);
 
             //Write the header
             writer.WriteAscii("ply\n");
@@ -34,36 +39,55 @@ namespace Vim.G3d
                 writer.WriteAscii("property uint8 green\n");
                 writer.WriteAscii("property uint8 blue\n");
             }
-            writer.WriteAscii("element face " + faceSize.Length + "\n");
-            writer.WriteAscii("property list uint8 int32 vertex_indices\n");
+            if (normals != null)
+            {
+                writer.WriteAscii("property float nx\n");
+                writer.WriteAscii("property float ny\n");
+                writer.WriteAscii("property float nz\n");
+            }
+            if (uvs != null)
+            {
+                writer.WriteAscii("property float s\n");
+                writer.WriteAscii("property float t\n");
+            }
+            writer.WriteAscii("element face " + numFaces + "\n");
+            writer.WriteAscii("property list uchar uint vertex_indices\n");
             writer.WriteAscii("end_header\n");
 
             // Write the vertices
-            if (colours != null)
+            for (var i = 0; i < vertices.Length / 3; i++)
             {
-                for (var i = 0; i < vertices.Length / 3; i++)
+                writer.WriteAscii($"{vertices[i * 3 + 0]} {vertices[i * 3 + 1]} {vertices[i * 3 + 2]} ");
+
+                if (colours != null)
                 {
-                    writer.WriteAscii($"{vertices[i * 3 + 0]} {vertices[i * 3 + 1]} {vertices[i * 3 + 2]} ");
                     writer.WriteAscii(
                         $"{(byte)Math.Max(Math.Min(colours[i * 3 + 0] * 255.0f, 255.0f), 0.0f)} " +
                         $"{(byte)Math.Max(Math.Min(colours[i * 3 + 1] * 255.0f, 255.0f), 0.0f)} " +
-                        $"{(byte)Math.Max(Math.Min(colours[i * 3 + 2] * 255.0f, 255.0f), 0.0f)}\n\n");
+                        $"{(byte)Math.Max(Math.Min(colours[i * 3 + 2] * 255.0f, 255.0f), 0.0f)}");
                 }
-            }
-            else
-            {
-                for (var i = 0; i < vertices.Length / 3; i++)
+
+                if (normals != null)
                 {
-                    writer.WriteAscii($"{vertices[i * 3 + 0]} {vertices[i * 3 + 1]} {vertices[i * 3 + 2]}\n");
+                    writer.WriteAscii($"{normals[i * 3 + 0]} {normals[i * 3 + 1]} {normals[i * 3 + 2]} ");
                 }
+
+                if (uvs != null)
+                {
+                    writer.WriteAscii($"{uvs[i * uvArity + 0]} {uvs[i * uvArity + 1]} ");
+                }
+
+                writer.WriteAscii($"\n");
             }
+            
 
             // Write the face indices
             var index = 0;
-            for (var i = 0; i < faceSize.Length; i++)
+            for (var i = 0; i < numFaces; i++)
             {
-                writer.WriteAscii(faceSize[i] + " ");
-                for (var j = 0; j < faceSize[i]; j++)
+                var numCorners = faceSize != null ? faceSize[i] : 3;
+                writer.WriteAscii(numCorners + " ");
+                for (var j = 0; j < numCorners; j++)
                 {
                     writer.WriteAscii(indices[index++] + " ");
                 }
