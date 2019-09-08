@@ -1,6 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
+﻿using System.Collections.Generic;
 
 namespace Vim.G3d
 {
@@ -15,13 +13,16 @@ namespace Vim.G3d
         public G3D ToG3D()
             => new G3D(Attributes, Header);
 
-        public void AddAttribute(BinaryAttribute attr)
-            => Attributes.Add(attr);
+        public G3DBuilder AddAttribute(BinaryAttribute attr)
+        {
+            Attributes.Add(attr);
+            return this;
+        }
 
-        public void AddAttribute<T>(Attribute<T> attr) where T: struct
+        public G3DBuilder AddAttribute<T>(Attribute<T> attr) where T: struct
             => AddAttribute(attr._Attribute);
 
-        public void AddIndices(int[] indices)
+        public G3DBuilder AddIndices(int[] indices)
             => AddAttribute(indices.ToAttribute(CommonAttributes.Indices));
 
         /// <summary>
@@ -50,47 +51,53 @@ namespace Vim.G3d
             AddFaceSizes(faceSizes.ToArray());
         }
 
-        public void AddVertices(float[] vertices)
+        public G3DBuilder SetObjectFaceSize(int n)
+            => AddAttribute(new[] {n}.ToAttribute(CommonAttributes.ObjectFaceSize));
+
+        public G3DBuilder SetGroupFaceSize(int[] faceSizes)
+            => AddAttribute(faceSizes.ToAttribute(CommonAttributes.GroupFaceSize));
+
+        public G3DBuilder AddVertices(float[] vertices)
             => AddAttribute(vertices.ToAttribute(CommonAttributes.Position));
 
-        public void AddUV(float[] uvs)
+        public G3DBuilder AddUV(float[] uvs)
             => AddAttribute(uvs.ToAttribute(CommonAttributes.UV));
 
-        public void AddUVW(float[] uvws)
+        public G3DBuilder AddUVW(float[] uvws)
             => AddAttribute(uvws.ToAttribute(CommonAttributes.UVW));
 
-        public void AddFaceNormals(float[] faceNormals)
+        public G3DBuilder AddFaceNormals(float[] faceNormals)
             => AddAttribute(faceNormals.ToAttribute(CommonAttributes.FaceNormal));
 
-        public void AddVertexNormals(float[] vertexNormals)
+        public G3DBuilder AddVertexNormals(float[] vertexNormals)
             => AddAttribute(vertexNormals.ToAttribute(CommonAttributes.VertexNormal));
 
-        public void AddVertexColors(float[] vertexColors)
+        public G3DBuilder AddVertexColors(float[] vertexColors)
             => AddAttribute(vertexColors.ToAttribute(CommonAttributes.VertexColor));
 
-        public void AddVertexColorsWithAlpha(float[] vertexColors)
+        public G3DBuilder AddVertexColorsWithAlpha(float[] vertexColors)
             => AddAttribute(vertexColors.ToAttribute(CommonAttributes.VertexColorWithAlpha));
 
-        public void AddTangent(float[] tangents)
-            => AddAttribute(tangents.ToAttribute(CommonAttributes.Tangent));
+        public G3DBuilder AddBitangent(float[] tangents)
+            => AddAttribute(tangents.ToAttribute(CommonAttributes.Bitangent));
 
-        public void AddBitangent(float[] bitangents)
-            => AddAttribute(bitangents.ToAttribute(CommonAttributes.Bitangent));
+        public G3DBuilder AddTangent3(float[] tangents)
+            => AddAttribute(tangents.ToAttribute(CommonAttributes.Tangent3));
 
-        public void AddTangentVector4(float[] tangents)
-            => AddAttribute(tangents.ToAttribute(CommonAttributes.TangentVector4));
+        public G3DBuilder AddTangent4(float[] tangents)
+            => AddAttribute(tangents.ToAttribute(CommonAttributes.Tangent4));
 
-        public void AddFaceSizes(int[] sizes)
+        public G3DBuilder AddFaceSizes(int[] sizes)
             => AddAttribute(sizes.ToAttribute(CommonAttributes.FaceSizes));
 
-        public void AddFaceIndices(int[] indices)
+        public G3DBuilder AddFaceIndices(int[] indices)
             => AddAttribute(indices.ToAttribute(CommonAttributes.FaceIndices));
 
-        public void AddGroupSizes(int[] sizes)
-            => AddAttribute(sizes.ToAttribute(CommonAttributes.GroupSizes));
-
-        public void AddGroupIndices(int[] indices)
+        public G3DBuilder AddGroupIndexOffsets(int[] indices)
             => AddAttribute(indices.ToAttribute(CommonAttributes.GroupIndices));
+
+        public G3DBuilder AddMaterialIds(int[] materialIds)
+            => AddAttribute(materialIds.ToAttribute(CommonAttributes.MaterialIds));
     }
 }
 

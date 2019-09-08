@@ -3,7 +3,6 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Assimp;
-using g3;
 
 namespace Vim.G3d.Tests
 {
@@ -57,7 +56,7 @@ $@"       #animations = {scene.AnimationCount}
             //Console.WriteLine("Header");
             foreach (var attr in g.Attributes)
             {
-                Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.Count}");
+                Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.ElementCount}");
             }
             Console.WriteLine($"{g.CornersPerFace} corners per face");
         }
@@ -153,6 +152,34 @@ $@"       #animations = {scene.AnimationCount}
                     TestG3D(g3d, file);
                 }
             }
+        }
+
+        [Test]
+        public static void TestBuilder()
+        {
+            var gb = new G3DBuilder();
+
+            var vertices = new[] {0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f, 0f, 1f, 1f, 1f, };
+            var colors = new[] { 1f, 1f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f, 0f, 0f, };
+            var uvs = new[] { 0f, 0f, 0.2f, 0.2f, 0.5f, 0.5f, 0.8f, 0.8f };
+            var indices = new[] {0, 1, 2, 0, 1, 3, 1, 2, 3, 2, 3, 0 };
+            var materialIds = new[] {0, 1, 2, 1};
+            gb.SetObjectFaceSize(3);
+            gb.AddVertices(vertices);
+            gb.AddIndices(indices);
+            gb.AddUV(uvs);
+            gb.AddVertexColors(colors);
+            gb.AddGroupIndexOffsets(new[] {0, 6});
+            gb.AddMaterialIds(materialIds);
+            var g3d = gb.ToG3D();
+            Assert.AreEqual(4, g3d.NumVertices);
+            Assert.AreEqual(3, g3d.CornersPerFace);
+            Assert.AreEqual(4, g3d.NumFaces);
+            Assert.AreEqual(2, g3d.NumGroups);
+            Assert.AreEqual(vertices, g3d.Vertices.Data.ToArray());
+            Assert.AreEqual(colors, g3d.VertexColor[0].Data.ToArray());
+            Assert.AreEqual(uvs, g3d.UV[0].Data.ToArray());
+            Assert.AreEqual(2, g3d.Groups.Length);
         }
     }
 }
