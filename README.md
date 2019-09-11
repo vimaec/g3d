@@ -1,8 +1,14 @@
 # G3D
 
-G3D is a simple, efficient, generic binary format for storing and transmitting geometry. G3D can  represent triangular meshes, quadrilateral meshes, polygonal meshes, point clouds, and line segments.  
+G3D is a simple, efficient, generic binary format for storing and transmitting geometry. The G3D format
+is designed to be used either as a serialization format or as an in-memory data structure.
 
-The G3D format was developed to allow geometry and associated attribute data to be efficiently serialized, deserialized, and rendered in different languages and on different platforms. 
+G3D can represent triangular meshes, quadrilateral meshes, polygonal meshes, point clouds, and line segments.  
+It can be easily and efficient ly deserialized and rendered in different languages and on different platforms.
+
+The G3D format can contain a superset of geometry attributes found in most common geometry formats, 
+including formats such as FBX, glTF, OBJ, PLY, and in memory data structures used in popular 3D APIs, like 
+Unity, Three.JS, Assimp, and 3dsMax.
 
 # Format 
 
@@ -26,8 +32,7 @@ G3D is organized as a collection of attribute buffers. Each attributes describe 
 * face      // per polygon data
 * edge      // per half-edge data 
 * group     // polygonal group - assumes a contiguous sequence of indices in the index buffer 
-* object    // whole object data - for example face-size of 4 with whole object indicates a quad mesh
-* material  // per material data
+* all		// whole object data - for example face-size of 4 with whole object indicates a quad mesh
 
 Attributes also have a "semamtic" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements, or Three.JS buffer attributes. There are a number of predefined semantic values with reserved names, but applications are free to define custom semantic values. The only required semantic in a G3D file is "position". Here is a list of some of the predefined semantics: 
 
