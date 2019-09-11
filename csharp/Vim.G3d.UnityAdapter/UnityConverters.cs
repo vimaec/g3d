@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using UnityEngine;
+using UnityEngine.Rendering;
 
 namespace Vim.G3d
 {
@@ -59,6 +60,7 @@ namespace Vim.G3d
             mesh.colors = g3d.VertexColor.ElementAtOrDefault(0)?.ToUnityVertexColor();
             mesh.normals = g3d.VertexNormal.ToUnityNormal();
             mesh.tangents = g3d.Tangents.ToUnityTangent();
+            mesh.indexFormat = IndexFormat.UInt32;
 
             if (g3d.NumGroups > 0)
             {
