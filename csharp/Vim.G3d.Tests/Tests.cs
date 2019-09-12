@@ -3,6 +3,7 @@ using System;
 using System.Diagnostics;
 using System.IO;
 using Assimp;
+using Assimp.Configs;
 
 namespace Vim.G3d.Tests
 {
@@ -154,29 +155,63 @@ $@"       #animations = {scene.AnimationCount}
             }
         }
 
+        public static G3D LoadAssimpFile(string filePath)
+        {
+           using (var context = new AssimpContext())
+           {
+                var scene = context.ImportFile(filePath);
+                Assert.AreEqual(1, scene.Meshes.Count);
+                return scene.Meshes[0].ToG3D();
+           }
+        }
+
+        public static void CompareG3D(G3D g1, G3D g2, bool compareAllAttributes = false)
+        {
+            if (compareAllAttributes)
+            {
+                Assert.AreEqual(g1.Attributes.Count, g2.Attributes.Count);
+                for (var i = 0; i < g1.Attributes.Count; ++i)
+                    Assert.AreEqual(g1.Attributes[i].Descriptor.ToString(), g2.Attributes[i].Descriptor.ToString());
+            }
+
+            Assert.AreEqual(g1.CornersPerFace, g2.CornersPerFace);
+            Assert.AreEqual(g1.NumCorners, g2.NumCorners);
+            Assert.AreEqual(g1.NumFaces, g2.NumFaces);
+            Assert.AreEqual(g1.NumGroups, g2.NumGroups);
+            Assert.AreEqual(g1.NumVertices, g2.NumVertices);
+
+            Assert.AreEqual(g1.Indices.Data.ToArray(), g2.Indices.Data.ToArray());
+
+            for (var i=0; i < g1.NumVertices; ++i)
+                Assert.AreEqual(g1.Vertices.Data[i], g2.Vertices.Data[i], 0.001);
+        }
+
         [Test]
-        public static void TestPlyWriter()
+        public static void TestWriters()
         {
             var fileName = @"models\PLY\wuson.ply";
             fileName = Path.Combine(InputDataPath, fileName);
 
-            var outputFileName = @"wuson.ply";
+            var outputFileName = @"test";
             outputFileName = Path.Combine(TestOutputFolder, outputFileName);
 
-            using (var context = new AssimpContext())
-            {
-                var scene = context.ImportFile(fileName);
+            var g3d = LoadAssimpFile(fileName);
 
-                if (scene.Meshes.Count != 1)
-                {
-                    throw new Exception("Expected 1 mesh in file.");
-                }
+            g3d.WritePlyFile(outputFileName + ".ply");
+            g3d.WriteObjFile(outputFileName + ".obj");
 
-                var g3d = scene.Meshes[0].ToG3D();
-                g3d.WritePly(outputFileName);
-            }
+            // TODO compare the PLY, the OBJ and the original file.
+
+            var g3dFromPly = LoadAssimpFile(outputFileName + ".ply");
+            var g3dFromObj = LoadAssimpFile(outputFileName + ".obj");
+
+            CompareG3D(g3d, g3dFromPly);
+
+            // BUG: Assimp ignores the OBJ index buffer. God knows why. 
+            //CompareG3D(g3d, g3dFromObj);
         }
-        
+
+        [Test]
         public static void TestBuilder()
         {
             var gb = new G3DBuilder();

@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using Assimp;
 
@@ -31,6 +32,11 @@ namespace Vim.G3d
                 r[i * 4 + 3] = c.A;
             }
             return r;
+        }
+
+        public static void Test<T>(T[] xs) where T : IComparable<T>
+        {
+            var tmp = xs.OrderBy(x => x);
         }
 
         public static bool IsTriangularMesh(Mesh mesh)
