@@ -19,10 +19,10 @@ namespace Vim.G3d
             var vertices = g.Vertices.ToArray();
             var indices = g.Indices.ToArray();
             var faceSize = g.FaceSizes.ToArray();
-            var colours = g.VertexColor?.ToArray();
+            var colours = g.VertexColor.Count > 0 ? g.VertexColor[0].ToArray() : null;
             var normals = g.VertexNormal?.ToArray();
-            var uvs = g.UV?.ToArray() ?? g.UVW?.ToArray();
-            var uvArity = g.UV != null ? 2 : g.UVW != null ? 3 : 0;
+            var uvs = g.UV.Count > 0 ? g.UV[0].ToArray() : null;// ?? g.UVW?.ToArray();
+            var uvArity = 2;// g.UV != null ? 2 : g.UVW != null ? 3 : 0;
 
             var numFaces = faceSize != null ? faceSize.Length : (indices.Length / 3);
 
