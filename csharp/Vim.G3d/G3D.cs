@@ -4,7 +4,11 @@
     Copyright 2018, Ara 3D Inc.
     Usage licensed under terms of MIT License
 
-    The G3D format is a simple, generic, and efficient representation of geometry data. 
+    The G3D format is a simple, generic, and efficient representation of geometry data
+    that is appropriate for serialization, or for usage in memory. 
+
+    The G3D format was designed to be able to contain a superset of data contained in various common 
+    mesh formats including OBJ, FBX, glTF, PLY, and more.  
 */
 
 using System;
@@ -14,6 +18,9 @@ using System.Linq;
 
 namespace Vim.G3d
 {
+    /// <summary>
+    /// Represents a single-precision G3D in memory, with access to common attributes.
+    /// </summary>
     public class G3D
     {
         public int CornersPerFace { get; }
@@ -23,107 +30,139 @@ namespace Vim.G3d
         public int NumFaces { get; }
         public int NumCorners { get; } // Also the number of half-edges 
         public int NumGroups { get; }
-        public int NumObjects { get; }
 
-        // Commonly accessed attributes 
-        public Attribute<float> Vertices;
-        public Attribute<int> Indices;
-        public Attribute<int> FaceIndices;
-        public Attribute<int> FaceSizes;
-        public Attribute<int> GroupIndices;
-        public Attribute<int> GroupSizes;
-        public Attribute<float> VertexNormal;
-        public Attribute<float> FaceNormal;
-        public Attribute<float> UV;
-        public Attribute<float> UVW;
-        public Attribute<float> VertexColor;
+        // Commonly accessed attributes (this is a lot of data per mesh)
+        public Attribute<float> Vertices; // Arity of 3
+        public Attribute<int> Indices; // Arity of 1
+        public Attribute<int> FaceSizes; // Number of indices per face, Arity of 1 (could be assigned to a face, group, or object)
+        public Attribute<int> GroupIndexOffsets; // Offset into the index buffer for each group, Arity of 1
+        public Attribute<int> MaterialIds; // Arity of 1, (per face, per group)
+        public Attribute<float> VertexNormal; // Vertex association, Arity of 3
+        public Attribute<float> FaceNormal; // Face association, Arity of 3
+        public Attribute<float> Tangents; // Arity of 4
+        public Attribute<float> Color; // Arity of 4 (face, group)
+
+        // Multiple UV/UVW and VC channels are possible
+        public List<Attribute<float>> UV = new List<Attribute<float>>(); // Arity of 2
+        public List<Attribute<float>> VertexColor = new List<Attribute<float>>(); // Arity of 3 
 
         public List<BinaryAttribute> Attributes = new List<BinaryAttribute>();
 
         public Header Header { get; }
 
-        private int AssignAttribute(BinaryAttribute attr, int expectedCount)
+        public PolygonGroup[] Groups { get; }
+
+        private int ValidateAttribute(BinaryAttribute attr, int expectedCount)
         {
-            if (expectedCount >= 0 && attr.Count != expectedCount)
-                throw new Exception($"Attribute {attr.Name} size {attr.Count} not match the expected size {expectedCount}");
-            return attr.Count;
+            if (expectedCount >= 0 && attr.ElementCount != expectedCount)
+                throw new Exception($"Attribute {attr.Name} size {attr.ElementCount} not match the expected size {expectedCount}");
+            return attr.ElementCount;
         }
 
         public G3D(IEnumerable<BinaryAttribute> attributes, Header header = null)
         {
-            // TODO: Add an API to easily look up attributes
             Header = header ?? new Header();
 
+            NumVertices = -1;
             NumFaces = -1;
             NumCorners = -1;
             NumGroups = -1;
-            NumObjects = -1;
+            CornersPerFace = -1;
 
             foreach (var attr in attributes)
             {
                 Attributes.Add(attr);
 
-                switch (attr.Descriptor.Association)    
+                var desc = attr.Descriptor;
+
+                switch (desc.Association)
                 {
-                    case AssociationEnum.assoc_none:
+                    case Association.assoc_none:
                         break;
-                    case AssociationEnum.assoc_edge:
-                    case AssociationEnum.assoc_corner:
-                        NumCorners = AssignAttribute(attr, NumCorners);
+                    case Association.assoc_vertex:
+                        NumVertices = ValidateAttribute(attr, NumVertices);
                         break;
-                    case AssociationEnum.assoc_face:
-                        NumFaces = AssignAttribute(attr, NumFaces);
+                    case Association.assoc_edge:
+                    case Association.assoc_corner:
+                        NumCorners = ValidateAttribute(attr, NumCorners);
                         break;
-                    case AssociationEnum.assoc_group:
-                        NumGroups = AssignAttribute(attr, NumGroups);
+                    case Association.assoc_face:
+                        NumFaces = ValidateAttribute(attr, NumFaces);
                         break;
-                    case AssociationEnum.assoc_object:
-                        NumObjects = AssignAttribute(attr, NumObjects);
+                    case Association.assoc_group:
+                        NumGroups = ValidateAttribute(attr, NumGroups);
                         break;
                 }
 
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_position && (attr.Descriptor.Association == AssociationEnum.assoc_corner || attr.Descriptor.Association == AssociationEnum.assoc_vertex))
+                switch (desc.Semantic)
                 {
-                    Vertices = Vertices ?? attr.AsType<float>();
-                }
+                    case Semantic.sem_position:
+                        if (desc.Association == Association.assoc_corner ||
+                            desc.Association == Association.assoc_vertex)
+                            Vertices = Vertices ?? attr.AsType<float>();
+                        break;
 
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_index && attr.Descriptor.Association == AssociationEnum.assoc_corner)
-                {
-                    Indices = Indices ?? attr.AsType<int>();
-                }
+                    case Semantic.sem_index:
+                        if (desc.Association == Association.assoc_corner && desc.DataArity == 1)
+                            Indices = Indices ?? attr.AsType<int>();
 
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_size && 
-                    (attr.Descriptor.Association == AssociationEnum.assoc_face || attr.Descriptor.Association == AssociationEnum.assoc_object))
-                {
-                    FaceSizes = FaceSizes ?? attr.AsType<int>();
-                }
+                        // It is not a recommended workflow but it is possible that someone might think it is a good idea to assign
+                        // indices to faces with a particular arity. This would suggest that the corners per face value is specified.
+                        if (desc.Association == Association.assoc_face)
+                            if (CornersPerFace > 0 && CornersPerFace != desc.DataArity)
+                                throw new Exception(
+                                    $"The number of corners per face is inconsistent expected {CornersPerFace} but found {desc.DataArity}");
 
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_normal && attr.Descriptor.Association == AssociationEnum.assoc_face)
-                {
-                    FaceNormal = FaceNormal ?? attr.AsType<float>();
-                }
+                        break;
 
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_normal && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
-                {
-                    VertexNormal = VertexNormal ?? attr.AsType<float>();
-                }
+                    case Semantic.sem_indexoffset:
+                        if (desc.DataArity == 1 && desc.Association == Association.assoc_group)
+                            GroupIndexOffsets = GroupIndexOffsets ?? attr.AsType<int>();
+                        break;
 
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_uv && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
-                {
-                    if (attr.Descriptor.DataArity == 2)
-                    {
-                        UV = UV ?? attr.AsType<float>();
-                    }
-                    else if (attr.Descriptor.DataArity == 3)
-                    {
-                        UVW = UVW ?? attr.AsType<float>();
-                    }
-                }
-                if (attr.Descriptor.Semantic == SemanticEnum.sem_color && attr.Descriptor.Association == AssociationEnum.assoc_vertex)
-                {
-                    VertexColor = VertexColor ?? attr.AsType<float>();
+                    case Semantic.sem_size:
+                        if (desc.Association == Association.assoc_face && desc.DataArity == 1)
+                            FaceSizes = FaceSizes ?? attr.AsType<int>();
+                        break;
+
+                    case Semantic.sem_normal:
+                        if (desc.Association == Association.assoc_face)
+                            FaceNormal = FaceNormal ?? attr.AsType<float>();
+                        else if (desc.Association == Association.assoc_vertex)
+                            VertexNormal = VertexNormal ?? attr.AsType<float>();
+                        break;
+
+                    case Semantic.sem_uv:
+                        if (desc.Association == Association.assoc_vertex && (desc.DataArity == 2 || desc.DataArity == 3))
+                            UV.Add(attr.AsType<float>());
+                        break;
+
+                    case Semantic.sem_color:
+                        if (desc.Association == Association.assoc_vertex)
+                        {
+                            if (desc.DataArity == 3 || desc.DataArity == 4)
+                                VertexColor.Add(attr.AsType<float>());
+                        }
+                        else if (desc.DataArity == 4)
+                        {
+                            Color = Color ?? attr.AsType<float>();
+                        }
+
+                        break;
+
+                    case Semantic.sem_tangent:
+                        if (desc.DataArity == 4 && desc.Association == Association.assoc_vertex)
+                            Tangents = Tangents ?? attr.AsType<float>();
+                        break;
+
+                    case Semantic.sem_materialid:
+                        if (desc.DataArity == 1)
+                            MaterialIds = MaterialIds ?? attr.AsType<int>();
+                        break;
                 }
             }
+
+            NumVertices = Vertices.ElementCount;
 
             if (NumVertices < 0)
                 throw new Exception("No position data found");
@@ -131,22 +170,22 @@ namespace Vim.G3d
             if (NumCorners < 0)
                 NumCorners = NumVertices;
 
-            if (NumObjects < 0)
-                NumObjects = 1;
-
-            CornersPerFace = -1;
-
             // Are the face sizes specified? 
             if (FaceSizes != null)
             {
                 // Same FaceSize for whole mesh
-                if (FaceSizes.Descriptor.Association == AssociationEnum.assoc_object)
+                if (FaceSizes.Descriptor.Association == Association.assoc_all)
                 {
-                    CornersPerFace = FaceSizes.Data[0];
+                    if (CornersPerFace < 0)
+                        CornersPerFace = FaceSizes.Data[0];
+                    else if (CornersPerFace != FaceSizes.Data[0])
+                        throw new Exception(
+                            $"Number of corner per face was already determined to be {CornersPerFace} but differs from the value of {FaceSizes.Data[0]}");
                 }
                 else
                 {
-                    CornersPerFace = -1;
+                    if (CornersPerFace >= 0)
+                        throw new Exception($"The number of corners was already determined to be {CornersPerFace} but a face size array was provided");
                 }
             }
             else
@@ -160,11 +199,19 @@ namespace Vim.G3d
                 if (CornersPerFace < 0)
                     throw new Exception("Internal error: expected number of corners to be determined at least from number of positions");
 
-                if (NumCorners % CornersPerFace != 0)
-                    throw new Exception($"Couldn't determine number of faces, and expected number of corners to be divisble by {CornersPerFace}");
-
                 NumFaces = NumCorners / CornersPerFace;
             }
+
+            if (NumCorners % CornersPerFace != 0)
+                throw new Exception($"Internal error: expected number of corners {NumCorners} to be divisble by {CornersPerFace}");
+            
+            // Compute the polygon groups
+            NumGroups = NumGroups >= 0 ? NumGroups: 0;
+            Groups = NumGroups > 0
+                ? Enumerable.Range(0, NumGroups).Select(i => new PolygonGroup(this, i)).ToArray()
+                : new PolygonGroup[0];
+
+            // Further validation: could run through the indices and material ids to assure each one is valid.            
         }
 
         public static G3D Read(string filePath)

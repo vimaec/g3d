@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Text;
-
-namespace Vim.G3d
+﻿namespace Vim.G3d
 {
     public class Header
     {

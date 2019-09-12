@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using Assimp;
 
@@ -53,7 +52,7 @@ namespace Vim.G3d
                 bldr.AddBitangent(mesh.BiTangents.ToFloats());
 
             if (mesh.HasTangentBasis)
-                bldr.AddTangent(mesh.Tangents.ToFloats());
+                bldr.AddTangent3(mesh.Tangents.ToFloats());
 
             if (mesh.HasNormals)
                 bldr.AddVertexNormals(mesh.Normals.ToFloats());
@@ -71,6 +70,12 @@ namespace Vim.G3d
             }
 
             return bldr.ToG3D();
+        }
+
+        public static IEnumerable<G3D> LoadAssimpMeshes(this string filePath)
+        {
+            using (var context = new AssimpContext())
+                return context.ImportFile(filePath).Meshes.Select(ToG3D);
         }
     }
 }

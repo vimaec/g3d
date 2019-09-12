@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Diagnostics;
 
 namespace Vim.G3d
 {
@@ -9,15 +8,15 @@ namespace Vim.G3d
     /// </summary>
     public class AttributeDescriptor
     {
-        public AssociationEnum Association { get; }
-        public SemanticEnum Semantic { get; }
-        public DataTypeEnum DataType { get; }
+        public Association Association { get; }
+        public Semantic Semantic { get; }
+        public DataType DataType { get; }
         public int DataArity { get; }
 
         public int DataElementSize { get; }
         public int DataTypeSize { get; }
 
-        public AttributeDescriptor(AssociationEnum association, SemanticEnum semantic, DataTypeEnum dataType, int dataArity)
+        public AttributeDescriptor(Association association, Semantic semantic, DataType dataType, int dataArity)
         {
             Association = association;
             Semantic = semantic;
@@ -62,20 +61,20 @@ namespace Vim.G3d
         public bool Equals(AttributeDescriptor other)
             => ToString() == other.ToString();
 
-        public static int GetDataTypeSize(DataTypeEnum dt)
+        public static int GetDataTypeSize(DataType dt)
         {
             switch (dt)
             {
-                case DataTypeEnum.dt_int8: return 1;
-                case DataTypeEnum.dt_int16: return 2;
-                case DataTypeEnum.dt_int32: return 4;
-                case DataTypeEnum.dt_int64: return 8;
-                case DataTypeEnum.dt_uint8: return 1;
-                case DataTypeEnum.dt_uint16: return 2;
-                case DataTypeEnum.dt_uint32: return 4;
-                case DataTypeEnum.dt_uint64: return 8;
-                case DataTypeEnum.dt_float32: return 4;
-                case DataTypeEnum.dt_float64: return 8;
+                case DataType.dt_int8: return 1;
+                case DataType.dt_int16: return 2;
+                case DataType.dt_int32: return 4;
+                case DataType.dt_int64: return 8;
+                case DataType.dt_uint8: return 1;
+                case DataType.dt_uint16: return 2;
+                case DataType.dt_uint32: return 4;
+                case DataType.dt_uint64: return 8;
+                case DataType.dt_float32: return 4;
+                case DataType.dt_float64: return 8;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dt), dt, null);
             }
@@ -84,20 +83,20 @@ namespace Vim.G3d
         public string AssociationString
             => Association.ToString().Substring("assoc_".Length);
 
-        public static AssociationEnum ParseAssociation(string s)
-            => (AssociationEnum)Enum.Parse(typeof(AssociationEnum), "assoc_" + s);
+        public static Association ParseAssociation(string s)
+            => (Association)Enum.Parse(typeof(Association), "assoc_" + s);
 
         public string SemanticString
             => Semantic.ToString().Substring("sem_".Length) ?? "unknown";
 
-        public static SemanticEnum ParseSemantic(string s)
-            => (SemanticEnum)Enum.Parse(typeof(SemanticEnum), "sem_" + s);
+        public static Semantic ParseSemantic(string s)
+            => (Semantic)Enum.Parse(typeof(Semantic), "sem_" + s);
 
         public string DataTypeString
             => DataType.ToString()?.Substring("dt_".Length) ?? null;
 
-        public static DataTypeEnum ParseDataType(string s)
-            => (DataTypeEnum)Enum.Parse(typeof(DataTypeEnum), "dt_" + s);
+        public static DataType ParseDataType(string s)
+            => (DataType)Enum.Parse(typeof(DataType), "dt_" + s);
     }
 
 }

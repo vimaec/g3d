@@ -12,12 +12,14 @@ namespace Vim.G3d
             Data = data;
             if (data.Bytes.Length % desc.DataElementSize != 0)
                 throw new Exception("Number of bytes in buffer is not divided evenly by the size of elements");
-            Count = data.Bytes.Length / desc.DataElementSize;
+            ElementCount = data.Bytes.Length / desc.DataElementSize;
+            PrimitiveCount = ElementCount / desc.DataArity;
         }
 
         public string Name => Descriptor.ToString();
         public Span<byte> Bytes => Data.Bytes;
-        public int Count { get; }
+        public int ElementCount { get; }
+        public int PrimitiveCount { get; }
 
         public AttributeDescriptor Descriptor { get; }
         public IBuffer Data { get; }
@@ -27,7 +29,7 @@ namespace Vim.G3d
     {
         public static void TypeCheck(params Type[] types)
         {
-            if (!types.Any(t => typeof(T) == t))
+            if (types.All(t => typeof(T) != t))
                 throw new Exception($"Incompatible type {typeof(T)} expected {string.Join<Type>(",", types)}");
         }
 
@@ -35,26 +37,26 @@ namespace Vim.G3d
         {
             switch (attr.Descriptor.DataType)
             {
-                case DataTypeEnum.dt_float32:
+                case DataType.dt_float32:
                     TypeCheck(typeof(float));
                     break;
-                case DataTypeEnum.dt_float64:
+                case DataType.dt_float64:
                     TypeCheck(typeof(double));
                     break;
-                case DataTypeEnum.dt_int8:
-                case DataTypeEnum.dt_uint8:
+                case DataType.dt_int8:
+                case DataType.dt_uint8:
                     TypeCheck(typeof(byte), typeof(sbyte));
                     break;
-                case DataTypeEnum.dt_int16:
-                case DataTypeEnum.dt_uint16:
+                case DataType.dt_int16:
+                case DataType.dt_uint16:
                     TypeCheck(typeof(short), typeof(ushort));
                     break;
-                case DataTypeEnum.dt_int32:
-                case DataTypeEnum.dt_uint32:
+                case DataType.dt_int32:
+                case DataType.dt_uint32:
                     TypeCheck(typeof(int), typeof(uint));
                     break;
-                case DataTypeEnum.dt_int64:
-                case DataTypeEnum.dt_uint64:
+                case DataType.dt_int64:
+                case DataType.dt_uint64:
                     TypeCheck(typeof(long), typeof(ulong));
                     break;
                 default:
@@ -63,11 +65,29 @@ namespace Vim.G3d
             _Attribute = attr;
         }
 
-        public BinaryAttribute _Attribute { get; }
-        public Span<T> Data => _Attribute.CastData<T>();
-        public string Name => _Attribute.Name;
-        public Span<byte> Bytes => _Attribute.Bytes;
-        public AttributeDescriptor Descriptor => _Attribute.Descriptor;
+        public BinaryAttribute _Attribute
+        { get; }
+
+        public Span<T> Data 
+            => _Attribute.CastData<T>();
+
+        public string Name 
+            => _Attribute.Name;
+
+        public Span<byte> Bytes 
+            => _Attribute.Bytes;
+
+        public AttributeDescriptor Descriptor 
+            => _Attribute.Descriptor;
+
+        public int ElementCount 
+            => _Attribute.ElementCount;
+
+        public int PrimitiveCount 
+            => _Attribute.PrimitiveCount;
+
+        public Span<U> CastData<U>() where U: struct
+            => _Attribute.CastData<U>();
     }        
 
     public static class AttributeExtensions
@@ -92,5 +112,14 @@ namespace Vim.G3d
 
         public static Attribute<T> AsType<T>(this BinaryAttribute attr) where T : struct
             => new Attribute<T>(attr);
+
+        public static Attribute<T> CheckArity<T>(this Attribute<T> self, int arity) where T : struct
+            => self?.Descriptor?.DataArity == arity ? self : null;
+
+        public static Attribute<T> CheckAssociation<T>(this Attribute<T> self, Association assoc) where T : struct
+            => self?.Descriptor?.Association == assoc ? self : null;
+
+        public static Attribute<T> CheckArityAndAssociation<T>(this Attribute<T> self, int arity, Association assoc) where T : struct
+            => self?.CheckArity(arity)?.CheckAssociation(assoc);
     }
 }

@@ -1,5 +1,6 @@
 ﻿using NUnit.Framework;
 using System;
+using System.Diagnostics;
 using System.IO;
 using Assimp;
 
@@ -35,6 +36,19 @@ $@"       #animations = {scene.AnimationCount}
     #bitangents = {mesh.BiTangents?.Count}");
                     }
 
+        public static T TimeLoadingFile<T>(string fileName, Func<string, T> func)
+        {
+            var sw = new Stopwatch();
+            sw.Start();
+            try
+            {
+                return func(fileName);
+            }
+            finally
+            {
+                Console.WriteLine($"Time to open {Path.GetFileName(fileName)} is {sw.ElapsedMilliseconds}msec");
+            }
+        }
 
         public static void OutputG3DStats(G3D g)
         {
@@ -42,7 +56,7 @@ $@"       #animations = {scene.AnimationCount}
             //Console.WriteLine("Header");
             foreach (var attr in g.Attributes)
             {
-                Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.Count}");
+                Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.ElementCount}");
             }
             Console.WriteLine($"{g.CornersPerFace} corners per face");
         }
@@ -51,31 +65,31 @@ $@"       #animations = {scene.AnimationCount}
             "..", "..", "..", "..", "..", // yes 5, count em, 5  
             "data", "assimp", "test");
 
-        public static string TestOutputFolder => Path.Combine(Path.GetTempPath(), "g3d-test");
-
-        public static int MeshCount = 0;
+        public static string TestOutputFolder => Path.Combine(InputDataPath, "..", "..", "g3d");
 
         public static void TestG3D(G3D g3d, string baseName)
         {
             Console.WriteLine("Testing G3D " + baseName);
             OutputG3DStats(g3d);
 
-            /*
-            var buffers = g3d.ToBuffers();
-            var i = 0;
-            foreach (var buffer in buffers)
-            {
-                Console.WriteLine(@"Buffer {i++} " + buffer.Name);
-            }
-            */
-
-            var outputFile = Path.Combine(TestOutputFolder, MeshCount++ + Path.GetFileName(baseName) + ".g3d");
+            var outputFile = Path.Combine(TestOutputFolder, Path.GetFileName(baseName) + ".g3d");
             g3d.Write(outputFile);
 
-            var tmp = G3D.Read(outputFile);
+            var tmp = TimeLoadingFile(outputFile, G3D.Read);
             OutputG3DStats(tmp);
+        }
 
-            // TODO: compare tmp and g3d
+        public static void CompareTiming(string fileName)
+        {
+            using (var context = new AssimpContext())
+            {
+                var scene = TimeLoadingFile(fileName, context.ImportFile);
+                var m = scene.Meshes[0];
+                var g3d = m.ToG3D();
+                var outputFile = Path.Combine(TestOutputFolder, Path.GetFileName(fileName) + ".g3d");
+                g3d.Write(outputFile);
+                TimeLoadingFile(outputFile, G3D.Read);
+            }
         }
 
         public static string[] TestFiles =
@@ -102,6 +116,20 @@ $@"       #animations = {scene.AnimationCount}
             @"models\Collada\duck.dae",
         };
 
+        [Test, Explicit("Performance")]
+        public static void TestPerformance()
+        {
+            Directory.CreateDirectory(TestOutputFolder);
+
+            Console.WriteLine(InputDataPath);
+
+            foreach (var f in TestFiles)
+            {
+                var file = Path.Combine(InputDataPath, f);
+                CompareTiming(file); 
+            }
+        }
+
         [Test]
         public static void TestAssimp()
         {
@@ -111,43 +139,47 @@ $@"       #animations = {scene.AnimationCount}
 
             foreach (var f in TestFiles)
             {
-                Console.WriteLine("Parsing " + f);
                 var file = Path.Combine(InputDataPath, f);
                 using (var context = new AssimpContext())
                 {
-                    var scene = context.ImportFile(file);
+                    var scene = TimeLoadingFile(file, context.ImportFile);
                     OutputSceneStats(scene);
-                    foreach (var m in scene.Meshes)
-                    {
-                        OutputMeshStats(m);
-                        var g3d = m.ToG3D();
-                        TestG3D(g3d, file);
-                    }
+
+                    // We only grab the first mesh. 
+                    var m = scene.Meshes[0];
+                    OutputMeshStats(m);
+                    var g3d = m.ToG3D();
+                    TestG3D(g3d, file);
                 }
             }
         }
 
         [Test]
-        public static void TestPlyWriter()
+        public static void TestBuilder()
         {
-            var fileName = @"models\PLY\wuson.ply";
-            fileName = Path.Combine(InputDataPath, fileName);
+            var gb = new G3DBuilder();
 
-            var outputFileName = @"wuson.ply";
-            outputFileName = Path.Combine(TestOutputFolder, outputFileName);
-
-            using (var context = new AssimpContext())
-            {
-                var scene = context.ImportFile(fileName);
-
-                if (scene.Meshes.Count != 1)
-                {
-                    throw new Exception("Expected 1 mesh in file.");
-                }
-
-                var g3d = scene.Meshes[0].ToG3D();
-                g3d.WritePly(outputFileName);
-            }
+            var vertices = new[] {0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f, 0f, 1f, 1f, 1f, };
+            var colors = new[] { 1f, 1f, 1f, 0f, 0f, 0f, 1f, 1f, 1f, 0f, 0f, 0f, };
+            var uvs = new[] { 0f, 0f, 0.2f, 0.2f, 0.5f, 0.5f, 0.8f, 0.8f };
+            var indices = new[] {0, 1, 2, 0, 1, 3, 1, 2, 3, 2, 3, 0 };
+            var materialIds = new[] {0, 1, 2, 1};
+            gb.SetObjectFaceSize(3);
+            gb.AddVertices(vertices);
+            gb.AddIndices(indices);
+            gb.AddUV(uvs);
+            gb.AddVertexColors(colors);
+            gb.AddGroupIndexOffsets(new[] {0, 6});
+            gb.AddMaterialIds(materialIds);
+            var g3d = gb.ToG3D();
+            Assert.AreEqual(4, g3d.NumVertices);
+            Assert.AreEqual(3, g3d.CornersPerFace);
+            Assert.AreEqual(4, g3d.NumFaces);
+            Assert.AreEqual(2, g3d.NumGroups);
+            Assert.AreEqual(vertices, g3d.Vertices.Data.ToArray());
+            Assert.AreEqual(colors, g3d.VertexColor[0].Data.ToArray());
+            Assert.AreEqual(uvs, g3d.UV[0].Data.ToArray());
+            Assert.AreEqual(2, g3d.Groups.Length);
         }
     }
 }
