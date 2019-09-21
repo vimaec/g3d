@@ -12,6 +12,8 @@ The G3D format can contain a superset of geometry attributes found in most commo
 including formats such as FBX, glTF, OBJ, PLY, and in memory data structures used in popular 3D APIs, like 
 Unity, Three.JS, Assimp, and 3dsMax.
 
+BFAST is maintained by [VIMaec LLC](https://vimaec.com) and is licensed under the terms of the MIT License.
+
 # Repository Structure and Projects
 
 On this Github repository we have the following projects:
