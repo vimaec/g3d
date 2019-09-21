@@ -12,8 +12,6 @@ The G3D format can contain a superset of geometry attributes found in most commo
 including formats such as FBX, glTF, OBJ, PLY, and in memory data structures used in popular 3D APIs, like 
 Unity, Three.JS, Assimp, and 3dsMax.
 
-You can read the [VIM AEC blog post about using G3D with Unity here](https://www.vimaec.com/the-g3d-geometry-exchange-format/).
-
 # Format 
 
 ## BFAST Container
@@ -91,6 +89,8 @@ This attribute descriptor string is the name of the buffer.
   
 # Recommended reading:
 
+* [VIM AEC blog post about using G3D with Unity](https://www.vimaec.com/the-g3d-geometry-exchange-format/)
+* [Hackernoon article about BFast](https://hackernoon.com/bfast-a-data-format-for-serializing-named-binary-buffers-243p130uw)
 * http://assimp.sourceforge.net/lib_html/structai_mesh.html
 * http://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_5EDC0280_E000_4B0B_88DF_5D215A589D5E_htm
 * https://help.autodesk.com/cloudhelp/2017/ENU/Max-SDK/cpp_ref/class_mesh.html
