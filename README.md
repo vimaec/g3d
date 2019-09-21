@@ -1,6 +1,6 @@
 # G3D
 
-[<img src="https://img.shields.io/nuget/v/Vim.G3d.svg">](https://www.nuget.org/packages/Vim.G3d) ![Nuget](https://img.shields.io/nuget/dt/Vim.G3d)
+[<img src="https://img.shields.io/nuget/v/Vim.G3d.svg">](https://www.nuget.org/packages/Vim.G3d) 
 
 G3D is a simple, efficient, generic binary format for storing and transmitting geometry. The G3D format
 is designed to be used either as a serialization format or as an in-memory data structure.
