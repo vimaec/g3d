@@ -1,14 +1,18 @@
 # G3D
 
+[<img src="https://img.shields.io/nuget/v/Vim.G3d.svg">](https://www.nuget.org/packages/Vim.G3d) ![Nuget](https://img.shields.io/nuget/dt/Vim.G3d)
+
 G3D is a simple, efficient, generic binary format for storing and transmitting geometry. The G3D format
 is designed to be used either as a serialization format or as an in-memory data structure.
 
 G3D can represent triangular meshes, quadrilateral meshes, polygonal meshes, point clouds, and line segments.  
-It can be easily and efficient ly deserialized and rendered in different languages and on different platforms.
+It can be easily and efficiently deserialized and rendered in different languages and on different platforms.
 
 The G3D format can contain a superset of geometry attributes found in most common geometry formats, 
 including formats such as FBX, glTF, OBJ, PLY, and in memory data structures used in popular 3D APIs, like 
 Unity, Three.JS, Assimp, and 3dsMax.
+
+You can read the [VIM AEC blog post about using G3D with Unity here](https://www.vimaec.com/the-g3d-geometry-exchange-format/).
 
 # Format 
 
