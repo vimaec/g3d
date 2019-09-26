@@ -28,8 +28,11 @@ namespace Vim.G3d.CppCLR.Tests
 
             foreach (var f in GeneratedG3ds)
             {
-                Console.WriteLine("File name = " + f);
+                Console.WriteLine($"Loading file {f}");
                 x.Load(f);
+                Console.WriteLine($"{x.Count()} attributes");
+                for (var i = 0; i < x.Count(); ++i)
+                    Console.WriteLine($"{i} attribute {x.AttributeName(i)} has {x.AttributeElementCount(i)} elements");
             }
         }
 

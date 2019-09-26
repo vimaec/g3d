@@ -36,7 +36,7 @@ namespace bfast
 	static const int array_offset_size = 16;
 
 	// This is the size of the header + padding to bring to alignment 
-	static const int array_offsets_start = 64;
+	static const int array_offsets_start = 32;
 
 	// This is sufficient alignment to fit objects natively into 256-bit (32 byte) registers 
 	static const int alignment = 64;
@@ -210,7 +210,7 @@ namespace bfast
 				if (offset._end > data.size())
 					throw runtime_error("Offset end is after the end of the data");
 				if (i > 0)
-					if (offset._begin < array_offsets[i]._end)
+					if (offset._begin < array_offsets[i-1]._end)
 						throw runtime_error("Offset begin is before the end of the previous offset");
 				auto begin = &data[0] + offset._begin;
 				auto end = &data[0] + offset._end;
@@ -225,6 +225,7 @@ namespace bfast
 	// A Bfast conceptually is a collection of buffers: named byte arrays 
 	struct Bfast
 	{
+		vector<byte> data;
 		vector<Buffer> buffers;
 
 		// Construct a raw BFast data block, using the names string argument to store the names data. 
@@ -271,19 +272,20 @@ namespace bfast
 			{
 				string tmp(data);
 				r.push_back(tmp);
-				data += tmp.size();
+				data += tmp.size() + 1;
 			}
 			return r;
 		}
 
 		// Unpacks an array of buffers into a BFastData package
-		static Bfast unpack(const vector<byte>& data)
+		static Bfast unpack(vector<byte>&& data)
 		{
 			auto raw_data = RawData::unpack(data);
 			auto names = split_names(raw_data.ranges[0]);
 			if (names.size() != raw_data.ranges.size() - 1)
 				throw runtime_error("The number of names does not match the raw data size");
 			Bfast r;
+			r.data = move(data);
 			for (size_t i = 0; i < names.size(); ++i)
 			{
 				r.buffers.push_back(Buffer{ names[i], raw_data.ranges[i + 1] });
@@ -324,7 +326,7 @@ namespace bfast
 			if (tmp != size)
 				throw runtime_error("Could not read all data");
 
-			return Bfast::unpack(buffer);
+			return Bfast::unpack(move(buffer));
 		}
 	};
 }

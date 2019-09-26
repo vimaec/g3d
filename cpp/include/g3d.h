@@ -281,14 +281,20 @@ namespace g3d
     // If on the other hand you pass a nullptr, you will be responsible for copying the data into the attribute afterwards
     struct G3d    
     {
+		string meta;
 		vector<Attribute> attributes; 
 
 		G3d()
+			: meta(default_meta())
 		{ }
 			
 		G3d(const G3d& other)
-			: attributes(other.attributes)
+			: meta(default_meta()), attributes(other.attributes)
 		{ }
+
+		static string default_meta() {
+			return "{ \"G3D\": \"1.0.0\" }";
+		}
 
 		G3d& operator=(const G3d& x)
 		{
@@ -305,8 +311,7 @@ namespace g3d
 
         void write_file(string path) {
             bfast::Bfast b;
-			auto meta = "{ filetype: \"g3d\" }";
-            b.add("meta", meta);
+            b.add("meta", meta.c_str());
 			for (auto attr : attributes)
 				b.buffers.push_back(attr.to_buffer());
 			b.write_file(path);
@@ -316,8 +321,14 @@ namespace g3d
 		{
 			auto bfast = bfast::Bfast::read_file(path);
 			G3d r;
-			for (auto b : bfast.buffers)
-				r.add_attribute(b.name, b.data.begin(), b.data.end());
+			for (auto i = 0; i < bfast.buffers.size(); ++i)
+			{
+				auto b = bfast.buffers[i];
+				if (i == 0)
+					r.meta = b.data.to_string();
+				else
+					r.add_attribute(b.name, b.data.begin(), b.data.end());
+			}
 			return r;
 		}
 
