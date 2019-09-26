@@ -53,7 +53,7 @@ namespace bfast
 	}
 
 	// The array offset indicates where in the raw byte array (offset from beginning of BFAST byte stream) that a particular array's data can be found. 
-	struct ArrayOffset {
+	struct alignas(8) ArrayOffset {
 		ulong _begin;
 		ulong _end;
 	};
@@ -82,6 +82,7 @@ namespace bfast
 		string name;
 		ByteRange data;
 	};
+
 	// The Bfast container implementation is a container of date ranges: the first one contains the names 
 	struct RawData
 	{
@@ -94,9 +95,8 @@ namespace bfast
 			vector<ArrayOffset> r;
 			for (auto range : ranges) {
 				assert(is_aligned(n));
-				ArrayOffset offset = { n, n + range.size() };
+				ArrayOffset offset = { n, n += range.size() };
 				r.push_back(offset);
-				n += range.size();
 				n = aligned_value(n);
 			}
 			return r;
@@ -106,7 +106,6 @@ namespace bfast
 		size_t compute_data_start() {
 			size_t r = 0;
 			r += header_size;
-			r = aligned_value(r);
 			r += array_offset_size * ranges.size();
 			r = aligned_value(r);
 			return r;
@@ -156,11 +155,10 @@ namespace bfast
 			h.data_start = n == 0 ? 0 : offsets.front()._begin;
 			h.data_end = n == 0 ? 0 : offsets.back()._end;
 
-			// Copy the header and add padding 
+			// Copy the header 
 			out = copy_to(h, out, current);
-			out = output_padding(out, current);
-			assert(is_aligned(current));
-
+			assert(current == 32);
+			
 			// Early escape if there are no offsets 
 			if (n == 0)
 				return;
@@ -168,19 +166,20 @@ namespace bfast
 			// Copy the array offsets and add padding 
 			for (auto off : offsets)
 				out = copy_to(off, out, current);
+			assert(current == 32 + offsets.size() * 16);
 			out = output_padding(out, current);
 			assert(is_aligned(current));
 			assert(current = compute_data_start());
 
 			// Copy the arrays 
 			for (auto i = 0; i < ranges.size(); ++i) {
+				output_padding(out, current);
 				auto range = ranges[i];
 				auto offset = offsets[i];
 				assert(current == offset._begin);
 				out = copy(range.begin(), range.end(), out);
 				current += range.size();
 				assert(current == offset._end);
-				output_padding(out, current);
 			}
 		}
 
@@ -225,19 +224,22 @@ namespace bfast
 	// A Bfast conceptually is a collection of buffers: named byte arrays 
 	struct Bfast
 	{
+		vector<byte> name_data;
 		vector<byte> data;
 		vector<Buffer> buffers;
 
 		// Construct a raw BFast data block, using the names string argument to store the names data. 
-		RawData to_raw_data(string& name_data) {
+		RawData to_raw_data() {
 			// Compute the name data
 			name_data.clear();
 			for (auto b : buffers)
-				name_data += b.name + '\0';
+			{
+				for (auto c : b.name)
+					name_data.push_back(c);
+				name_data.push_back(0);
+			}
 			RawData r;
-			auto begin = (byte*)name_data.c_str();
-			auto end = begin + name_data.size();
-			r.ranges.push_back(ByteRange{ begin, end });
+			r.ranges.push_back(ByteRange{ name_data.data(), name_data.data() + name_data.size() });
 			for (auto b : buffers)
 				r.ranges.push_back(b.data);
 			return r;
@@ -245,8 +247,7 @@ namespace bfast
 
 		// Returns a vector of bytes containing the byte stream. 
 		vector<byte> pack() {
-			string name_data;
-			return to_raw_data(name_data).pack();
+			return to_raw_data().pack();
 		}
 
 		// Adds a buffer with the given name and data

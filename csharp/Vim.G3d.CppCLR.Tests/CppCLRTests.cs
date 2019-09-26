@@ -20,19 +20,31 @@ namespace Vim.G3d.CppCLR.Tests
 
         public static string[] GeneratedG3ds => Directory.GetFiles(TestOutputFolder, "*.g3d");
 
+        public static string TestOutputFolderCpp => Path.Combine(TestOutputFolder, "cpp");
+
+        public static void OutputStats(ManagedG3d x)
+        {
+            Console.WriteLine($"{x.Count()} attributes");
+            for (var i = 0; i < x.Count(); ++i)
+                Console.WriteLine($"{i} attribute {x.AttributeName(i)} has {x.AttributeElementCount(i)} elements");
+        }
 
         [Test]
         public static void CppTest()
         {
             var x = new ManagedG3d();
 
+            Directory.CreateDirectory(TestOutputFolderCpp);
+
             foreach (var f in GeneratedG3ds)
             {
                 Console.WriteLine($"Loading file {f}");
                 x.Load(f);
-                Console.WriteLine($"{x.Count()} attributes");
-                for (var i = 0; i < x.Count(); ++i)
-                    Console.WriteLine($"{i} attribute {x.AttributeName(i)} has {x.AttributeElementCount(i)} elements");
+                var output = Path.Combine(TestOutputFolderCpp, Path.GetFileName(f));
+                OutputStats(x);
+                x.Write(output);
+                x.Load(output);
+                OutputStats(x);
             }
         }
 
