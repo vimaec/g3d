@@ -120,7 +120,7 @@ namespace Vim.G3d
                             GroupIndexOffsets = GroupIndexOffsets ?? attr.AsType<int>();
                         break;
 
-                    case Semantic.sem_size:
+                    case Semantic.sem_facesize:
                         if (desc.Association == Association.assoc_face && desc.DataArity == 1)
                             FaceSizes = FaceSizes ?? attr.AsType<int>();
                         break;
@@ -216,6 +216,9 @@ namespace Vim.G3d
 
         public static G3D Read(string filePath)
             => BFast.Read(filePath).ToG3D();
+
+        public static G3D Read(byte[] bytes)
+            => bytes.Unpack().ToG3D();
 
         public IEnumerable<INamedBuffer> ToBuffers()
             => new[] { Header.ToString().ToNamedBuffer("meta") } // First buffer is named "meta"

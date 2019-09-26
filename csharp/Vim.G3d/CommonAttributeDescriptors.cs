@@ -8,9 +8,9 @@
         public const string UVW = "g3d:vertex:uv:float32:3";
         public const string VertexNormal = "g3d:vertex:normal:float32:3";
         public const string FaceNormal = "g3d:vertex:normal:float32:3";
-        public const string ObjectFaceSize = "g3d:all:size:int32:1";
-        public const string GroupFaceSize = "g3d:group:size:int32:1";
-        public const string FaceSizes = "g3d:face:size:int32:1";
+        public const string ObjectFaceSize = "g3d:all:facesize:int32:1";
+        public const string GroupFaceSize = "g3d:group:facesize:int32:1";
+        public const string FaceSizes = "g3d:face:facesize:int32:1";
         public const string FaceIndices = "g3d:face:indexoffset:int32:1";
         public const string VertexColor = "g3d:vertex:color:float32:3";
         public const string VertexColorWithAlpha = "g3d:vertex:color:float32:4";

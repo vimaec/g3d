@@ -7,6 +7,10 @@
     <StartupObject />
   </PropertyGroup>
 
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+  </PropertyGroup>
+
   <ItemGroup>
     <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
@@ -14,7 +18,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Vim.G3d.AssimpAdapter\Vim.G3d.AssimpAdapter.csproj" />
+    <ProjectReference Include="..\Vim.G3d.TestUtils\Vim.G3d.TestUtils.csproj" />
     <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
   </ItemGroup>
 

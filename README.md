@@ -58,16 +58,12 @@ Attributes also have a "semamtic" which is used to identify what role the attrib
 * spheres,       // used to identify bounding spheres
 * user,          // identifies user specific data (in 3ds Max this could be "per-vertex-data")
 
-Attributes are stored in 512-byte aligned data-buffers arranged as arrays of scalars or fixed width vectors. The individual data values can be integers, unsigned integers, or floating point values of various widths from 1 to 8 bytes. The data-types are:
+Attributes are stored in 512-byte aligned data-buffers arranged as arrays of scalars or fixed width vectors. The individual data values can be integers, or floating point values of various widths from 1 to 8 bytes. The data-types are:
 
 * int8
 * int16
 * int32
 * int64
-* uint8
-* uint16
-* uint32
-* uint64
 * float32
 * float64
 

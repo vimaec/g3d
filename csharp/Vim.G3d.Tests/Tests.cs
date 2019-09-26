@@ -1,123 +1,15 @@
 ﻿using NUnit.Framework;
 using System;
-using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using Assimp;
-using Assimp.Configs;
+using static Vim.G3d.Tests.Utils;
 
 namespace Vim.G3d.Tests
 {
     public static class Tests
     {
-        public static void OutputSceneStats(Scene scene)
-        {
-            Console.WriteLine(
-$@"       #animations = {scene.AnimationCount}
-    #cameras = {scene.CameraCount}
-    #lights = {scene.LightCount}
-    #mterials = {scene.MaterialCount}
-    #meshes = {scene.MeshCount}
-    #textures = {scene.TextureCount}");
-        }
-
-        // TODO: merge all of the meshes using the transform. 
-
-        public static void OutputMeshStats(Mesh mesh)
-        {
-            Console.WriteLine(
-                $@"
-    mesh  {mesh.Name}
-    #faces = {mesh.FaceCount}
-    #vertices = {mesh.VertexCount}
-    #normals = {mesh.Normals?.Count ?? 0}
-    #texture coordinate chanels = {mesh.TextureCoordinateChannelCount}
-    #vertex color chanels = {mesh.VertexColorChannelCount}
-    #bones = {mesh.BoneCount}
-    #tangents = {mesh.Tangents?.Count}
-    #bitangents = {mesh.BiTangents?.Count}");
-                    }
-
-        public static T TimeLoadingFile<T>(string fileName, Func<string, T> func)
-        {
-            var sw = new Stopwatch();
-            sw.Start();
-            try
-            {
-                return func(fileName);
-            }
-            finally
-            {
-                Console.WriteLine($"Time to open {Path.GetFileName(fileName)} is {sw.ElapsedMilliseconds}msec");
-            }
-        }
-
-        public static void OutputG3DStats(G3D g)
-        {
-            Console.WriteLine($"Number of attributes = {g.Attributes.Count}");
-            //Console.WriteLine("Header");
-            foreach (var attr in g.Attributes)
-            {
-                Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.ElementCount}");
-            }
-            Console.WriteLine($"{g.CornersPerFace} corners per face");
-        }
-
-        public static string InputDataPath => Path.Combine(TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", // yes 5, count em, 5  
-            "data", "assimp", "test");
-
-        public static string TestOutputFolder => Path.Combine(InputDataPath, "..", "..", "g3d");
-
-        public static void TestG3D(G3D g3d, string baseName)
-        {
-            Console.WriteLine("Testing G3D " + baseName);
-            OutputG3DStats(g3d);
-
-            var outputFile = Path.Combine(TestOutputFolder, Path.GetFileName(baseName) + ".g3d");
-            g3d.Write(outputFile);
-
-            var tmp = TimeLoadingFile(outputFile, G3D.Read);
-            OutputG3DStats(tmp);
-        }
-
-        public static void CompareTiming(string fileName)
-        {
-            using (var context = new AssimpContext())
-            {
-                var scene = TimeLoadingFile(fileName, context.ImportFile);
-                var m = scene.Meshes[0];
-                var g3d = m.ToG3D();
-                var outputFile = Path.Combine(TestOutputFolder, Path.GetFileName(fileName) + ".g3d");
-                g3d.Write(outputFile);
-                TimeLoadingFile(outputFile, G3D.Read);
-            }
-        }
-
-        public static string[] TestFiles =
-        {
-            @"models-nonbsd\3DS\jeep1.3ds",
-            @"models-nonbsd\3DS\mar_rifle.3ds",
-            @"models-nonbsd\dxf\rifle.dxf",
-            @"models-nonbsd\FBX\2013_ASCII\duck.fbx",
-            @"models-nonbsd\FBX\2013_ASCII\jeep1.fbx",
-            // Binary fails assimp import
-            //@"models-nonbsd\FBX\2013_BINARY\duck.fbx",
-            //@"models-nonbsd\FBX\2013_BINARY\jeep1.fbx",
-            @"models-nonbsd\OBJ\rifle.obj",
-            @"models-nonbsd\OBJ\segment.obj",
-            @"models-nonbsd\PLY\ant-half.ply",
-            @"models\IFC\AC14-FZK-Haus.ifc",
-            @"models\PLY\wuson.ply",
-            @"models\STL\wuson.stl",
-            @"models\STL\Spider_ascii.stl",
-            @"models\STL\Spider_binary.stl",
-            @"models\glTF\CesiumMilkTruck\CesiumMilkTruck.gltf",
-            @"models\glTF2\2CylinderEngine-glTF-Binary\2CylinderEngine.glb",
-            @"models\DXF\wuson.dxf",
-            @"models\Collada\duck.dae",
-        };
-
-        [Test, Explicit("Performance")]
+        [Test]
         public static void TestPerformance()
         {
             Directory.CreateDirectory(TestOutputFolder);
@@ -127,7 +19,7 @@ $@"       #animations = {scene.AnimationCount}
             foreach (var f in TestFiles)
             {
                 var file = Path.Combine(InputDataPath, f);
-                CompareTiming(file); 
+                CompareTiming(file, TestOutputFolder); 
             }
         }
 
@@ -187,6 +79,16 @@ $@"       #animations = {scene.AnimationCount}
         }
 
         [Test]
+        public static void TestDragon()
+        {
+            var inputFile = Path.Combine(BaseInputDataPath, "dragon_vrip.ply");
+            var g3d = CompareTiming(inputFile, TestOutputFolder);
+            OutputG3DStats(g3d);
+            var objFile = Path.ChangeExtension(inputFile, "obj");
+            g3d.WriteObjFile(objFile);
+        }
+
+        [Test]
         public static void TestWriters()
         {
             var fileName = @"models\PLY\wuson.ply";
@@ -209,6 +111,15 @@ $@"       #animations = {scene.AnimationCount}
 
             // BUG: Assimp ignores the OBJ index buffer. God knows why. 
             //CompareG3D(g3d, g3dFromObj);
+        }
+
+        [Test, Explicit("Big files, hard coded paths")]
+        public static void LucyTest()
+        {
+            var inputFile = @"C:\dev\data\lucy.ply";
+            var outputFolder = @"C:\dev\data\output";
+            var g3d = CompareTiming(inputFile, outputFolder);
+            g3d.WriteObjFile(Path.Combine(outputFolder, Path.GetFileName(inputFile) + ".obj"));
         }
 
         [Test]
@@ -237,6 +148,17 @@ $@"       #animations = {scene.AnimationCount}
             Assert.AreEqual(colors, g3d.VertexColor[0].Data.ToArray());
             Assert.AreEqual(uvs, g3d.UV[0].Data.ToArray());
             Assert.AreEqual(2, g3d.Groups.Length);
+            Assert.AreEqual(7, g3d.Attributes.Count);
+            Assert.AreEqual(new[]
+            {
+                CommonAttributes.ObjectFaceSize,
+                CommonAttributes.Position,
+                CommonAttributes.Indices,
+                CommonAttributes.UV,
+                CommonAttributes.VertexColor,
+                CommonAttributes.GroupIndices,
+                CommonAttributes.MaterialIds
+            }, g3d.Attributes.Select(attr => attr.Descriptor.ToString()).ToArray());
         }
     }
 }

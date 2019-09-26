@@ -9,10 +9,6 @@
         dt_int16,
         dt_int32,
         dt_int64,
-        dt_uint8,
-        dt_uint16,
-        dt_uint32,
-        dt_uint64,
         dt_float32,
         dt_float64,
     };
@@ -45,7 +41,7 @@
         sem_tangent,       // computed tangent information (per vertex)
         sem_materialid,    // material id (per face, per group)
         sem_visibility,    // visibility data (e.g. 
-        sem_size,          // number of indices per face
+        sem_facesize,      // number of indices per face: can be per face, per group, or per object. 
         sem_uv,            // UV or UVW (sometimes more than 1, e.g. Unity supports up to 8)
         sem_color,         // usually vertex color, but could be edge color as well
         sem_smoothing,     // identifies smoothing groups (e.g. ala 3ds Max and OBJ files)

@@ -44,19 +44,15 @@ namespace Vim.G3d
                     TypeCheck(typeof(double));
                     break;
                 case DataType.dt_int8:
-                case DataType.dt_uint8:
                     TypeCheck(typeof(byte), typeof(sbyte));
                     break;
                 case DataType.dt_int16:
-                case DataType.dt_uint16:
                     TypeCheck(typeof(short), typeof(ushort));
                     break;
                 case DataType.dt_int32:
-                case DataType.dt_uint32:
                     TypeCheck(typeof(int), typeof(uint));
                     break;
                 case DataType.dt_int64:
-                case DataType.dt_uint64:
                     TypeCheck(typeof(long), typeof(ulong));
                     break;
                 default:
