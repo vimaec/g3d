@@ -1,21 +1,34 @@
 # G3D
 
+[<img src="https://img.shields.io/nuget/v/Vim.G3d.svg">](https://www.nuget.org/packages/Vim.G3d) 
+
 G3D is a simple, efficient, generic binary format for storing and transmitting geometry. The G3D format
 is designed to be used either as a serialization format or as an in-memory data structure.
 
 G3D can represent triangular meshes, quadrilateral meshes, polygonal meshes, point clouds, and line segments.  
-It can be easily and efficient ly deserialized and rendered in different languages and on different platforms.
+It can be easily and efficiently deserialized and rendered in different languages and on different platforms.
 
 The G3D format can contain a superset of geometry attributes found in most common geometry formats, 
 including formats such as FBX, glTF, OBJ, PLY, and in memory data structures used in popular 3D APIs, like 
 Unity, Three.JS, Assimp, and 3dsMax.
 
+BFAST is maintained by [VIMaec LLC](https://vimaec.com) and is licensed under the terms of the MIT License.
+
+# Repository Structure and Projects
+
+On this Github repository we have the following projects:
+
+* `csharp\Vim.G3d` - C# .NET Standard 2.0 Library for reading/writing G3D buffers 
+* `csharp\Vim.G3d.AssimpAdapter` - C# .NET Framework 4.7.1 library for converting from Assimp meshes to G3D data structures
+* `csharp\Vim.G3d.Test` - C# .NET Core 2.1 project with NUnit tests 
+* `csharp\Vim.G3d.UnityAdapter` - C# .NET Framework 4.7.1 library for converting to/from Unity types (tested with Unit 2019.1) 
+* `unity\Vim.G3d.Unity` - A Unity 2019.1.14 project for testing the Unity adapters  
+
 # Format 
 
 ## BFAST Container
 
-The underlying binary layout of a G3D file conforms to the [BFAST serialization format](https://github.com/vimaecbfast), which is a simple and efficient binary format for serializing collections of byte arrays. BFAST provides an interface that allows named arrays of binary data to be serialized
-and deserialized quickly and easily.
+The underlying binary layout of a G3D file conforms to the [BFAST serialization format](https://github.com/vimaec/bfast), which is a simple and efficient binary format for serializing collections of byte arrays. BFAST provides an interface that allows named arrays of binary data to be serialized and deserialized quickly and easily.
 
 The first named buffer in the BFAST container is reserved for meta-information about the file encoded in JSON format. It has the name "meta". Each subsequent buffer uses the attribute descriptor string as a name. 
 
@@ -80,9 +93,11 @@ Every attribute descriptor has a one to one mapping to a string representation s
     `g3d:<association>:<semantic>:<data_type>:<data_arity>`
 
 This attribute descriptor string is the name of the buffer. 
-  
+
 # Recommended reading:
 
+* [VIM AEC blog post about using G3D with Unity](https://www.vimaec.com/the-g3d-geometry-exchange-format/)
+* [Hackernoon article about BFast](https://hackernoon.com/bfast-a-data-format-for-serializing-named-binary-buffers-243p130uw)
 * http://assimp.sourceforge.net/lib_html/structai_mesh.html
 * http://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_5EDC0280_E000_4B0B_88DF_5D215A589D5E_htm
 * https://help.autodesk.com/cloudhelp/2017/ENU/Max-SDK/cpp_ref/class_mesh.html
