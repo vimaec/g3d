@@ -48,29 +48,28 @@ namespace g3d
     enum Semantic 
     {
         sem_unknown,
-        sem_user,
-        sem_coordinate,
-        sem_index,
-        sem_faceindex,
-        sem_facesize,
+        sem_position,
+		sem_index,
+		sem_offset,
+		sem_facesize,
         sem_normal,
         sem_binormal,
         sem_tangent,
         sem_materialid,
-        sem_polygroup,
+        sem_group,
         sem_uv,
         sem_color,
-        sem_smoothing,
-        sem_crease,
-        sem_hole,
-        sem_visibility, 
-        sem_selection,
-        sem_pervertex,
-        sem_mapchannel_data,
-        sem_mapchannel_index,
-        sem_custom,
-        sem_invalid,
-    };
+		sem_visibility,
+		sem_smoothing,
+        sem_weight,
+        sem_mapchannel,
+		sem_id,
+		sem_joint,
+		sem_box,
+		sem_sphere,
+		sem_geometry,
+		sem_user,
+	};
 
     // Contains all the information necessary to parse an attribute data channel and associate it with some part of the geometry 
     struct AttributeDescriptor
@@ -159,27 +158,29 @@ namespace g3d
         static map<Semantic, string> semantics_to_strings() {
             static map<Semantic, string> names = {
                 { sem_unknown,         "unknown" },
-                { sem_user,            "user" },
-                { sem_coordinate,      "coordinate" },
-                { sem_index,           "index" },
-                { sem_faceindex,       "faceindex" },
+				{ sem_position,        "position" },
+				{ sem_index,           "index" },
+				{ sem_offset,          "offset" },
                 { sem_facesize,        "facesize" },
                 { sem_normal,          "normal" },
                 { sem_binormal,        "binormal" },
                 { sem_tangent,         "tangent" },
                 { sem_materialid,      "materialid" },
-                { sem_polygroup,       "polygroup" },
+                { sem_group,           "group" },
                 { sem_uv,              "uv", },
                 { sem_color,           "color" },
-                { sem_smoothing,       "smoothing" },
-                { sem_crease,          "crease" },
-                { sem_hole,            "hole" },
-                { sem_visibility,      "visibility" },
-                { sem_selection,       "selection" },
-                { sem_pervertex,       "pervertex" },
-                { sem_custom,          "custom" },
-                { sem_invalid,         "invalid" }
-            };
+				{ sem_visibility,      "visibility" },
+				{ sem_smoothing,       "smoothing" },
+                { sem_weight,          "weight" },
+				{ sem_mapchannel,	   "mapchannel" },
+				{ sem_id,			"id" },
+				{ sem_joint,			"joint" },
+				{ sem_box,				"boxes" },
+				{ sem_sphere,			"spheres" },
+				{ sem_geometry,		    "geometry" },
+				{ sem_user,            "user" }
+
+			};
             return names;
         }
 
@@ -276,37 +277,24 @@ namespace g3d
         uint8_t* _end;
     };
 
-   // A G3d data structure, is a set of attributes. 
-    // If you pass a pointer to data when adding an attribute it will not make a copy instead that data will be referenced by the G3dBuilder, 
-    // If on the other hand you pass a nullptr, you will be responsible for copying the data into the attribute afterwards
+    // A G3d data structure, is a set of attributes. It is stored internally as a BFast 
     struct G3d    
     {
 		string meta;
-		vector<Attribute> attributes; 
+		bfast::Bfast bfast;
+		std::vector<Attribute> attributes;
 
 		G3d()
 			: meta(default_meta())
 		{ }
 			
-		G3d(const G3d& other)
-			: meta(default_meta()), attributes(other.attributes)
-		{ }
-
 		static string default_meta() {
 			return "{ \"G3D\": \"1.0.0\" }";
 		}
 
-		G3d& operator=(const G3d& x)
-		{
-			attributes = x.attributes;
-			return *this;
-		}
-
-		bfast::Bfast to_bfast() {
-			bfast::Bfast r;
+		void recompute_bfast() {
 			for (auto attr : attributes)
-				r.buffers.push_back(attr.to_buffer());
-			return r;
+				bfast.buffers.push_back(attr.to_buffer());
 		}
 
         void write_file(string path) {
@@ -317,19 +305,18 @@ namespace g3d
 			b.write_file(path);
         }
 
-		static G3d read_file(string path)
+		void read_file(string path)
 		{
-			auto bfast = bfast::Bfast::read_file(path);
-			G3d r;
+			attributes.clear();
+			bfast = bfast::Bfast::read_file(path);
 			for (auto i = 0; i < bfast.buffers.size(); ++i)
 			{
 				auto b = bfast.buffers[i];
 				if (i == 0)
-					r.meta = b.data.to_string();
+					meta = b.data.to_string();
 				else
-					r.add_attribute(b.name, b.data.begin(), b.data.end());
+					add_attribute(b.name, b.data.begin(), b.data.end());
 			}
-			return r;
 		}
 
 		const string Position = "g3d:vertex:position:float32:3";

@@ -116,7 +116,7 @@ namespace bfast
 			auto tmp = compute_offsets();
 			if (tmp.size() == 0)
 				return compute_data_start();
-			return tmp.back()._end;
+			return aligned_value(tmp.back()._end);
 		}
 
 		// Copies the data structure to the bytes stream and update the current index
@@ -138,7 +138,7 @@ namespace bfast
 			return out;
 		}
 
-		// Copies the BFAST data structure to the byte stream. 
+		// Copies the BFAST data structure to any output iterator
 		template<typename OutIter_T>
 		void copy_to(OutIter_T out)
 		{
@@ -176,6 +176,7 @@ namespace bfast
 				output_padding(out, current);
 				auto range = ranges[i];
 				auto offset = offsets[i];
+				assert(range.size() == (offset._end- offset._begin));
 				assert(current == offset._begin);
 				out = copy(range.begin(), range.end(), out);
 				current += range.size();
@@ -183,6 +184,7 @@ namespace bfast
 			}
 		}
 
+		// Converts the BFast into a byte-array.
 		vector<byte> pack() {
 			vector<byte> r(compute_needed_size());
 			copy_to(r.data());
@@ -221,7 +223,8 @@ namespace bfast
 	};
 
 
-	// A Bfast conceptually is a collection of buffers: named byte arrays 
+	// A Bfast conceptually is a collection of buffers: named byte arrays. 
+	// It contains the raw data contained within.
 	struct Bfast
 	{
 		vector<byte> name_data;

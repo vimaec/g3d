@@ -35,23 +35,24 @@
         sem_unknown,       // no known attribute type
         sem_position,      // vertex buffer 
         sem_index,         // index buffer
-        sem_indexoffset,   // an offset into the index buffer (used with groups and with faces)
+        sem_offset,         // an offset into the index buffer (used with groups and with faces)
+        sem_facesize,      // number of indices per face: can be per face, per group, or per object. 
         sem_normal,        // computed normal information (per face, group, corner, or vertex)
         sem_binormal,      // computed binormal information (per vertex_
         sem_tangent,       // computed tangent information (per vertex)
         sem_materialid,    // material id (per face, per group)
-        sem_visibility,    // visibility data (e.g. 
-        sem_facesize,      // number of indices per face: can be per face, per group, or per object. 
+        sem_group,         // identifies what polygon group a face belongs to
         sem_uv,            // UV or UVW (sometimes more than 1, e.g. Unity supports up to 8)
         sem_color,         // usually vertex color, but could be edge color as well
+        sem_visibility,    // visibility data (e.g. 
         sem_smoothing,     // identifies smoothing groups (e.g. ala 3ds Max and OBJ files)
         sem_weight,        // in 3ds Max this is called selection 
         sem_mapchannel,    // 3ds Max map channel (assoc of none => map verts, assoc of corner => map faces)
         sem_id,            // used to identify what object each face part came from 
         sem_joint,         // used to identify what a joint a skin is associated with 
-        sem_boxes,         // used to identify bounding boxes
-        sem_spheres,       // used to identify bounding spheres
-        sem_geometryid,    // identifies geometry per instance
+        sem_box,           // used to identify bounding boxes
+        sem_sphere,        // used to identify bounding spheres
+        sem_geometry,      // identifies geometry per instance
         sem_user,          // identifies user specific data (in 3ds Max this could be "per-vertex-data")
     };
 }

@@ -115,7 +115,7 @@ namespace Vim.G3d
 
                         break;
 
-                    case Semantic.sem_indexoffset:
+                    case Semantic.sem_offset:
                         if (desc.DataArity == 1 && desc.Association == Association.assoc_group)
                             GroupIndexOffsets = GroupIndexOffsets ?? attr.AsType<int>();
                         break;

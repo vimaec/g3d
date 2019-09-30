@@ -35,7 +35,7 @@ namespace Vim
 
 			void Load(String^ filePath)
 			{
-				*g3d = g3d::G3d::read_file(marshal_as<std::string>(filePath));
+				g3d->read_file(marshal_as<std::string>(filePath));
 			}
 
 			void Write(String^ filePath)
