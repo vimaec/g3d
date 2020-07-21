@@ -1,8 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Text;
 using System.IO;
-using System.Linq;
+using Vim.Math3d;
 
 namespace Vim.G3d
 {
@@ -11,19 +10,19 @@ namespace Vim.G3d
     /// </summary> 
     public static class PlyExporter
     {
-        public static void WritePlyFile(this G3D g, string filePath)
+        public static void WritePly(this G3D g, string filePath)
             => File.WriteAllLines(filePath, PlyStrings(g));
 
         public static IEnumerable<string> PlyStrings(G3D g)
         {
-            var vertices = g.Vertices.ToArray();
-            var indices = g.Indices.ToArray();
-            var colors = g.VertexColor.ElementAtOrDefault(0)?.ToArray();
+            var vertices = g.Vertices;
+            var indices = g.Indices;
+            var colors = g.VertexColors;
 
             //Write the header
-            yield return "ply;";
+            yield return "ply";
             yield return "format ascii 1.0";
-            yield return "element vertex " + vertices.Length / 3 + "";
+            yield return "element vertex " + vertices.Count + "";
             yield return "property float x";
             yield return "property float y";
             yield return "property float z";
@@ -40,29 +39,31 @@ namespace Vim.G3d
             // Write the vertices
             if (colors != null)
             {
-                for (var i = 0; i < vertices.Length / 3; i++)
+                for (var i = 0; i < vertices.Count; i++)
                 {
-                    yield return 
-                        $"{vertices[i * 3 + 0]} {vertices[i * 3 + 1]} {vertices[i * 3 + 2]} " +
-                        $"{(byte)Math.Max(Math.Min(colors[i * 3 + 0] * 255.0f, 255.0f), 0.0f)} " +
-                        $"{(byte)Math.Max(Math.Min(colors[i * 3 + 1] * 255.0f, 255.0f), 0.0f)} " +
-                        $"{(byte)Math.Max(Math.Min(colors[i * 3 + 2] * 255.0f, 255.0f), 0.0f)}";
+                    var v = vertices[i];
+                    var c = (colors[i] * 255f).Clamp(Vector4.Zero, new Vector4(255,255,255,255));
+
+                    yield return
+                        $"{v.X} {v.Y} {v.Z} {(byte) c.X} {(byte) c.Y} {(byte) c.Z}";
                 }
             }
             else
             {
-                for (var i = 0; i < vertices.Length / 3; i++)
+                for (var i = 0; i < vertices.Count; i++)
                 {
-                    yield return $"{vertices[i * 3 + 0]} {vertices[i * 3 + 1]} {vertices[i * 3 + 2]}";
+                    var v = vertices[i];
+                    yield return
+                        $"{v.X} {v.Y} {v.Z}";
                 }
             }
 
             // Write the face indices
             var index = 0;
             var sb = new StringBuilder();
+            var faceSize = g.NumCornersPerFace;
             for (var i = 0; i < g.NumFaces; i++)
             {
-                var faceSize = g.FaceSize(i);
                 sb.Append(faceSize);
                 for (var j = 0; j < faceSize; j++)
                 {

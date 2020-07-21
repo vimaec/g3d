@@ -1,30 +1,51 @@
 ﻿using System.Collections.Generic;
-using System.IO;
 using System.Text;
+using System.IO;
+using Vim.LinqArray;
 
 namespace Vim.G3d
 {
+    /// <summary>
+    /// This is a simple ObjExporter for the purposes of testing.
+    /// </summary>
     public static class ObjExporter
     {
         public static IEnumerable<string> ObjLines(G3D g3d)
         {
             // Write the vertices 
-            var vertices = g3d.Vertices.Data.ToArray();
-            for (var v=0; v < vertices.Length; v += 3)
-                yield return ($"v {vertices[v]} {vertices[v+1]} {vertices[v+2]}");
+            var vertices = g3d.Vertices;
+            var uvs = g3d.VertexUvs;
+            foreach (var v in vertices.ToEnumerable())
+                yield return ($"v {v.X} {v.Y} {v.Z}");
+            if (uvs != null)
+            {
+                for (var v = 0; v < uvs.Count; v += 2)
+                    yield return ($"vt {uvs[v].X} {uvs[v].Y}");
+            }
 
-            var indices = g3d.Indices.Data.ToArray();
+            var indices = g3d.Indices;
             var sb = new StringBuilder();
             var i = 0;
-            var f = 0;
-            while (i < indices.Length)
+            var faceSize = g3d.NumCornersPerFace;
+            while (i < indices.Count)
             {
                 sb.Append("f");
-                var faceSize = g3d.FaceSize(f++);
-                for (var j = 0; j < faceSize; ++j)
+
+                if (uvs == null)
                 {
-                    var index = g3d.Indices.Data[i++] + 1;
-                    sb.Append(" ").Append(index);
+                    for (var j = 0; j < faceSize; ++j)
+                    {
+                        var index = g3d.Indices[i++] + 1;
+                        sb.Append(" ").Append(index);
+                    }
+                }
+                else
+                {
+                    for (var j = 0; j < faceSize; ++j)
+                    {
+                        var index = g3d.Indices[i++] + 1;
+                        sb.Append(" ").Append(index).Append("/").Append(index);
+                    }
                 }
 
                 yield return sb.ToString();
@@ -32,7 +53,7 @@ namespace Vim.G3d
             }
         }
 
-        public static void WriteObjFile(this G3D g3d, string filePath)
+        public static void WriteObj(this G3D g3d, string filePath)
             => File.WriteAllLines(filePath, ObjLines(g3d));
     }
 }

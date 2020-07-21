@@ -22,4 +22,29 @@ It can be easily and efficiently deserialized and rendered in different language
     </None>
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\BFast\csharp\Vim.BFast\Vim.BFast.csproj" />
+    <ProjectReference Include="..\..\..\LinqArray\LinqArray\Vim.LinqArray.csproj" />
+    <ProjectReference Include="..\..\..\Math3d\src\Vim.Math3d.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Service Include="{508349b6-6b84-4df5-91f0-309beebad82d}" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="CommonAttributes.cs">
+      <DependentUpon>CommonAttributes.tt</DependentUpon>
+      <DesignTime>True</DesignTime>
+      <AutoGen>True</AutoGen>
+    </Compile>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="CommonAttributes.tt">
+      <LastGenOutput>CommonAttributes.cs</LastGenOutput>
+      <Generator>TextTemplatingFileGenerator</Generator>
+    </None>
+  </ItemGroup>
+
 </Project>

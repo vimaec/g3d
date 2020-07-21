@@ -4,7 +4,9 @@
     Copyright 2018, Ara 3D, Inc.
     Usage licensed under terms of MIT Licenese.
 */
-#pragma once
+
+#ifndef __G3D_H__
+#define __G3D_H__
 
 #include <vector>
 #include <sstream>
@@ -14,9 +16,9 @@
 
 namespace g3d
 {
-	#define G3D_VERSION = { 1, 0, 1, "2019.9.24" };
+    #define G3D_VERSION = { 2, 0, 1, "2019.12.04" };
 
-	using namespace std;
+    using namespace std;
 
     /// The different types of data types that can be used as elements. 
     enum DataType 
@@ -39,52 +41,28 @@ namespace g3d
         assoc_face,
         assoc_corner,
         assoc_edge,
-		assoc_group,
+        assoc_group,
         assoc_all,
         assoc_none,
     };
-
-    // The type of the attribute
-    enum Semantic 
-    {
-        sem_unknown,
-        sem_position,
-		sem_index,
-		sem_offset,
-		sem_facesize,
-        sem_normal,
-        sem_binormal,
-        sem_tangent,
-        sem_materialid,
-        sem_group,
-        sem_uv,
-        sem_color,
-		sem_visibility,
-		sem_smoothing,
-        sem_weight,
-        sem_mapchannel,
-		sem_id,
-		sem_joint,
-		sem_box,
-		sem_sphere,
-		sem_geometry,
-		sem_user,
-	};
 
     // Contains all the information necessary to parse an attribute data channel and associate it with some part of the geometry 
     struct AttributeDescriptor
     {
         /// The type of individual data values. There are n of these per element where n is the arity.
-		DataType data_type;
+        DataType data_type;
 
         /// The number of primitive values associated with each element 
-		int data_arity;
+        int data_arity;
+
+        /// The index of the attribute.
+        int index;
         
         /// What part of the geometry each tuple of data values is associated with 
-		Association association;
+        Association association;
         
         /// The semantic of the attribute (e.g. normals, uv)
-		Semantic semantic;
+        string semantic;
 
         /// The size of each data element in bytes (not counting the arity).
         int32_t data_type_size() const {
@@ -143,8 +121,8 @@ namespace g3d
                 { assoc_face,       "face" },
                 { assoc_corner,     "corner" },
                 { assoc_edge,       "edge" },
-				{ assoc_group,		"group" },
-				{ assoc_all,		"all" },
+                { assoc_group,      "group" },
+                { assoc_all,        "all" },
                 { assoc_none,       "none" },
             };
             return names;
@@ -154,46 +132,13 @@ namespace g3d
             static auto r = reverse_map(associations_to_strings());
             return r;
         }
-
-        static map<Semantic, string> semantics_to_strings() {
-            static map<Semantic, string> names = {
-                { sem_unknown,         "unknown" },
-				{ sem_position,        "position" },
-				{ sem_index,           "index" },
-				{ sem_offset,          "offset" },
-                { sem_facesize,        "facesize" },
-                { sem_normal,          "normal" },
-                { sem_binormal,        "binormal" },
-                { sem_tangent,         "tangent" },
-                { sem_materialid,      "materialid" },
-                { sem_group,           "group" },
-                { sem_uv,              "uv", },
-                { sem_color,           "color" },
-				{ sem_visibility,      "visibility" },
-				{ sem_smoothing,       "smoothing" },
-                { sem_weight,          "weight" },
-				{ sem_mapchannel,	   "mapchannel" },
-				{ sem_id,			"id" },
-				{ sem_joint,			"joint" },
-				{ sem_box,				"boxes" },
-				{ sem_sphere,			"spheres" },
-				{ sem_geometry,		    "geometry" },
-				{ sem_user,            "user" }
-
-			};
-            return names;
-        }
-
-        static const map<string, Semantic>& semantics_from_strings() {
-            static auto r = reverse_map(semantics_to_strings());
-            return r;
-        }
         
         string to_string() const {
             ostringstream oss;
             oss << "g3d"
                 << ":" << associations_to_strings().at(association)
-                << ":" << semantics_to_strings().at(semantic)
+                << ":" << semantic
+                << ":" << index
                 << ":" << data_types_to_strings().at(data_type)
                 << ":" << data_arity;
             return oss.str();
@@ -213,25 +158,19 @@ namespace g3d
             return elems;
         }
 
-		static Association association_from_string(const string& s) {
-			auto d = associations_from_strings();
-			if (d.find(s) == d.end()) throw runtime_error("unknown association");
-			return d.at(s);
-		}
+        static Association association_from_string(const string& s) {
+            auto d = associations_from_strings();
+            if (d.find(s) == d.end()) throw runtime_error("unknown association");
+            return d.at(s);
+        }
 
-		static DataType data_type_from_string(const string& s) {
-			auto d = data_types_from_strings();
-			if (d.find(s) == d.end()) throw runtime_error("unknown data-type");
-			return d.at(s);
-		}
+        static DataType data_type_from_string(const string& s) {
+            auto d = data_types_from_strings();
+            if (d.find(s) == d.end()) throw runtime_error("unknown data-type");
+            return d.at(s);
+        }
 
-		static Semantic semantic_from_string(const string& s) {
-			auto d = semantics_from_strings();
-			if (d.find(s) == d.end()) return sem_unknown;
-			return d.at(s);
-		}
-
-		static AttributeDescriptor from_string(const string& s) {
+        static AttributeDescriptor from_string(const string& s) {
             AttributeDescriptor desc;
             auto tokens = split(s, ':');
             auto token = tokens.begin();
@@ -239,7 +178,8 @@ namespace g3d
             if (token == end) throw runtime_error("Insufficient tokens");
             if (*token++ != "g3d") throw runtime_error("Expected g3d"); if (token == end) throw runtime_error("Insufficient tokens");
             desc.association = association_from_string(*token++); if (token == end) throw runtime_error("Insufficient tokens");
-            desc.semantic = semantic_from_string(*token++); if (token == end) throw runtime_error("Insufficient tokens");
+            desc.semantic = *token++; if (token == end) throw runtime_error("Insufficient tokens");
+            desc.index = stoi(*token++);
             desc.data_type = data_type_from_string(*token++); if (token == end) throw runtime_error("Insufficient tokens");
             desc.data_arity = stoi(*token++);
             if (token != end) throw runtime_error("Too many tokens");
@@ -251,8 +191,8 @@ namespace g3d
     struct Attribute {
         Attribute(const string& desc, const void* begin, const void* end)
             : descriptor(AttributeDescriptor::from_string(desc))
-			, _begin((uint8_t*)begin)
-			, _end((uint8_t*)end)
+            , _begin((uint8_t*)begin)
+            , _end((uint8_t*)end)
         { 
             if (!begin || !end) throw runtime_error("Null parameters");
             if (byte_size() % data_element_size() != 0) throw runtime_error("Data buffer byte size does not divide evenly by size of elements");        
@@ -266,12 +206,12 @@ namespace g3d
         size_t num_elements() const {
             return byte_size() / data_element_size();
         }
-		bfast::Buffer to_buffer() {
-			return bfast::Buffer{ descriptor.to_string(), bfast::ByteRange { _begin, _end } };
-		}
-		static Attribute from_buffer(bfast::Buffer buffer) {
-			return Attribute(buffer.name, buffer.data.begin(), buffer.data.end());
-		}
+        bfast::Buffer to_buffer() {
+            return bfast::Buffer{ descriptor.to_string(), bfast::ByteRange { _begin, _end } };
+        }
+        static Attribute from_buffer(bfast::Buffer buffer) {
+            return Attribute(buffer.name, buffer.data.begin(), buffer.data.end());
+        }
         AttributeDescriptor descriptor;
         uint8_t* _begin;
         uint8_t* _end;
@@ -280,69 +220,117 @@ namespace g3d
     // A G3d data structure, is a set of attributes. It is stored internally as a BFast 
     struct G3d    
     {
-		string meta;
-		bfast::Bfast bfast;
-		std::vector<Attribute> attributes;
+        string meta;
+        bfast::Bfast bfast;
+        std::vector<Attribute> attributes;
 
-		G3d()
-			: meta(default_meta())
-		{ }
-			
-		static string default_meta() {
-			return "{ \"G3D\": \"1.0.0\" }";
-		}
+        G3d()
+            : meta(default_meta())
+        { }
 
-		void recompute_bfast() {
-			for (auto attr : attributes)
-				bfast.buffers.push_back(attr.to_buffer());
-		}
+        G3d(bfast::Bfast& inputBfast)
+        {
+            attributes.clear();
+            bfast = inputBfast;
+            for (auto i = 0; i < bfast.buffers.size(); ++i)
+            {
+                auto b = bfast.buffers[i];
+                if (i == 0)
+                    meta = b.data.to_string();
+                else
+                {
+                    add_attribute(b.name, b.data.begin(), b.data.end());
+                }
+            }
+        }
+            
+        static string default_meta() {
+            return "{ \"G3D\": \"1.0.0\" }";
+        }
+
+        void recompute_bfast() {
+            for (auto attr : attributes)
+                bfast.buffers.push_back(attr.to_buffer());
+        }
 
         void write_file(string path) {
             bfast::Bfast b;
             b.add("meta", meta.c_str());
-			for (auto attr : attributes)
-				b.buffers.push_back(attr.to_buffer());
-			b.write_file(path);
+            for (auto attr : attributes)
+                b.buffers.push_back(attr.to_buffer());
+            b.write_file(path);
         }
 
-		void read_file(string path)
-		{
-			attributes.clear();
-			bfast = bfast::Bfast::read_file(path);
-			for (auto i = 0; i < bfast.buffers.size(); ++i)
-			{
-				auto b = bfast.buffers[i];
-				if (i == 0)
-					meta = b.data.to_string();
-				else
-					add_attribute(b.name, b.data.begin(), b.data.end());
-			}
-		}
+        void read_file(string path)
+        {
+            attributes.clear();
+            bfast = bfast::Bfast::read_file(path);
+            for (auto i = 0; i < bfast.buffers.size(); ++i)
+            {
+                auto b = bfast.buffers[i];
+                if (i == 0)
+                    meta = b.data.to_string();
+                else
+                    add_attribute(b.name, b.data.begin(), b.data.end());
+            }
+        }
 
-		const string Position = "g3d:vertex:position:float32:3";
-		const string Indices = "g3d:corner:index:int32:1";
-		const string UV = "g3d:vertex:uv:float32:2";
-		const string UVW = "g3d:vertex:uv:float32:3";
-		const string VertexNormal = "g3d:vertex:normal:float32:3";
-		const string FaceNormal = "g3d:vertex:normal:float32:3";
-		const string ObjectFaceSize = "g3d:all:facesize:int32:1";
-		const string GroupFaceSize = "g3d:group:facesize:int32:1";
-		const string FaceSizes = "g3d:face:facesize:int32:1";
-		const string FaceIndices = "g3d:face:indexoffset:int32:1";
-		const string VertexColor = "g3d:vertex:color:float32:3";
-		const string VertexColorWithAlpha = "g3d:vertex:color:float32:4";
-		const string Bitangent = "g3d:vertex:bitangent:float32:3";
-		const string Tangent3 = "g3d:vertex:tangent:float32:3";
-		const string Tangent4 = "g3d:vertex:tangent:float32:4";
-		const string GroupIndices = "g3d:group:indexoffset:int32:1";
-		const string MaterialIds = "g3d:face:materialid:int32:1";
+        void add_attribute(const string& name, const void* begin, const void* end) {
+            attributes.push_back(Attribute(name, begin, end));
+        }
 
-		void add_attribute(const string& name, const void* begin, const void* end) {
-			attributes.push_back(Attribute(name, begin, end));
-		}
+        void add_attribute(const string& name, void* begin, size_t size) {
+            add_attribute(name, begin, (uint8_t*)begin + size);
+        }
+    };
 
-		void add_attribute(const string& name, void* begin, size_t size) {
-			add_attribute(name, begin, (uint8_t*)begin + size);
-		}
-	};
+    struct descriptors
+    {
+        static constexpr const char* Position = "g3d:vertex:position:0:float32:3";
+        static constexpr const char* Index = "g3d:corner:index:0:int32:1";
+        static constexpr const char* ObjectFaceSize = "g3d:all:facesize:0:int32:1";
+
+        static constexpr const char* VertexUv = "g3d:vertex:uv:0:float32:2";
+        static constexpr const char* VertexUvw = "g3d:vertex:uv:0:float32:3";
+        static constexpr const char* VertexNormal = "g3d:vertex:normal:0:float32:3";
+        static constexpr const char* VertexColor = "g3d:vertex:color:0:float32:3";
+        static constexpr const char* VertexColorWithAlpha = "g3d:vertex:color:0:float32:4";
+        static constexpr const char* VertexBitangent = "g3d:vertex:bitangent:0:float32:3";
+        static constexpr const char* VertexTangent = "g3d:vertex:tangent:0:float32:3";
+        static constexpr const char* VertexTangent4 = "g3d:vertex:tangent:0:float32:4";
+        static constexpr const char* VertexSelectionWeight = "g3d:vertex:weight:0:float32:1";
+
+        static constexpr const char* FaceMaterialId = "g3d:face:materialid:0:int32:1";
+        static constexpr const char* FaceObjectId = "g3d:face:objectid:0:int32:1";
+        static constexpr const char* FaceGroupId = "g3d:face:groupid:0:int32:1";
+        static constexpr const char* FaceNormal = "g3d:vertex:normal:0:float32:3";
+        static constexpr const char* FaceSize = "g3d:face:facesize:0:int32:1";
+        static constexpr const char* FaceIndexOffset = "g3d:face:indexoffset:0:int32:1";
+        static constexpr const char* FaceSelectionWeight = "g3d:face:weight:0:float32:1";
+
+        static constexpr const char* GroupMaterialId = "g3d:group:materialid:0:int32:1";
+        static constexpr const char* GroupObjectId = "g3d:group:objectid:0:int32:1";
+        static constexpr const char* GroupIndexOffset = "g3d:group:indexoffset:0:int32:1";
+        static constexpr const char* GroupVertexOffset = "g3d:group:vertexoffset:0:int32:1";
+        static constexpr const char* GroupNormal = "g3d:vertex:normal:0:float32:3";
+        static constexpr const char* GroupFaceSize = "g3d:group:facesize:0:int32:1";
+
+        // https://docs.thinkboxsoftware.com/products/krakatoa/2.6/1_Documentation/manual/formats/particle_channels.html
+        static constexpr const char* PointVelocity = "g3d:vertex:velocity:0:float32:3";
+        static constexpr const char* PointNormal = "g3d:vertex:normal:0:float32:3";
+        static constexpr const char* PointAcceleration = "g3d:vertex:acceleration:0:float32:3";
+        static constexpr const char* PointDensity = "g3d:vertex:density:0:float32:1";
+        static constexpr const char* PointEmissionColor = "g3d:vertex:emission:0:float32:3";
+        static constexpr const char* PointAbsorptionColor = "g3d:vertex:absorption:0:float32:3";
+        static constexpr const char* PointSpin = "g3d:vertex:spin:0:float32:4";
+        static constexpr const char* PointOrientation = "g3d:vertex:orientation:0:float32:4";
+        static constexpr const char* PointParticleId = "g3d:vertex:particleid:0:int32:1";
+        static constexpr const char* PointAge = "g3d:vertex:age:0:int32:1";
+
+        // Line specific attributes 
+        static constexpr const char* LineTangentIn = "g3d:vertex:tangent:0:float32:3";
+        static constexpr const char* LineTangentOut = "g3d:vertex:tangent:1:float32:3";
+    };
 }
+
+#endif

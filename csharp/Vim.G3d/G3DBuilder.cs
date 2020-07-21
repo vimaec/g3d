@@ -1,4 +1,6 @@
 ﻿using System.Collections.Generic;
+using Vim.LinqArray;
+using Vim.Math3d;
 
 namespace Vim.G3d
 {
@@ -7,97 +9,31 @@ namespace Vim.G3d
     /// </summary>
     public class G3DBuilder
     {
-        public Header Header { get; set; }
-        public readonly List<BinaryAttribute> Attributes = new List<BinaryAttribute>();
+        public readonly List<GeometryAttribute> Attributes = new List<GeometryAttribute>();
 
-        public G3D ToG3D()
-            => new G3D(Attributes, Header);
+        public G3D ToG3D(G3dHeader? header = null)
+            => new G3D(Attributes, header ?? G3dHeader.Default);
 
-        public G3DBuilder AddAttribute(BinaryAttribute attr)
+        public G3DBuilder Add(GeometryAttribute attr)
         {
             Attributes.Add(attr);
             return this;
         }
 
-        public G3DBuilder AddAttribute<T>(Attribute<T> attr) where T: struct
-            => AddAttribute(attr._Attribute);
-
         public G3DBuilder AddIndices(int[] indices)
-            => AddAttribute(indices.ToAttribute(CommonAttributes.Index));
+            => Add(indices.ToIndexAttribute());
 
-        /// <summary>
-        /// Computes the face indices and the face sizes.
-        /// Use this if dealing with a polygonal mesh. 
-        /// </summary>
-        public void AddIndicesByFace(IEnumerable<IEnumerable<int>> faces)
-        {
-            var faceSizes = new List<int>();
-            var faceIndices = new List<int>();
-            var indices = new List<int>();
-            var currentIndex = 0;
-            foreach (var f in faces)
-            {
-                var nFaceSize = 0;
-                faceIndices.Add(currentIndex);
-                foreach (var i in f)
-                {
-                    nFaceSize++;
-                    indices.Add(currentIndex++);
-                }
-                faceSizes.Add(nFaceSize);
-            }
-            AddIndices(indices.ToArray());
-            AddFaceIndices(faceIndices.ToArray());
-            AddFaceSizes(faceSizes.ToArray());
-        }
+        public G3DBuilder AddIndices(IArray<int> indices)
+            => Add(indices.ToIndexAttribute());
 
-        public G3DBuilder SetObjectFaceSize(int n)
-            => AddAttribute(new[] {n}.ToAttribute(CommonAttributes.ObjectFaceSize));
+        public G3DBuilder SetObjectFaceSize(int objectFaceSize)
+            => Add(new[] {objectFaceSize}.ToIArray().ToObjectFaceSizeAttribute());
 
-        public G3DBuilder SetGroupFaceSize(int[] faceSizes)
-            => AddAttribute(faceSizes.ToAttribute(CommonAttributes.GroupFaceSize));
+        public G3DBuilder AddVertices(IArray<Vector3> vertices)
+            => Add(vertices.ToPositionAttribute());
 
-        public G3DBuilder AddVertices(float[] vertices)
-            => AddAttribute(vertices.ToAttribute(CommonAttributes.Position));
-
-        public G3DBuilder AddUV(float[] uvs)
-            => AddAttribute(uvs.ToAttribute(CommonAttributes.VertexUv));
-
-        public G3DBuilder AddUVW(float[] uvws)
-            => AddAttribute(uvws.ToAttribute(CommonAttributes.VertexUvw));
-
-        public G3DBuilder AddFaceNormals(float[] faceNormals)
-            => AddAttribute(faceNormals.ToAttribute(CommonAttributes.FaceNormal));
-
-        public G3DBuilder AddVertexNormals(float[] vertexNormals)
-            => AddAttribute(vertexNormals.ToAttribute(CommonAttributes.VertexNormal));
-
-        public G3DBuilder AddVertexColors(float[] vertexColors)
-            => AddAttribute(vertexColors.ToAttribute(CommonAttributes.VertexColor));
-
-        public G3DBuilder AddVertexColorsWithAlpha(float[] vertexColors)
-            => AddAttribute(vertexColors.ToAttribute(CommonAttributes.VertexColorWithAlpha));
-
-        public G3DBuilder AddBitangent(float[] tangents)
-            => AddAttribute(tangents.ToAttribute(CommonAttributes.VertexBitangent));
-
-        public G3DBuilder AddTangent3(float[] tangents)
-            => AddAttribute(tangents.ToAttribute(CommonAttributes.VertexTangent));
-
-        public G3DBuilder AddTangent4(float[] tangents)
-            => AddAttribute(tangents.ToAttribute(CommonAttributes.VertexTangent));
-
-        public G3DBuilder AddFaceSizes(int[] sizes)
-            => AddAttribute(sizes.ToAttribute(CommonAttributes.FaceSize));
-
-        public G3DBuilder AddFaceIndices(int[] indices)
-            => AddAttribute(indices.ToAttribute(CommonAttributes.FaceIndexOffset));
-
-        public G3DBuilder AddGroupIndexOffsets(int[] indices)
-            => AddAttribute(indices.ToAttribute(CommonAttributes.GroupIndexOffset));
-
-        public G3DBuilder AddMaterialIds(int[] materialIds)
-            => AddAttribute(materialIds.ToAttribute(CommonAttributes.FaceMaterialId));
+        public IGeometryAttributes ToIGeometryAttributes()
+            => new GeometryAttributes(Attributes);
     }
 }
 

@@ -1,0 +1,8 @@
+# Reinclude all file extension
+
+!*.*
+
+# Ignore Unit Test Output files
+
+output/**
+

@@ -30,6 +30,12 @@
     <ClInclude Include="..\include\g3d.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="..\include\vim.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Vim.Vim.CppCLR.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="Vim.G3d.CppCLR.cpp">
@@ -39,6 +45,9 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="pch.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Vim.Vim.CppCLR.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

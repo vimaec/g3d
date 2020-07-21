@@ -16,23 +16,27 @@ namespace Vim.G3d
 
         public int DataElementSize { get; }
         public int DataTypeSize { get; }
+        public string Name { get; }
 
         public AttributeDescriptor(Association association, string semantic, DataType dataType, int dataArity, int index = 0)
         {
             Association = association;
+            if (semantic.Contains(":"))
+                throw new Exception("The semantic must not contain a semicolon");
             Semantic = semantic;
             DataType = dataType;
             DataArity = dataArity;
             Index = index;
             DataTypeSize = GetDataTypeSize(DataType);
             DataElementSize = DataTypeSize * DataArity;
+            Name = $"g3d:{AssociationString}:{Semantic}:{Index}:{DataTypeString}:{DataArity}";
         }
-
+            
         /// <summary>
         /// Generates a URN representation of the attribute descriptor
         /// </summary>
         public override string ToString()
-            => $"g3d:{AssociationString}:{Semantic}:{Index}:{DataTypeString}:{DataArity}";
+            => Name;
 
         /// <summary>
         /// Parses a URN representation of the attribute descriptor to generate an actual attribute descriptor 
@@ -89,5 +93,8 @@ namespace Vim.G3d
 
         public static DataType ParseDataType(string s)
             => (DataType)Enum.Parse(typeof(DataType), "dt_" + s);
+            
+        public AttributeDescriptor SetIndex(int index)
+            => new AttributeDescriptor(Association, Semantic, DataType, DataArity, index);
     }
 }
