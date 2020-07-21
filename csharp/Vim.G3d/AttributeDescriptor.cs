@@ -9,20 +9,21 @@ namespace Vim.G3d
     public class AttributeDescriptor
     {
         public Association Association { get; }
-        public Semantic Semantic { get; }
+        public string Semantic { get; }
         public DataType DataType { get; }
         public int DataArity { get; }
+        public int Index { get; }
 
         public int DataElementSize { get; }
         public int DataTypeSize { get; }
 
-        public AttributeDescriptor(Association association, Semantic semantic, DataType dataType, int dataArity)
+        public AttributeDescriptor(Association association, string semantic, DataType dataType, int dataArity, int index = 0)
         {
             Association = association;
             Semantic = semantic;
             DataType = dataType;
             DataArity = dataArity;
-
+            Index = index;
             DataTypeSize = GetDataTypeSize(DataType);
             DataElementSize = DataTypeSize * DataArity;
         }
@@ -31,7 +32,7 @@ namespace Vim.G3d
         /// Generates a URN representation of the attribute descriptor
         /// </summary>
         public override string ToString()
-            => $"g3d:{AssociationString}:{SemanticString}:{DataTypeString}:{DataArity}";
+            => $"g3d:{AssociationString}:{Semantic}:{Index}:{DataTypeString}:{DataArity}";
 
         /// <summary>
         /// Parses a URN representation of the attribute descriptor to generate an actual attribute descriptor 
@@ -39,13 +40,14 @@ namespace Vim.G3d
         public static AttributeDescriptor Parse(string urn)
         {
             var vals = urn.Split(':');
-            if (vals.Length != 5) throw new Exception("Expected 5 parts to the attribute descriptor URN");
+            if (vals.Length != 6) throw new Exception("Expected 6 parts to the attribute descriptor URN");
             if (vals[0] != "g3d") throw new Exception("First part of URN must be g3d");
             return new AttributeDescriptor(
                 ParseAssociation(vals[1]),
-                ParseSemantic(vals[2]),
-                ParseDataType(vals[3]),
-                int.Parse(vals[4])
+                vals[2],
+                ParseDataType(vals[4]),
+                int.Parse(vals[5]),
+                int.Parse(vals[3])
             );
         }
 
@@ -82,17 +84,10 @@ namespace Vim.G3d
         public static Association ParseAssociation(string s)
             => (Association)Enum.Parse(typeof(Association), "assoc_" + s);
 
-        public string SemanticString
-            => Semantic.ToString().Substring("sem_".Length) ?? "unknown";
-
-        public static Semantic ParseSemantic(string s)
-            => (Semantic)Enum.Parse(typeof(Semantic), "sem_" + s);
-
         public string DataTypeString
             => DataType.ToString()?.Substring("dt_".Length) ?? null;
 
         public static DataType ParseDataType(string s)
             => (DataType)Enum.Parse(typeof(DataType), "dt_" + s);
     }
-
 }

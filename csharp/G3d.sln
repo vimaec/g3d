@@ -21,7 +21,7 @@ Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vim.G3d.CppCLR", "..\cpp\Vi
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vim.G3d.CppCLR.Tests", "Vim.G3d.CppCLR.Tests\Vim.G3d.CppCLR.Tests.csproj", "{FE769360-9A7B-40CC-8169-32B639DA46FD}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vim.G3d.TestUtils", "Vim.G3d.TestUtils\Vim.G3d.TestUtils.csproj", "{DC901770-4AD6-4FBB-8D5F-06697CDD7F0A}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.TestUtils", "Vim.G3d.TestUtils\Vim.G3d.TestUtils.csproj", "{DC901770-4AD6-4FBB-8D5F-06697CDD7F0A}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -63,10 +63,10 @@ Global
 		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Release|Any CPU.Build.0 = Release|Any CPU
 		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Release|x64.ActiveCfg = Release|Any CPU
 		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Release|x64.Build.0 = Release|Any CPU
-		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|Any CPU.ActiveCfg = Debug|Win32
+		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|Any CPU.ActiveCfg = Debug|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|x64.ActiveCfg = Debug|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|x64.Build.0 = Debug|x64
-		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|Any CPU.ActiveCfg = Release|Win32
+		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|Any CPU.ActiveCfg = Release|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|x64.ActiveCfg = Release|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|x64.Build.0 = Release|x64
 		{FE769360-9A7B-40CC-8169-32B639DA46FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU

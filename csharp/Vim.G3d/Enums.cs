@@ -28,31 +28,38 @@
     };
 
     /// <summary>
-    /// The semantic (role or meaning) of the attribute. These are commonly defined roles in geometry processing applications.    
+    /// Common semantic names.
     /// </summary>
-    public enum Semantic
+    public static class Semantic
     {
-        sem_unknown,       // no known attribute type
-        sem_position,      // vertex buffer 
-        sem_index,         // index buffer
-        sem_offset,         // an offset into the index buffer (used with groups and with faces)
-        sem_facesize,      // number of indices per face: can be per face, per group, or per object. 
-        sem_normal,        // computed normal information (per face, group, corner, or vertex)
-        sem_binormal,      // computed binormal information (per vertex_
-        sem_tangent,       // computed tangent information (per vertex)
-        sem_materialid,    // material id (per face, per group)
-        sem_group,         // identifies what polygon group a face belongs to
-        sem_uv,            // UV or UVW (sometimes more than 1, e.g. Unity supports up to 8)
-        sem_color,         // usually vertex color, but could be edge color as well
-        sem_visibility,    // visibility data (e.g. 
-        sem_smoothing,     // identifies smoothing groups (e.g. ala 3ds Max and OBJ files)
-        sem_weight,        // in 3ds Max this is called selection 
-        sem_mapchannel,    // 3ds Max map channel (assoc of none => map verts, assoc of corner => map faces)
-        sem_id,            // used to identify what object each face part came from 
-        sem_joint,         // used to identify what a joint a skin is associated with 
-        sem_box,           // used to identify bounding boxes
-        sem_sphere,        // used to identify bounding spheres
-        sem_geometry,      // identifies geometry per instance
-        sem_user,          // identifies user specific data (in 3ds Max this could be "per-vertex-data")
-    };
+        public const string Position = "position";
+        public const string Index = "index";
+        public const string FaceSize = "facesize";
+        public const string Uv = "uv";
+        public const string Normal = "normal";
+        public const string Color = "color";
+        public const string Bitangent = "bitangent";
+        public const string Tangent = "tangent";
+        public const string Weight = "weight";
+
+        public const string MaterialId = "materialid";
+        public const string ObjectId = "objectid";
+        public const string GroupId = "groupid";
+        public const string IndexOffset = "indexoffset";
+        
+        public const string Velocity = "velocity";
+        public const string Acceleration = "acceleration";
+        public const string Density = "density";
+        public const string Emission = "emission";
+        public const string Absorption = "absorption";
+        public const string Spin = "spin";
+        public const string Orientaton = "orientation";
+        public const string ParticleId = "particleid";
+        public const string Age = "age";
+
+        // Line specific attributes 
+        public const string TangentInt = "tangentin";
+        public const string TangentOut = "tangentout";
+
+    }
 }

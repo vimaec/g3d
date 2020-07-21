@@ -20,7 +20,6 @@ namespace Vim.G3d
         public Span<byte> Bytes => Data.Bytes;
         public int ElementCount { get; }
         public int PrimitiveCount { get; }
-
         public AttributeDescriptor Descriptor { get; }
         public IBuffer Data { get; }
     }

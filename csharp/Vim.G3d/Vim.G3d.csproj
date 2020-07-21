@@ -16,10 +16,6 @@ It can be easily and efficiently deserialized and rendered in different language
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vim.BFast" Version="1.1.0" />
-  </ItemGroup>
-
-  <ItemGroup>
     <None Include="..\..\LICENSE.txt">
       <Pack>True</Pack>
       <PackagePath></PackagePath>

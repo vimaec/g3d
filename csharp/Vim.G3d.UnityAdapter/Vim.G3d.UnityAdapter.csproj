@@ -51,12 +51,6 @@
       <Version>1.1.0</Version>
     </PackageReference>
   </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj">
-      <Project>{a9be658c-60a4-4f2b-9028-2428c7d44ed3}</Project>
-      <Name>Vim.G3d</Name>
-    </ProjectReference>
-  </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSHARP.Targets" />
   <ProjectExtensions>
     <VisualStudio AllowExistingFolder="true" />

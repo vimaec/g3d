@@ -46,7 +46,7 @@ namespace Vim.G3d
         public List<Attribute<float>> UV = new List<Attribute<float>>(); // Arity of 2
         public List<Attribute<float>> VertexColor = new List<Attribute<float>>(); // Arity of 3 
 
-        public List<BinaryAttribute> Attributes = new List<BinaryAttribute>();
+        public List<BinaryAttribute> Attributes { get; }
 
         public Header Header { get; }
 
@@ -96,13 +96,13 @@ namespace Vim.G3d
 
                 switch (desc.Semantic)
                 {
-                    case Semantic.sem_position:
+                    case Semantic.Position:
                         if (desc.Association == Association.assoc_corner ||
                             desc.Association == Association.assoc_vertex)
                             Vertices = Vertices ?? attr.AsType<float>();
                         break;
 
-                    case Semantic.sem_index:
+                    case Semantic.Index:
                         if (desc.Association == Association.assoc_corner && desc.DataArity == 1)
                             Indices = Indices ?? attr.AsType<int>();
 
@@ -115,29 +115,29 @@ namespace Vim.G3d
 
                         break;
 
-                    case Semantic.sem_offset:
+                    case Semantic.IndexOffset:
                         if (desc.DataArity == 1 && desc.Association == Association.assoc_group)
                             GroupIndexOffsets = GroupIndexOffsets ?? attr.AsType<int>();
                         break;
 
-                    case Semantic.sem_facesize:
+                    case Semantic.FaceSize:
                         if (desc.Association == Association.assoc_face && desc.DataArity == 1)
                             FaceSizes = FaceSizes ?? attr.AsType<int>();
                         break;
 
-                    case Semantic.sem_normal:
+                    case Semantic.Normal:
                         if (desc.Association == Association.assoc_face)
                             FaceNormal = FaceNormal ?? attr.AsType<float>();
                         else if (desc.Association == Association.assoc_vertex)
                             VertexNormal = VertexNormal ?? attr.AsType<float>();
                         break;
 
-                    case Semantic.sem_uv:
+                    case Semantic.Uv:
                         if (desc.Association == Association.assoc_vertex && (desc.DataArity == 2 || desc.DataArity == 3))
                             UV.Add(attr.AsType<float>());
                         break;
 
-                    case Semantic.sem_color:
+                    case Semantic.Color:
                         if (desc.Association == Association.assoc_vertex)
                         {
                             if (desc.DataArity == 3 || desc.DataArity == 4)
@@ -150,12 +150,12 @@ namespace Vim.G3d
 
                         break;
 
-                    case Semantic.sem_tangent:
+                    case Semantic.Tangent:
                         if (desc.DataArity == 4 && desc.Association == Association.assoc_vertex)
                             Tangents = Tangents ?? attr.AsType<float>();
                         break;
 
-                    case Semantic.sem_materialid:
+                    case Semantic.MaterialId:
                         if (desc.DataArity == 1)
                             MaterialIds = MaterialIds ?? attr.AsType<int>();
                         break;
@@ -217,17 +217,8 @@ namespace Vim.G3d
         public static G3D Read(string filePath)
             => BFast.Read(filePath).ToG3D();
 
+        // TODO: I don't think this a great name
         public static G3D Read(byte[] bytes)
             => bytes.Unpack().ToG3D();
-
-        public IEnumerable<INamedBuffer> ToBuffers()
-            => new[] { Header.ToString().ToNamedBuffer("meta") } // First buffer is named "meta"
-            .Concat(Attributes); // All other attributes are subsequent buffers 
-
-        public void Write(Stream stream)
-            => BFast.WriteBFast(ToBuffers(), stream);
-
-        public void Write(string filePath)
-            => Write(File.OpenWrite(filePath));
     }
 }

@@ -51,9 +51,6 @@ namespace Vim.G3d
         public static Mesh ToMesh(this TextAsset asset)
             => asset.ToG3D().ToMesh();
 
-        public static G3D ToG3D(this byte[] bytes)
-            => G3D.Read(bytes);
-
         public static Mesh CopyTo(this G3D g3d, Mesh mesh)
         {
             mesh.vertices = g3d.Vertices.CastData<Vector3>().ToArray();
@@ -94,7 +91,7 @@ namespace Vim.G3d
         }
 
         public static G3DBuilder AddUnityUV(this G3DBuilder gb, Vector2[] vectors)
-            => vectors?.Length == 0 ? gb : gb.AddAttribute(vectors.ToBinaryAttribute(CommonAttributes.UV));
+            => vectors?.Length == 0 ? gb : gb.AddAttribute(vectors.ToBinaryAttribute(CommonAttributes.VertexUv));
 
         public static G3DBuilder AddUnityVertices(this G3DBuilder gb, Vector3[] vectors)
             => vectors?.Length == 0 ? gb : gb.AddAttribute(vectors.ToBinaryAttribute(CommonAttributes.Position));
@@ -106,7 +103,7 @@ namespace Vim.G3d
             => normals?.Length == 0 ? gb : gb.AddAttribute(normals.ToBinaryAttribute(CommonAttributes.VertexNormal));
 
         public static G3DBuilder AddUnityTangent(this G3DBuilder gb, Vector4[] tangents)
-            => tangents?.Length == 0 ? gb : gb.AddAttribute(tangents.ToBinaryAttribute(CommonAttributes.Tangent4));
+            => tangents?.Length == 0 ? gb : gb.AddAttribute(tangents.ToBinaryAttribute(CommonAttributes.VertexTangent4));
 
         public static G3D ToG3D(this Mesh mesh)
         {

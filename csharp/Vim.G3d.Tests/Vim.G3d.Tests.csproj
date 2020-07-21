@@ -12,14 +12,13 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.2.0" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.4.0" />
     <PackageReference Include="NUnit" Version="3.12.0" />
-    <PackageReference Include="NUnit3TestAdapter" Version="3.14.0" />
+    <PackageReference Include="NUnit3TestAdapter" Version="3.15.1" />
   </ItemGroup>
 
   <ItemGroup>
     <ProjectReference Include="..\Vim.G3d.TestUtils\Vim.G3d.TestUtils.csproj" />
-    <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
   </ItemGroup>
 
 </Project>

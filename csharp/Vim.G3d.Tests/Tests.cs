@@ -153,11 +153,11 @@ namespace Vim.G3d.Tests
             {
                 CommonAttributes.ObjectFaceSize,
                 CommonAttributes.Position,
-                CommonAttributes.Indices,
-                CommonAttributes.UV,
+                CommonAttributes.Index,
+                CommonAttributes.VertexUv,
                 CommonAttributes.VertexColor,
-                CommonAttributes.GroupIndices,
-                CommonAttributes.MaterialIds
+                CommonAttributes.GroupIndexOffset,
+                CommonAttributes.FaceMaterialId
             }, g3d.Attributes.Select(attr => attr.Descriptor.ToString()).ToArray());
         }
     }
