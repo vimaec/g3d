@@ -47,7 +47,7 @@ G3D is organized as a collection of attribute buffers. Each attributes describe 
 * group     // polygonal group - assumes a contiguous sequence of indices in the index buffer 
 * all		// whole object data - for example face-size of 4 with whole object indicates a quad mesh
 
-Attributes also have a "semamtic" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements, or Three.JS buffer attributes. There are a number of predefined semantic values with reserved names, but applications are free to define custom semantic values. The only required semantic in a G3D file is "position". Here is a list of some of the predefined semantics: 
+Attributes also have a "semantic" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements, or Three.JS buffer attributes. There are a number of predefined semantic values with reserved names, but applications are free to define custom semantic values. The only required semantic in a G3D file is "position". Here is a list of some of the predefined semantics: 
 
 * unknown,       // no known attribute type
 * position,      // vertex buffer 
@@ -58,7 +58,7 @@ Attributes also have a "semamtic" which is used to identify what role the attrib
 * binormal,      // computed binormal information 
 * tangent,       // computed tangent information 
 * materialid,    // material id
-* visibility,    // visibility data (e.g. 
+* visibility,    // visibility data
 * size,          // number of indices per face or group
 * uv,            // UV (sometimes more than 1, e.g. Unity supports up to 8)
 * color,         // usually vertex color, but could be edge color as well
