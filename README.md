@@ -36,7 +36,17 @@ The first named buffer in the BFAST container is reserved for meta-information a
 
 The first buffer of a G3D file is a JSON object where each field value must be a string. There is no requirement for the names and the values of the fields. 
 
-## Attributes 
+## Attributes
+ 
+### Attribute Descriptor String
+
+Every attribute descriptor has a one to one mapping to a string representation similar to a URN: 
+    
+    `g3d:<association>:<semantic>:<index>:<data_type>:<data_arity>`
+
+This attribute descriptor string is the name of the buffer. 
+
+### Association
 
 G3D is organized as a collection of attribute buffers. Each attributes describe what part of the incoming geometry they are associated with:
 
@@ -47,7 +57,9 @@ G3D is organized as a collection of attribute buffers. Each attributes describe 
 * group     // polygonal group - assumes a contiguous sequence of indices in the index buffer 
 * all		// whole object data - for example face-size of 4 with whole object indicates a quad mesh
 
-Attributes also have a "semamtic" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements, or Three.JS buffer attributes. There are a number of predefined semantic values with reserved names, but applications are free to define custom semantic values. The only required semantic in a G3D file is "position". Here is a list of some of the predefined semantics: 
+### Semantic
+
+Attributes also have a "semantic" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements, or Three.JS buffer attributes. There are a number of predefined semantic values with reserved names, but applications are free to define custom semantic values. The only required semantic in a G3D file is "position". Here is a list of some of the predefined semantics: 
 
 * unknown,       // no known attribute type
 * position,      // vertex buffer 
@@ -58,7 +70,7 @@ Attributes also have a "semamtic" which is used to identify what role the attrib
 * binormal,      // computed binormal information 
 * tangent,       // computed tangent information 
 * materialid,    // material id
-* visibility,    // visibility data (e.g. 
+* visibility,    // visibility data
 * size,          // number of indices per face or group
 * uv,            // UV (sometimes more than 1, e.g. Unity supports up to 8)
 * color,         // usually vertex color, but could be edge color as well
@@ -71,6 +83,12 @@ Attributes also have a "semamtic" which is used to identify what role the attrib
 * spheres,       // used to identify bounding spheres
 * user,          // identifies user specific data (in 3ds Max this could be "per-vertex-data")
 
+### Index
+
+Attributes use indices to distinguish when multiple attributes share the same name (e.g. uv:0 ... uv:8)
+
+### Data Type
+
 Attributes are stored in 512-byte aligned data-buffers arranged as arrays of scalars or fixed width vectors. The individual data values can be integers, or floating point values of various widths from 1 to 8 bytes. The data-types are:
 
 * int8
@@ -80,19 +98,13 @@ Attributes are stored in 512-byte aligned data-buffers arranged as arrays of sca
 * float32
 * float64
 
+### Arity
+
 The number of primitives per data element is called the "arity" and can be any integer value greater than zero. 
 
 ## Encoding Strings
 
 While there is no explicit string type, one could encode string data by using a data-type uint8 with an arity of a fixed value (say 255) to store short strings. 
-
-## Attribute Descriptor String
-
-Every attribute descriptor has a one to one mapping to a string representation similar to a URN: 
-    
-    `g3d:<association>:<semantic>:<data_type>:<data_arity>`
-
-This attribute descriptor string is the name of the buffer. 
 
 # Recommended reading:
 
