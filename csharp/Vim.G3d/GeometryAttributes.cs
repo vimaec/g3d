@@ -22,7 +22,6 @@ namespace Vim.G3d
         public int NumVertices { get; } = -1;
         public int NumFaces { get; } = -1;
         public int NumCorners { get; } = -1;
-        public int NumGroups { get; } = -1;
         public int NumSubgeometries { get; } = -1;
         public int NumInstances { get; } = -1;
 
@@ -41,11 +40,13 @@ namespace Vim.G3d
             return attr.ElementCount;
         }
 
-        public GeometryAttributes(IEnumerable<GeometryAttribute> attributes)
+        public GeometryAttributes(IEnumerable<GeometryAttribute> attributes, int numCornersPerFaceOverride = -1)
         {
             foreach (var attr in attributes)
+            {
                 if (attr != null && !Lookup.ContainsKey(attr.Name))
                     Lookup.Add(attr.Name, attr);
+            }
 
             foreach (var attr in Lookup.Values)
             {
@@ -65,13 +66,10 @@ namespace Vim.G3d
                     case Association.assoc_face:
                         NumFaces = ValidateAttribute(attr, NumFaces);
                         break;
-                    case Association.assoc_group:
-                        NumGroups = ValidateAttribute(attr, NumGroups);
-                        break;
                     case Association.assoc_instance:
                         NumInstances = ValidateAttribute(attr, NumInstances);
                         break;
-                    case Association.assoc_subgeo:
+                    case Association.assoc_subgeometry:
                         NumSubgeometries = ValidateAttribute(attr, NumSubgeometries);
                         break;
                 }
@@ -129,18 +127,18 @@ namespace Vim.G3d
                 }
             }
 
+            if (numCornersPerFaceOverride >= 0)
+            {
+                NumCornersPerFace = numCornersPerFaceOverride;
+            }
+
             if (NumCorners < 0) NumCorners = NumVertices;
-            if (NumGroups < 0) NumGroups = 0;
             if (NumInstances < 0) NumInstances = 0;
             if (NumSubgeometries < 0) NumSubgeometries = 0;
             if (NumFaces < 0) NumFaces = NumCorners / NumCornersPerFace;
-
-            // Check that 
-            if (NumCorners % NumCornersPerFace != 0)
-                throw new Exception($"The number of corners {NumCorners} has to be divisible by the number of corners per face {NumCornersPerFace}");
-
-            if (NumFaces * NumCornersPerFace != NumCorners)
-                throw new Exception($"The number of faces {NumFaces} time the number of corners per face {NumCornersPerFace} has to be equal to the number of corners {NumCorners}");
         }
+
+        public static GeometryAttributes Empty
+            => new GeometryAttributes(new GeometryAttribute[] { });
     }
 }

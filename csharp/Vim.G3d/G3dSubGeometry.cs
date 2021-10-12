@@ -24,22 +24,18 @@ namespace Vim.G3d
         public G3dSubGeometry(G3D parent, int index)
         {
             (G3D, Index) = (parent, index);
-
             Vertices = G3D.Vertices?.SubArray(VertexOffset, NumVertices);
-            Indices = G3D.Indices?.SubArray(IndexOffset, NumCorners);
-
+            var offset = VertexOffset;
+            Indices = G3D.Indices?.SubArray(IndexOffset, NumCorners).Select(i => i - offset);
             VertexUvs = G3D.VertexUvs?.SubArray(VertexOffset, NumVertices);
             VertexNormals = G3D.VertexNormals?.SubArray(VertexOffset, NumVertices);
             VertexColors = G3D.VertexColors?.SubArray(VertexOffset, NumVertices);
             VertexTangents = G3D.VertexTangents?.SubArray(VertexOffset, NumVertices);
-
             FaceGroups = G3D.FaceGroups?.SubArray(FaceOffset, NumFaces);
             FaceNormals = G3D.FaceNormals?.SubArray(FaceOffset, NumFaces);
-            FaceColors = G3D.FaceColors?.SubArray(FaceOffset, NumFaces);
             FaceMaterialIds = G3D.FaceMaterialIds?.SubArray(FaceOffset, NumFaces);
-            FaceObjectIds = G3D.FaceObjectIds?.SubArray(FaceOffset, NumFaces);
         }
-    
+
         // Vertex buffer. Usually present.
         public IArray<Vector3> Vertices { get; }
 
@@ -53,10 +49,10 @@ namespace Vim.G3d
         public IArray<Vector4> VertexTangents { get; }
 
         // Face associated data.
-        public IArray<int> FaceGroups { get; } 
-        public IArray<Vector3> FaceNormals { get; } 
-        public IArray<Vector4> FaceColors { get; } 
-        public IArray<int> FaceMaterialIds { get; } 
-        public IArray<int> FaceObjectIds { get; } 
+        public IArray<int> FaceGroups { get; }
+        public IArray<Vector3> FaceNormals { get; }
+        public IArray<Vector4> FaceColors { get; }
+        public IArray<int> FaceMaterialIds { get; }
+        public IArray<int> FaceObjectIds { get; }
     }
 }

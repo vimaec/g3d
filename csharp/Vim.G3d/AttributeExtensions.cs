@@ -45,18 +45,18 @@ namespace Vim.G3d
                 if (desc.DataArity == 2)
                     return attr.AsType<Vector2>().Data.Select(vc => new Vector4(vc.X, vc.Y, 0, 1f));
                 if (desc.DataArity == 1)
-                    return attr.AsType<float>().Data.Select(vc => new Vector4(vc,vc,vc, 1f));
+                    return attr.AsType<float>().Data.Select(vc => new Vector4(vc, vc, vc, 1f));
             }
             if (desc.DataType == DataType.dt_int8)
             {
                 if (desc.DataArity == 4)
-                    return attr.AsType<Byte4>().Data.Select(b => new Vector4((float)b.X / 255f, (float)b.Y / 255f, (float)b.Z / 255f, (float)b.W / 255f));
+                    return attr.AsType<Byte4>().Data.Select(b => new Vector4(b.X / 255f, b.Y / 255f, b.Z / 255f, b.W / 255f));
                 if (desc.DataArity == 3)
-                    return attr.AsType<Byte3>().Data.Select(b => new Vector4((float)b.X / 255f, (float)b.Y / 255f, (float)b.Z / 255f, 1f));
+                    return attr.AsType<Byte3>().Data.Select(b => new Vector4(b.X / 255f, b.Y / 255f, b.Z / 255f, 1f));
                 if (desc.DataArity == 2)
-                    return attr.AsType<Byte2>().Data.Select(b => new Vector4((float)b.X / 255f, (float)b.Y / 255f, 0f, 1f));
+                    return attr.AsType<Byte2>().Data.Select(b => new Vector4(b.X / 255f, b.Y / 255f, 0f, 1f));
                 if (desc.DataArity == 1)
-                    return attr.AsType<byte>().Data.Select(b => new Vector4((float)b / 255f, (float)b / 255f, (float)b / 255f, 1f));
+                    return attr.AsType<byte>().Data.Select(b => new Vector4(b / 255f, b / 255f, b / 255f, 1f));
             }
             Debug.WriteLine($"Failed to recongize color format {attr.Descriptor}");
             return null;

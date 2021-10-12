@@ -11,6 +11,7 @@
 #include <sstream>
 #include <unordered_map>
 #include <tuple>
+#include <stdexcept>
 
 #include "g3d.h"
 
@@ -114,9 +115,21 @@ namespace Vim
         return tokens;
     }
 
+    enum class VimErrorCodes
+    {
+        Success = 0,
+        Failed = -1,
+        NoVersionInfo = -2,
+        FileNotRecognized = -3,
+        GeometryLoadingException = -4,
+        AssetLoadingException = -5,
+        EntityLoadingException = -6
+    };
+
     class Scene
     {
     public:
+        static const uint32_t mVimHeaderFourCC = '1MIV'; // VIM1 encoded as uint32
         bfast::Bfast mBfast;
         bfast::Bfast mGeometryBFast;
         bfast::Bfast mAssetsBFast;
@@ -127,21 +140,103 @@ namespace Vim
         std::unordered_map<std::string, EntityTable> mEntityTables;
         std::unordered_map<std::string, std::string> mHeader;
 
-        void ReadFile(std::string fileName)
+        uint32_t mVersionMajor = 0xffffffff;
+        uint32_t mVersionMinor = 0xffffffff;
+        uint32_t mVersionPatch = 0xffffffff;
+
+        VimErrorCodes ReadFile(std::string fileName)
         {
-            mBfast = bfast::Bfast::read_file(fileName);
+            try
+            {
+                mBfast = bfast::Bfast::read_file(fileName);
+            }
+            catch (std::exception& e)
+            {
+                e;
+                return VimErrorCodes::FileNotRecognized;
+            }
+
             for (auto i = 0; i < mBfast.buffers.size(); ++i)
             {
                 auto& b = mBfast.buffers[i];
                 if (b.name == "header")
                 {
-                    std::string header = (const char*)b.data.begin();
-                    std::vector<std::string> tokens = split(header, ":");
+                    std::vector<std::string> versionParts;
+                    uint32_t fourCC = *(uint32_t*)b.data.begin();
 
-                    for (size_t i = 0; i < tokens.size(); i += 2)
+                    // New header version uses FourCC
+                    if (fourCC == mVimHeaderFourCC)
                     {
-                        mHeader[tokens[i]] = tokens[i + 1];
+                        std::string header = (const char*)(b.data.begin() + 4);
+                        std::vector<std::string> tokens = split(header, "\n");
+
+                        for (size_t i = 0; i < tokens.size(); i += 2)
+                        {
+                            std::vector<std::string> keyValue = split(tokens[i], "=");
+
+                            if (keyValue.size() == 2)
+                            {
+                                mHeader[keyValue[0]] = keyValue[1];
+                            }
+                        }
+
+                        if (mHeader.end() != mHeader.find("vim"))
+                        {
+                            versionParts = split(mHeader["vim"], ".");
+                        }
+                        else
+                        {
+                            // No vim version found
+                            return VimErrorCodes::NoVersionInfo;
+                        }
                     }
+                    else
+                    {
+                        // Old header versions don't use a fourCC
+                        // Old header version is 0.vim[0].obj[0]obj[1]obj[2]
+                        versionParts.push_back("0");
+
+                        std::string header = (const char*)b.data.begin();
+                        std::vector<std::string> tokens = split(header, ":");
+
+                        for (size_t i = 0; i < tokens.size(); i += 2)
+                        {
+                            mHeader[tokens[i]] = tokens[i + 1];
+                        }
+
+                        if (mHeader.end() != mHeader.find("vim"))
+                        {
+                            std::vector<std::string> versionTokens = split(mHeader["vim"], ".");
+                            versionParts.push_back(versionTokens.size() > 0 ? versionTokens[0] : "0");
+                        }
+                        else
+                        {
+                            return VimErrorCodes::NoVersionInfo;
+                        }
+
+                        if (mHeader.end() != mHeader.find("objectmodel"))
+                        {
+                            std::vector<std::string> parts = split(mHeader["objectmodel"], ".");
+                            while (parts.size() < 3) parts.push_back("0");
+
+                            uint32_t objectVersion = 0;
+                            for (auto& part : parts)
+                            {
+                                objectVersion = objectVersion * 10 + std::stoi(part);
+                            }
+
+                            assert(versionParts.size() == 2);
+                            versionParts.push_back(std::to_string(objectVersion));
+                        }
+                        else
+                        {
+                            return VimErrorCodes::NoVersionInfo;
+                        }
+                    }
+
+                    if (versionParts.size() > 0) mVersionMajor = std::stoi(versionParts[0]);
+                    if (versionParts.size() > 1) mVersionMinor = std::stoi(versionParts[1]);
+                    if (versionParts.size() > 2) mVersionPatch = std::stoi(versionParts[2]);
                 }
                 else if (b.name == "nodes")
                 {
@@ -149,12 +244,28 @@ namespace Vim
                 }
                 else if (b.name == "geometry")
                 {
-                    mGeometryBFast = bfast::Bfast::unpack(b.data);
-                    mGeometry = std::move(g3d::G3d(mGeometryBFast));
+                    try
+                    {
+                        mGeometryBFast = bfast::Bfast::unpack(b.data);
+                        mGeometry = std::move(g3d::G3d(mGeometryBFast));
+                    }
+                    catch (std::exception& e)
+                    {
+                        e;
+                        return Vim::VimErrorCodes::GeometryLoadingException;
+                    }
                 }
                 else if (b.name == "assets")
                 {
-                    mAssetsBFast = bfast::Bfast::unpack(b.data);
+                    try
+                    {
+                        mAssetsBFast = bfast::Bfast::unpack(b.data);
+                    }
+                    catch (std::exception& e)
+                    {
+                        e;
+                        return Vim::VimErrorCodes::AssetLoadingException;
+                    }
                 }
                 else if (b.name == "strings")
                 {
@@ -177,46 +288,55 @@ namespace Vim
                 }
                 else if (b.name == "entities")
                 {
-                    mEntitiesBFast = bfast::Bfast::unpack(b.data);
-                    for (auto j = 0; j < mEntitiesBFast.buffers.size(); ++j)
+                    try
                     {
-                        auto& entityBuffer = mEntitiesBFast.buffers[j];
-                        EntityTable entityTable = { entityBuffer.name };
-                        bfast::Bfast tableBFast = bfast::Bfast::unpack(entityBuffer.data);
-
-                        for (auto k = 0; k < tableBFast.buffers.size(); ++k)
+                        mEntitiesBFast = bfast::Bfast::unpack(b.data);
+                        for (auto j = 0; j < mEntitiesBFast.buffers.size(); ++j)
                         {
-                            auto& tableBuffer = tableBFast.buffers[k];
-                        
-                            if (tableBuffer.name == "properties")
-                            {
-                                entityTable.mProperties = std::vector<SerializableProperty>((SerializableProperty*)tableBuffer.data.begin(), (SerializableProperty*)tableBuffer.data.end());
-                            }
-                            else 
-                            {
-                                size_t index = tableBuffer.name.find_first_of(':');
-                                std::string type = tableBuffer.name.substr(0, index);
-                                std::string name = tableBuffer.name.substr(index + 1);
+                            auto& entityBuffer = mEntitiesBFast.buffers[j];
+                            EntityTable entityTable = { entityBuffer.name };
+                            bfast::Bfast tableBFast = bfast::Bfast::unpack(entityBuffer.data);
 
-                                if (type == "numeric")
+                            for (auto k = 0; k < tableBFast.buffers.size(); ++k)
+                            {
+                                auto& tableBuffer = tableBFast.buffers[k];
+
+                                if (tableBuffer.name == "properties")
                                 {
-                                    entityTable.mNumericColumns[name] = std::vector<double>((double*)tableBuffer.data.begin(), (double*)tableBuffer.data.end());
+                                    entityTable.mProperties = std::vector<SerializableProperty>((SerializableProperty*)tableBuffer.data.begin(), (SerializableProperty*)tableBuffer.data.end());
                                 }
-                                else if (type == "index")
+                                else
                                 {
-                                    entityTable.mIndexColumns[name] = std::vector<int>((int*)tableBuffer.data.begin(), (int*)tableBuffer.data.end());
-                                }
-                                else if (type == "string")
-                                {
-                                    entityTable.mStringColumns[name] = std::vector<int>((int*)tableBuffer.data.begin(), (int*)tableBuffer.data.end());
+                                    size_t index = tableBuffer.name.find_first_of(':');
+                                    std::string type = tableBuffer.name.substr(0, index);
+                                    std::string name = tableBuffer.name.substr(index + 1);
+
+                                    if (type == "numeric")
+                                    {
+                                        entityTable.mNumericColumns[name] = std::vector<double>((double*)tableBuffer.data.begin(), (double*)tableBuffer.data.end());
+                                    }
+                                    else if (type == "index")
+                                    {
+                                        entityTable.mIndexColumns[name] = std::vector<int>((int*)tableBuffer.data.begin(), (int*)tableBuffer.data.end());
+                                    }
+                                    else if (type == "string")
+                                    {
+                                        entityTable.mStringColumns[name] = std::vector<int>((int*)tableBuffer.data.begin(), (int*)tableBuffer.data.end());
+                                    }
                                 }
                             }
+
+                            mEntityTables[entityTable.mName] = entityTable;
                         }
-
-                        mEntityTables[entityTable.mName] = entityTable;
+                    }
+                    catch (std::exception& e)
+                    {
+                        e;
+                        return Vim::VimErrorCodes::EntityLoadingException;
                     }
                 }
             }
+            return VimErrorCodes::Success;
         }
     };
 

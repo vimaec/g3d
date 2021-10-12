@@ -19,7 +19,7 @@ namespace Vim.G3d
                 yield return ($"v {v.X} {v.Y} {v.Z}");
             if (uvs != null)
             {
-                for (var v = 0; v < uvs.Count; v += 2)
+                for (var v = 0; v < uvs.Count; v++)
                     yield return ($"vt {uvs[v].X} {uvs[v].Y}");
             }
 

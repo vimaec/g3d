@@ -5,14 +5,14 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <Description>G3D is a simple, efficient, generic binary format for storing and transmitting geometry. The G3D format is designed to be used either as a serialization format or as an in-memory data structure. G3D can represent triangular meshes, quadrilateral meshes, polygonal meshes, point clouds, and line segments.
 It can be easily and efficiently deserialized and rendered in different languages and on different platforms.</Description>
-    <Copyright>Copyright 2019, VIMaec LLC. licensed under the MIT License</Copyright>
     <PackageLicenseFile>LICENSE.txt</PackageLicenseFile>
     <PackageProjectUrl>https://github.com/vimaec/g3d</PackageProjectUrl>
     <RepositoryUrl>https://github.com/vimaec/g3d</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <Authors>VIM AEC</Authors>
-    <Company>VIMaec LLC.</Company>
-    <Version>1.0.1</Version>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <Optimize>true</Optimize>
   </PropertyGroup>
 
   <ItemGroup>
@@ -23,9 +23,12 @@ It can be easily and efficiently deserialized and rendered in different language
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\..\..\BFast\csharp\Vim.BFast\Vim.BFast.csproj" />
+    <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)"/>
+    <PackageReference Include="Vim.BFast" Version="1.2.0"/>
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\..\..\LinqArray\LinqArray\Vim.LinqArray.csproj" />
-    <ProjectReference Include="..\..\..\Math3d\src\Vim.Math3d.csproj" />
   </ItemGroup>
 
   <ItemGroup>

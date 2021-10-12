@@ -16,6 +16,7 @@
 #include <fstream>
 #include <algorithm>
 #include <iterator>
+#include <stdexcept>
 
 namespace bfast
 {
@@ -146,6 +147,7 @@ namespace bfast
         template<typename OutIter_T>
         void copy_to(OutIter_T out)
         {
+            OutIter_T start = out;
             // Initialize and get the data offsets 
             auto offsets = compute_offsets();
             assert(offsets.size() == ranges.size());
@@ -162,9 +164,9 @@ namespace bfast
             // Copy the header 
             out = copy_to(h, out, current);
             assert(current == 32);
-
             // Early escape if there are no offsets 
             if (n == 0)
+
                 return;
 
             // Copy the array offsets and add padding 
@@ -177,7 +179,7 @@ namespace bfast
 
             // Copy the arrays 
             for (auto i = 0; i < ranges.size(); ++i) {
-                output_padding(out, current);
+                out = output_padding(out, current);
                 const auto& range = ranges[i];
                 const auto& offset = offsets[i];
                 assert(range.size() == (offset._end - offset._begin));
@@ -200,9 +202,9 @@ namespace bfast
         {
             const auto& h = *(Header*)data.begin();
             if (h.magic != MAGIC)
-                throw runtime_error("invalid magic number, either not a BFast, or was created on a machine with different endianess");
+                throw std::runtime_error("invalid magic number, either not a BFast, or was created on a machine with different endianess");
             if (h.data_end < h.data_start)
-                throw runtime_error("data ends before it starts");
+                throw std::runtime_error("data ends before it starts");
 
             const auto* array_offsets = (ArrayOffset*)(data.begin() + array_offsets_start);
 
@@ -212,11 +214,11 @@ namespace bfast
             {
                 const auto& offset = array_offsets[i];
                 if (offset._begin > offset._end)
-                    throw runtime_error("Offset begin is after the offset end");
+                    throw std::runtime_error("Offset begin is after the offset end");
                 if (offset._end > data.size())
-                    throw runtime_error("Offset end is after the end of the data");
+                    throw std::runtime_error("Offset end is after the end of the data");
                 if (i > 0 && offset._begin < array_offsets[i - 1]._end)
-                    throw runtime_error("Offset begin is before the end of the previous offset");
+                    throw std::runtime_error("Offset begin is before the end of the previous offset");
                 auto begin = data.begin() + offset._begin;
                 auto end = data.begin() + offset._end;
                 r.ranges[i] = ByteRange{ begin, end };
@@ -318,7 +320,7 @@ namespace bfast
             auto raw_data = RawData::unpack(data);
             auto names = split_names(raw_data.ranges[0]);
             if (names.size() != raw_data.ranges.size() - 1)
-                throw runtime_error("The number of names does not match the raw data size");
+                throw std::runtime_error("The number of names does not match the raw data size");
             Bfast r;
             r.data = data;
             r.buffers.resize(names.size());
@@ -337,7 +339,7 @@ namespace bfast
             auto raw_data = RawData::unpack(r.data);
             auto names = split_names(raw_data.ranges[0]);
             if (names.size() != raw_data.ranges.size() - 1)
-                throw runtime_error("The number of names does not match the raw data size");
+                throw std::runtime_error("The number of names does not match the raw data size");
             r.buffers.resize(names.size());
             for (size_t i = 0; i < names.size(); ++i)
             {
@@ -350,7 +352,7 @@ namespace bfast
             auto data = pack();
             FILE* f = nullptr;
             if (fopen_s(&f, file.c_str(), "wb") != 0)
-                throw runtime_error("Failed to open file");
+                throw std::runtime_error("Failed to open file");
             if (f == nullptr)
                 return;
             fwrite(&data[0], 1, data.size(), f);
@@ -364,7 +366,7 @@ namespace bfast
             fstrm.seekg(0, ios_base::beg);
 
             if (!fstrm.is_open())
-                throw runtime_error("Couldn't read file");
+                throw std::runtime_error("Couldn't read file");
 
             vector<byte> buffer;
             buffer.resize(filesize);

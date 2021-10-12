@@ -27,7 +27,7 @@ namespace Vim.G3d
             => Add(indices.ToIndexAttribute());
 
         public G3DBuilder SetObjectFaceSize(int objectFaceSize)
-            => Add(new[] {objectFaceSize}.ToIArray().ToObjectFaceSizeAttribute());
+            => Add(new[] { objectFaceSize }.ToIArray().ToObjectFaceSizeAttribute());
 
         public G3DBuilder AddVertices(IArray<Vector3> vertices)
             => Add(vertices.ToPositionAttribute());

@@ -1,14 +1,14 @@
-﻿using NUnit.Framework;
+﻿using Assimp;
+using NUnit.Framework;
 using System;
+using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using Vim.DotNetUtilities;
-using Vim.LinqArray;
-using System.Collections.Generic;
 using System.Reflection;
-using Assimp;
-using Vim.Math3d;
+using Vim.DotNetUtilities;
 using Vim.G3d.AssimpWrapper;
+using Vim.LinqArray;
+using Vim.Math3d;
 
 namespace Vim.G3d.Tests
 {
@@ -36,7 +36,7 @@ namespace Vim.G3d.Tests
         }
 
         public static string ProjectFolder = Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "..", "..");
-        public static string RootFolder = Path.Combine(ProjectFolder, "..", "..");
+        public static string RootFolder = Path.Combine(ProjectFolder, "..", "..", "..");
         public static string TestInputFolder = Path.Combine(RootFolder, "test-data", "models");
         public static string TestOutputFolder = Path.Combine(RootFolder, "test-data", "output");
 
@@ -54,7 +54,6 @@ namespace Vim.G3d.Tests
             ValidateSame(g1.NumCornersPerFace, g2.NumCornersPerFace, "NumCornersPerFace");
             ValidateSame(g1.NumFaces, g2.NumFaces, "NumFaces");
             ValidateSame(g1.NumCorners, g2.NumCorners, "NumCorners");
-            ValidateSame(g1.NumGroups, g2.NumGroups, "NumGroups");
             ValidateSame(g1.NumVertices, g2.NumVertices, "NumVertices");
             ValidateSame(g1.NumInstances, g2.NumInstances, "NumInstances");
             ValidateSame(g1.NumSubgeometries, g2.NumSubgeometries, "NumSubgeometries");
@@ -75,7 +74,7 @@ namespace Vim.G3d.Tests
             foreach (var f in Directory.GetFiles(TestOutputFolder))
             {
                 var g3d = G3D.Read(f);
-                TestUtils.OutputG3DStats(g3d);
+                G3dTestUtils.OutputStats(g3d);
             }
         }
 
@@ -179,7 +178,7 @@ namespace Vim.G3d.Tests
             foreach (var f in files)
             {
                 Console.WriteLine(
-                    "Assimp,"+
+                    "Assimp," +
                     $"{Path.GetExtension(f.ShortName)}," +
                     $"{f.ShortName}," +
                     $"{f.SourceFile?.Length / 1000}," +
@@ -353,7 +352,6 @@ namespace Vim.G3d.Tests
                 Assert.AreEqual(g1.NumCornersPerFace, g2.NumCornersPerFace);
                 Assert.AreEqual(g1.NumFaces, g2.NumFaces);
                 Assert.AreEqual(g1.NumCorners, g2.NumCorners);
-                Assert.AreEqual(g1.NumGroups, g2.NumGroups);
                 Assert.AreEqual(g1.NumVertices, g2.NumVertices);
                 Assert.AreEqual(g1.NumInstances, g2.NumInstances);
                 Assert.AreEqual(g1.NumSubgeometries, g2.NumSubgeometries);

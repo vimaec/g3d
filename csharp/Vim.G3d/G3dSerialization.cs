@@ -41,7 +41,7 @@ namespace Vim.G3d
 
         public static G3D ReadG3d(this Stream stream)
         {
-            G3dHeader header = G3dHeader.Default;
+            var header = G3dHeader.Default;
 
             GeometryAttribute ReadAttribute(Stream s2, string name, long size)
             {

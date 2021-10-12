@@ -23,7 +23,7 @@ namespace Vim.G3d
         public byte padding; // 0
 
         public string Unit => Encoding.ASCII.GetString(new byte[] { unitA, unitB });
- 
+
         public byte[] ToBytes()
             => new[] { magicA, magicB, unitA, unitB, upAxis, forwardVector, handedness, padding };
 
@@ -53,13 +53,13 @@ namespace Vim.G3d
                 padding = 0
             };
 
-        public static readonly string[] SupportedUnits = { "mm", "cm", "m\0", "km", "in", "ft", "yd", "mi"};
+        public static readonly string[] SupportedUnits = { "mm", "cm", "m\0", "km", "in", "ft", "yd", "mi" };
 
         public G3dHeader Validate()
         {
             if (magicA != 0x63) throw new Exception($"First magic number must be 0x63 not {magicA}");
             if (magicB != 0xD0) throw new Exception($"Second magic number must be 0xD0 not {magicB}");
-            if (Array.IndexOf(SupportedUnits, Unit) < 0) throw new Exception($"Unit {Unit} is not a supported unit: {string.Join(", ",SupportedUnits)}");
+            if (Array.IndexOf(SupportedUnits, Unit) < 0) throw new Exception($"Unit {Unit} is not a supported unit: {string.Join(", ", SupportedUnits)}");
             if (upAxis < 0 || upAxis > 2) throw new Exception("Up axis must be 0(x), 1(y), or 2(z)");
             if (forwardVector < 0 || forwardVector > 5) throw new Exception("Front vector must be 0 (x), 1(y), 2(z), 3(-x), 4(-y), or 5(-z)");
             if (handedness < 0 || handedness > 1) throw new Exception("Handedness must be 0 (left) or 1 (right");

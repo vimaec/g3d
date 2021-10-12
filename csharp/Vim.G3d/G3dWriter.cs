@@ -13,8 +13,8 @@ namespace Vim.G3d
         public class G3dWriter : IBFastComponent
         {
             public INamedBuffer Meta { get; }
-            public string[]  Names { get; }
-            public long[] Sizes { get;  }
+            public string[] Names { get; }
+            public long[] Sizes { get; }
             BFastHeader Header { get; }
             IGeometryAttributes Attributes { get; }
 
@@ -39,6 +39,7 @@ namespace Vim.G3d
                         _stream.Write(Meta);
                     else
                         WriteAttribute(_stream, Attributes.Attributes[index - 1], name, size);
+                    return size;
                 });
             }
         }
