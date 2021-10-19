@@ -6,14 +6,14 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\BFast\csharp\Vim.BFast\Vim.BFast.csproj" />
-        <ProjectReference Include="..\..\..\LinqArray\LinqArray\Vim.LinqArray.csproj" />
         <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
     </ItemGroup>
 
     <ItemGroup>
         <PackageReference Include="AssimpNet" Version="4.1.0" />
-        <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)"/>
+        <PackageReference Include="Vim.Math3D" Version="1.3.0"/>
+        <PackageReference Include="Vim.BFast" Version="1.2.0"/>
+        <PackageReference Include="Vim.LinqArray" Version="1.1.0"/>
     </ItemGroup>
 
 </Project>

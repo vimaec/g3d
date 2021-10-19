@@ -9,14 +9,12 @@
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
-        <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)"/>
+        <PackageReference Include="Vim.Math3D" Version="1.3.0"/>
+        <PackageReference Include="Vim.BFast" Version="1.2.0"/>
+        <PackageReference Include="Vim.LinqArray" Version="1.1.0"/>
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\..\..\BFast\csharp\Vim.BFast\Vim.BFast.csproj" />
-        <ProjectReference Include="..\..\..\DotNetUtilities\Vim.DotNetUtilities.csproj" />
-        <ProjectReference Include="..\..\..\LinqArray\LinqArray\Vim.LinqArray.csproj" />
-        <ProjectReference Include="..\..\cpp\Vim.G3d.CppCLR\Vim.G3d.CppCLR.vcxproj" />
         <ProjectReference Include="..\Vim.G3d.AssimpWrapper\Vim.G3d.AssimpWrapper.csproj" />
         <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
     </ItemGroup>
