@@ -5,7 +5,6 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Vim.DotNetUtilities;
 using Vim.G3d.AssimpWrapper;
 using Vim.LinqArray;
 using Vim.Math3d;
@@ -35,7 +34,7 @@ namespace Vim.G3d.Tests
             public G3D G3d;
         }
 
-        public static string ProjectFolder = Path.Combine(Assembly.GetExecutingAssembly().Location, "..", "..", "..");
+        public static string ProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..", "..");
         public static string RootFolder = Path.Combine(ProjectFolder, "..", "..", "..");
         public static string TestInputFolder = Path.Combine(RootFolder, "test-data", "models");
         public static string TestOutputFolder = Path.Combine(RootFolder, "test-data", "output");
@@ -331,7 +330,7 @@ namespace Vim.G3d.Tests
         [Test]
         public static void TestWriters()
         {
-            var fileName = Path.Combine(TestInputFolder, "PLY", "wuson.ply");
+            var fileName = Path.Combine(TestInputFolder, "PLY", "Wuson.ply");
 
             var outputFileName = @"test";
             outputFileName = Path.Combine(TestOutputFolder, outputFileName);
