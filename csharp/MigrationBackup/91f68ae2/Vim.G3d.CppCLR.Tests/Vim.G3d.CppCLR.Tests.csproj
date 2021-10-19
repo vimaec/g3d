@@ -56,6 +56,10 @@
       <Project>{02f067cf-ae2a-4184-8378-77e59cc88fee}</Project>
       <Name>Vim.G3d.CppCLR</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Vim.G3d.TestUtils\Vim.G3d.TestUtils.csproj">
+      <Project>{dc901770-4ad6-4fbb-8d5f-06697cdd7f0a}</Project>
+      <Name>Vim.G3d.TestUtils</Name>
+    </ProjectReference>
   </ItemGroup>
   <ItemGroup>
     <None Include="packages.config" />
