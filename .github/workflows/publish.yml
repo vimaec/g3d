@@ -1,0 +1,25 @@
+name: Publish to NuGet
+
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Checkout shared scripts
+      uses: actions/checkout@v2
+      with:
+        repository: vimaec/ci-cd-scripts
+        ref: refs/heads/main
+        path: .github/
+    - uses: ./.github/actions/publish-nuget
+      with:
+        project_path: csharp/Vim.G3d/Vim.G3d.csproj
+        package_name: Vim.G3d
+        api_key: ${{secrets.NUGET_KEY}}
+        root_path: ".github"

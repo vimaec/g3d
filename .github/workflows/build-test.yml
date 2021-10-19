@@ -1,0 +1,27 @@
+name: Build and Test
+
+on:
+  push:
+    branches: [ master ]
+  pull_request:
+    branches: [ master ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+    - name: Checkout shared scripts
+      uses: actions/checkout@v2
+      with:
+        repository: vimaec/ci-cd-scripts
+        ref: refs/heads/main
+        path: .github/
+    - uses: ./.github/actions/build-and-test
+      with:
+        project_path: csharp/Vim.G3d/Vim.G3d.csproj
+        package_name: Vim.G3d
+        root_path: ".github"
