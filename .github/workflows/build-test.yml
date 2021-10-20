@@ -23,5 +23,6 @@ jobs:
     - uses: ./.github/actions/build-and-test
       with:
         project_path: csharp/Vim.G3d/Vim.G3d.csproj
+        test_project_path: csharp/Vim.G3d.Tests/Vim.G3d.Tests.csproj
         package_name: Vim.G3d
         root_path: ".github"
