@@ -15,8 +15,26 @@
     </ItemGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Vim.G3d.AssimpWrapper\Vim.G3d.AssimpWrapper.csproj" />
-        <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
+        <ProjectReference Include="../Vim.G3d.AssimpWrapper/Vim.G3d.AssimpWrapper.csproj" />
+        <ProjectReference Include="../Vim.G3d/Vim.G3d.csproj" />
     </ItemGroup>
 
+    <ItemGroup>
+      <Compile Update="Properties/Resources.Designer.cs">
+        <DesignTime>True</DesignTime>
+        <AutoGen>True</AutoGen>
+        <DependentUpon>Resources.resx</DependentUpon>
+      </Compile>
+    </ItemGroup>
+
+    <ItemGroup>
+      <EmbeddedResource Update="Properties/Resources.resx">
+        <Generator>ResXFileCodeGenerator</Generator>
+        <LastGenOutput>Resources.Designer.cs</LastGenOutput>
+      </EmbeddedResource>
+    </ItemGroup>
+
+    <Target Name="PreBuild" BeforeTargets="PreBuildEvent">
+        <Exec Command="echo $(ProjectDir) &gt; &quot;$(ProjectDir)/Resources/ProjDir.txt&quot;" />
+    </Target>
 </Project>

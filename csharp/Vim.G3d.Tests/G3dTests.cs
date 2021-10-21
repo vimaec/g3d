@@ -34,8 +34,8 @@ namespace Vim.G3d.Tests
             public G3D G3d;
         }
 
-        public static string ProjectFolder = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "..", "..");
-        public static string RootFolder = Path.Combine(ProjectFolder, "..", "..", "..");
+        public static readonly string ProjectFolder = new DirectoryInfo(Properties.Resources.ProjDir.Trim()).FullName;
+        public static string RootFolder = Path.Combine(ProjectFolder, "..", "..");
         public static string TestInputFolder = Path.Combine(RootFolder, "test-data", "models");
         public static string TestOutputFolder = Path.Combine(RootFolder, "test-data", "output");
 
