@@ -10,7 +10,7 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="AssimpNet" Version="4.1.0" />
+        <PackageReference Include="AssimpNet" Version="5.0.0-beta1" />
         <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)"/>
         <PackageReference Include="Vim.BFast" Version="$(BFastVersion)"/>
         <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)"/>
