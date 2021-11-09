@@ -23,7 +23,6 @@ namespace Vim.G3d
         public IArray<Matrix4x4> Transforms => Nodes.Select(n => n.Transform);
     }
 
-    /// </summary>
     [Serializable, StructLayout(LayoutKind.Sequential, Pack = 1)]
     public struct SerializableSceneNode
     {

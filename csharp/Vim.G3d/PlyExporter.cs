@@ -42,10 +42,10 @@ namespace Vim.G3d
                 for (var i = 0; i < vertices.Count; i++)
                 {
                     var v = vertices[i];
-                    var c = (colors[i] * 255f).Clamp(Vector4.Zero, new Vector4(255,255,255,255));
+                    var c = (colors[i] * 255f).Clamp(Vector4.Zero, new Vector4(255, 255, 255, 255));
 
                     yield return
-                        $"{v.X} {v.Y} {v.Z} {(byte) c.X} {(byte) c.Y} {(byte) c.Z}";
+                        $"{v.X} {v.Y} {v.Z} {(byte)c.X} {(byte)c.Y} {(byte)c.Z}";
                 }
             }
             else

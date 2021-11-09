@@ -31,7 +31,7 @@ namespace Vim.G3d
             DataElementSize = DataTypeSize * DataArity;
             Name = $"g3d:{AssociationString}:{Semantic}:{Index}:{DataTypeString}:{DataArity}";
         }
-            
+
         /// <summary>
         /// Generates a URN representation of the attribute descriptor
         /// </summary>
@@ -86,14 +86,40 @@ namespace Vim.G3d
             => Association.ToString().Substring("assoc_".Length);
 
         public static Association ParseAssociation(string s)
-            => (Association)Enum.Parse(typeof(Association), "assoc_" + s);
+        {
+            switch (s)
+            {
+                case "all":
+                    return Association.assoc_all;
+                case "corner":
+                    return Association.assoc_corner;
+                case "edge":
+                    return Association.assoc_edge;
+                case "face":
+                    return Association.assoc_face;
+                case "instance":
+                    return Association.assoc_instance;
+                case "subgeometry":
+                    return Association.assoc_subgeometry;
+                case "vertex":
+                    return Association.assoc_vertex;
+
+                // Legacy G3D format called "subgeo" groups
+                case "group":
+                    return Association.assoc_subgeometry;
+
+                // Anything else we just treat as unknown 
+                default:
+                    return Association.assoc_none;
+            }
+        }
 
         public string DataTypeString
             => DataType.ToString()?.Substring("dt_".Length) ?? null;
 
         public static DataType ParseDataType(string s)
             => (DataType)Enum.Parse(typeof(DataType), "dt_" + s);
-            
+
         public AttributeDescriptor SetIndex(int index)
             => new AttributeDescriptor(Association, Semantic, DataType, DataArity, index);
     }

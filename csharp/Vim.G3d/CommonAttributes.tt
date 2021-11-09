@@ -25,11 +25,8 @@ string[] namesDescriptorAndTypes = {
     "FaceMaterialId",       "g3d:face:materialid:0:int32:1","int",
     "FaceNormal",           "g3d:face:normal:0:float32:3","Vector3",
     "FaceGroup",            "g3d:face:group:0:int32:1","int",
-    "GroupMaterialId",      "g3d:group:materialid:0:int32:1","int",
-    "GroupObjectId",        "g3d:group:objectid:0:int32:1","int",
-    "GroupColor",           "g3d:group:color:0:float32:4","Vector4",
-    "SubGeoVertexOffset",   "g3d:subgeo:vertexoffset:0:int32:1","int",
-    "SubGeoIndexOffset",    "g3d:subgeo:indexoffset:0:int32:1","int",
+    "SubGeoVertexOffset",   "g3d:subgeometry:vertexoffset:0:int32:1","int",
+    "SubGeoIndexOffset",    "g3d:subgeometry:indexoffset:0:int32:1","int",
     "InstanceTransforms",   "g3d:instance:transform:0:float32:16", "Matrix4x4",
     "InstanceGeometries",   "g3d:instance:subgeometry:0:int32:1", "int",
     "LineTangentIn",        "g3d:vertex:tangent:0:float32:3","Vector3",
@@ -42,42 +39,42 @@ using Vim.Math3d;
 
 namespace Vim.G3d
 {
-	public static class CommonAttributes
-	{
+    public static class CommonAttributes
+    {
 
 <#
-	for (var i=0; i < namesDescriptorAndTypes.Length; i += 3)
-	{
-		var name = namesDescriptorAndTypes[i];
-		var desc = namesDescriptorAndTypes[i + 1];
-		var type = namesDescriptorAndTypes[i + 2];
+    for (var i=0; i < namesDescriptorAndTypes.Length; i += 3)
+    {
+        var name = namesDescriptorAndTypes[i];
+        var desc = namesDescriptorAndTypes[i + 1];
+        var type = namesDescriptorAndTypes[i + 2];
 #>
-		public static string <#= name #> = "<#= desc #>";
+        public static string <#= name #> = "<#= desc #>";
 <#
-	}
+    }
 #>
     }
 
-	public static class CommonAttributeExtensions
-	{
+    public static class CommonAttributeExtensions
+    {
 
 <#
-	for (var i=0; i < namesDescriptorAndTypes.Length; i += 3)
-	{
-		var name = namesDescriptorAndTypes[i];
-		var desc = namesDescriptorAndTypes[i + 1];
-		var type = namesDescriptorAndTypes[i + 2];
+    for (var i=0; i < namesDescriptorAndTypes.Length; i += 3)
+    {
+        var name = namesDescriptorAndTypes[i];
+        var desc = namesDescriptorAndTypes[i + 1];
+        var type = namesDescriptorAndTypes[i + 2];
         var codeName = "CommonAttributes." + name;
 #>
-		public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this IArray<<#= type #>> xs, int index) => xs.ToAttribute(<#= codeName #>, index);
-		public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this IArray<<#= type #>> xs) => xs.ToAttribute(<#= codeName #>);
-		public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this <#= type #>[] xs, int index) => xs.ToIArray().To<#= name #>Attribute(index);
-		public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this <#= type #>[] xs) => xs.ToIArray().To<#= name #>Attribute();
-		public static GeometryAttribute<<#= type #>> GetAttribute<#= name #>(this IGeometryAttributes self) => self.GetAttribute<<#= type #>>(<#= codeName #>);
-		public static IArray<<#= type #>> GetAttributeData<#= name #>(this IGeometryAttributes self) => self.GetAttribute<#= name #>()?.Data;
+        public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this IArray<<#= type #>> xs, int index) => xs.ToAttribute(<#= codeName #>, index);
+        public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this IArray<<#= type #>> xs) => xs.ToAttribute(<#= codeName #>);
+        public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this <#= type #>[] xs, int index) => xs.ToIArray().To<#= name #>Attribute(index);
+        public static GeometryAttribute<<#= type #>> To<#= name #>Attribute(this <#= type #>[] xs) => xs.ToIArray().To<#= name #>Attribute();
+        public static GeometryAttribute<<#= type #>> GetAttribute<#= name #>(this IGeometryAttributes self) => self.GetAttribute<<#= type #>>(<#= codeName #>);
+        public static IArray<<#= type #>> GetAttributeData<#= name #>(this IGeometryAttributes self) => self.GetAttribute<#= name #>()?.Data;
 <#
-	}
+    }
 #>
 
-	}
+    }
 }

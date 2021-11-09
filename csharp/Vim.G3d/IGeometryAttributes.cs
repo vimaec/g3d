@@ -5,16 +5,15 @@ namespace Vim.G3d
     /// <summary>
     /// This is a read-only collection of G3D attributes. 
     /// </summary>
-    public interface IGeometryAttributes 
+    public interface IGeometryAttributes
     {
         int NumCornersPerFace { get; }
         int NumVertices { get; }
         int NumCorners { get; }
-        int NumFaces { get; } 
-        int NumGroups { get; }
+        int NumFaces { get; }
         int NumInstances { get; }
         int NumSubgeometries { get; }
-    
+
         IArray<GeometryAttribute> Attributes { get; }
         GeometryAttribute GetAttribute(string name);
     }

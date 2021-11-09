@@ -3,27 +3,28 @@ using NUnit.Framework;
 using System;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
+using Vim.G3d.AssimpWrapper;
+using Vim.LinqArray;
 
 namespace Vim.G3d.Tests
 {
-    public class Utils
+    public static class G3dTestUtils
     {
         public static void OutputSceneStats(Scene scene)
-        {
-            Console.WriteLine(
-$@"       #animations = {scene.AnimationCount}
+            => Console.WriteLine(
+$@"    #animations = {scene.AnimationCount}
     #cameras = {scene.CameraCount}
     #lights = {scene.LightCount}
-    #mterials = {scene.MaterialCount}
+    #materials = {scene.MaterialCount}
     #meshes = {scene.MeshCount}
+    #nodes = {scene.GetNodes().Count()}
     #textures = {scene.TextureCount}");
-        }
 
         // TODO: merge all of the meshes using the transform. 
 
         public static void OutputMeshStats(Mesh mesh)
-        {
-            Console.WriteLine(
+            => Console.WriteLine(
                 $@"
     mesh  {mesh.Name}
     #faces = {mesh.FaceCount}
@@ -34,7 +35,6 @@ $@"       #animations = {scene.AnimationCount}
     #bones = {mesh.BoneCount}
     #tangents = {mesh.Tangents?.Count}
     #bitangents = {mesh.BiTangents?.Count}");
-        }
 
         public static T TimeLoadingFile<T>(string fileName, Func<string, T> func)
         {
@@ -50,40 +50,46 @@ $@"       #animations = {scene.AnimationCount}
             }
         }
 
-        public static void OutputG3DStats(G3D g)
+        public static void OutputStats(G3D g)
         {
-            Console.WriteLine($"# corners per faces {g.CornersPerFace} ");
+            //Console.WriteLine("Header");
+
+            Console.WriteLine($"# corners per faces {g.NumCornersPerFace} ");
             Console.WriteLine($"# vertices = {g.NumVertices}");
             Console.WriteLine($"# faces = {g.NumFaces}");
-            Console.WriteLine($"# groups = {g.NumGroups}");
+            Console.WriteLine($"# subgeos = {g.NumSubgeometries}");
+            Console.WriteLine($"# indices (corners/edges0 = {g.NumCorners}");
+            Console.WriteLine($"# instances = {g.NumInstances}");
             Console.WriteLine($"Number of attributes = {g.Attributes.Count}");
-            //Console.WriteLine("Header");
-            foreach (var attr in g.Attributes)
+
+            foreach (var attr in g.Attributes.ToEnumerable())
+                Console.WriteLine($"{attr.Name} #items={attr.ElementCount}");
+        }
+
+        public static void AssertSame(G3D g1, G3D g2)
+        {
+            Assert.AreEqual(g1.NumCornersPerFace, g2.NumCornersPerFace);
+            Assert.AreEqual(g1.NumFaces, g2.NumFaces);
+            Assert.AreEqual(g1.NumCorners, g2.NumCorners);
+            Assert.AreEqual(g1.NumVertices, g2.NumVertices);
+            Assert.AreEqual(g1.NumInstances, g2.NumInstances);
+            Assert.AreEqual(g1.NumSubgeometries, g2.NumSubgeometries);
+            Assert.AreEqual(g1.Attributes.Count, g2.Attributes.Count);
+            for (var i = 0; i < g1.Attributes.Count; ++i)
             {
-                Console.WriteLine($"{attr.Name} #bytes={attr.Bytes.Length} #items={attr.ElementCount}");
+                var attr1 = g1.Attributes[i];
+                var attr2 = g2.Attributes[i];
+                Assert.AreEqual(attr1.Name, attr2.Name);
+                Assert.AreEqual(attr1.GetByteSize(), attr2.GetByteSize());
+                Assert.AreEqual(attr1.ElementCount, attr2.ElementCount);
             }
         }
-    
-        // This depends on where the executable ends up (which is different between .NET standard and .NET framework and .NET core)
-        public static string BaseInputDataPath => Path.Combine(TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "..", "data"); // yes 5, count em, 5  
 
-        public static string InputDataPath => Path.Combine(BaseInputDataPath, "assimp", "test");
-
-        public static string TestOutputFolder => Path.Combine(InputDataPath, "..", "..", "g3d");
-
-        public static string[] GeneratedG3ds => Directory.GetFiles(TestOutputFolder, "*.g3d");
-
-        public static void TestG3D(G3D g3d, string baseName)
+        public static void AssertSame(Mesh m, G3D g)
         {
-            Console.WriteLine("Testing G3D " + baseName);
-            OutputG3DStats(g3d);
-
-            var outputFile = Path.Combine(TestOutputFolder, Path.GetFileName(baseName) + ".g3d");
-            g3d.Write(outputFile);
-
-            var tmp = TimeLoadingFile(outputFile, G3D.Read);
-            OutputG3DStats(tmp);
+            Assert.AreEqual(m.FaceCount, g.NumFaces);
+            Assert.AreEqual(m.GetIndices(), g.Indices.ToArray());
+            Assert.AreEqual(m.VertexCount, g.NumVertices);
         }
 
         public static G3D CompareTiming(string fileName, string outputFolder)
@@ -93,11 +99,13 @@ $@"       #animations = {scene.AnimationCount}
                 var scene = TimeLoadingFile(fileName, context.ImportFile);
                 var m = scene.Meshes[0];
                 var g3d = m.ToG3D();
+                AssertSame(m, g3d);
                 var outputFile = Path.Combine(outputFolder, Path.GetFileName(fileName) + ".g3d");
                 g3d.Write(outputFile);
-                TimeLoadingFile(outputFile, G3D.Read);
-                OutputG3DStats(g3d);
-                return g3d;
+                var r = TimeLoadingFile(outputFile, G3D.Read);
+                //OutputG3DStats(g3d);
+                AssertSame(g3d, r);
+                return r;
             }
         }
 
@@ -111,12 +119,13 @@ $@"       #animations = {scene.AnimationCount}
             // Binary fails assimp import
             //@"models-nonbsd\FBX\2013_BINARY\duck.fbx",
             //@"models-nonbsd\FBX\2013_BINARY\jeep1.fbx",
-            @"models-nonbsd\OBJ\rifle.obj",
-            @"models-nonbsd\OBJ\segment.obj",
+            // OBJ files were not checked in to the repo.
+            //@"models-nonbsd\OBJ\rifle.obj",
+            //@"models-nonbsd\OBJ\segment.obj",
             @"models-nonbsd\PLY\ant-half.ply",
             @"models\IFC\AC14-FZK-Haus.ifc",
-            @"models\PLY\wuson.ply",
-            @"models\STL\wuson.stl",
+            @"models\PLY\Wuson.ply",
+            @"models\STL\Wuson.stl",
             @"models\STL\Spider_ascii.stl",
             @"models\STL\Spider_binary.stl",
             @"models\glTF\CesiumMilkTruck\CesiumMilkTruck.gltf",

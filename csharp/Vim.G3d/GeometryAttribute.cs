@@ -16,7 +16,7 @@ namespace Vim.G3d
     /// 1. concatenation with like-typed attributes
     /// 2. remapping    
     /// </summary>
-    public abstract class GeometryAttribute 
+    public abstract class GeometryAttribute
     {
         /// <summary>
         /// The descriptor contains information about the data contained in the attribute:
@@ -77,11 +77,11 @@ namespace Vim.G3d
         /// <summary>
         /// Convenience function to cast this object into a mesh attribute of the given type, throwing an exception if not possible, 
         /// </summary>
-        public GeometryAttribute<T> AsType<T>() where T: unmanaged
+        public GeometryAttribute<T> AsType<T>() where T : unmanaged
             => this as GeometryAttribute<T> ?? throw new Exception($"The type of the attribute is {GetType()} not MeshAttribute<{typeof(T)}>");
 
         /// <summary>
-        /// Loads the correct typed data from a BinaryReader
+        /// Loads the correct typed data from a Stream.
         /// </summary>
         public abstract GeometryAttribute Read(Stream stream, long byteCount);
 
@@ -96,7 +96,7 @@ namespace Vim.G3d
     /// The underlying data is an IArray which means that it can be
     /// computed on demand. 
     /// </summary>
-    public class GeometryAttribute<T> : GeometryAttribute where T: unmanaged
+    public class GeometryAttribute<T> : GeometryAttribute where T : unmanaged
     {
         public IArray<T> Data;
 
@@ -131,16 +131,16 @@ namespace Vim.G3d
             else if (typeof(T) == typeof(float))
                 (arity, dataType) = (1, DataType.dt_float32);
             else if (typeof(T) == typeof(Vector2))
-                (arity, dataType) = (2, DataType.dt_float32); 
-            else if (typeof(T) == typeof(Vector3)) 
+                (arity, dataType) = (2, DataType.dt_float32);
+            else if (typeof(T) == typeof(Vector3))
                 (arity, dataType) = (3, DataType.dt_float32);
-            else if (typeof(T) == typeof(Vector4)) 
+            else if (typeof(T) == typeof(Vector4))
                 (arity, dataType) = (4, DataType.dt_float32);
             else if (typeof(T) == typeof(Matrix4x4))
                 (arity, dataType) = (16, DataType.dt_float32);
-            else if (typeof(T) == typeof(double)) 
+            else if (typeof(T) == typeof(double))
                 (arity, dataType) = (1, DataType.dt_float64);
-            else if (typeof(T) == typeof(DVector2)) 
+            else if (typeof(T) == typeof(DVector2))
                 (arity, dataType) = (2, DataType.dt_float64);
             else if (typeof(T) == typeof(DVector3))
                 (arity, dataType) = (3, DataType.dt_float64);
@@ -172,11 +172,11 @@ namespace Vim.G3d
                 throw new Exception($"All attributes have to have the same type {typeof(T)} to be concatenated");
 
             // Given multiple attributes associated with "all" or with "nothing", the first one takes precedence	
-            if (Descriptor.Association == Association.assoc_all || Descriptor.Association == Association.assoc_none) 
+            if (Descriptor.Association == Association.assoc_all || Descriptor.Association == Association.assoc_none)
                 return this;
 
             // Sub-geometry attributes can't be merged 
-            if (Descriptor.Association == Association.assoc_subgeo)
+            if (Descriptor.Association == Association.assoc_subgeometry)
                 throw new Exception("Can't merge sub-geometry attributes");
 
             // Instance attributes can't be merged 
@@ -187,10 +187,6 @@ namespace Vim.G3d
             if (Descriptor.Semantic == Semantic.Index)
                 throw new Exception("Can't merge index attributes");
 
-            // Group attributes can't be merged 
-            if (Descriptor.Semantic == Semantic.Group)
-                throw new Exception("Can't merge group attributes");
-            
             return others
                 .Select(ma => ma as GeometryAttribute<T>)
                 .Prepend(this)
@@ -216,7 +212,7 @@ namespace Vim.G3d
             var data = stream.ReadArray<T>((int)nElements);
             return new GeometryAttribute<T>(data.ToIArray(), Descriptor);
         }
-    
+
         public override GeometryAttribute SetIndex(int index)
             => index == Descriptor.Index ? this : new GeometryAttribute<T>(Data, Descriptor.SetIndex(index));
     }
