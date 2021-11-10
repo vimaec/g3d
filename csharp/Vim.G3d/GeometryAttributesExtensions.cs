@@ -24,10 +24,14 @@ namespace Vim.G3d
                     return self.NumCorners;
                 case Association.assoc_edge:
                     return self.NumCorners;
-                case Association.assoc_subgeometry:
-                    return self.NumSubgeometries;
+                case Association.assoc_mesh:
+                    return self.NumMeshes;
                 case Association.assoc_instance:
                     return self.NumInstances;
+                case Association.assoc_shapevertex:
+                    return self.NumShapeVertices;
+                case Association.assoc_shape:
+                    return self.NumShapes;
             }
             return -1;
         }
@@ -65,11 +69,17 @@ namespace Vim.G3d
         public static IEnumerable<GeometryAttribute> InstanceAttributes(this IGeometryAttributes g)
             => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_instance);
 
-        public static IEnumerable<GeometryAttribute> SubGeometryAttributes(this IGeometryAttributes g)
-            => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_subgeometry);
+        public static IEnumerable<GeometryAttribute> MeshAttributes(this IGeometryAttributes g)
+            => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_mesh);
 
         public static IEnumerable<GeometryAttribute> WholeGeometryAttributes(this IGeometryAttributes g)
             => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_all);
+
+        public static IEnumerable<GeometryAttribute> ShapeVertexAttributes(this IGeometryAttributes g)
+            => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_shapevertex);
+
+        public static IEnumerable<GeometryAttribute> ShapeAttributes(this IGeometryAttributes g)
+            => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_shape);
 
         public static bool HasSameAttributes(this IGeometryAttributes g1, IGeometryAttributes g2)
             => g1.Attributes.Count == g2.Attributes.Count && g1.Attributes.Indices().All(i => g1.Attributes[i].Name == g2.Attributes[i].Name);
@@ -128,7 +138,7 @@ namespace Vim.G3d
                 return first;
             var corners = first.NumCornersPerFace;
             if (!gs.All(g => g.NumCornersPerFace == corners))
-                throw new Exception("Cannot merge geometries with different numbers of corners per faces");
+                throw new Exception("Cannot merge meshes with different numbers of corners per faces");
 
             // Merge all of the attributes of the different geometries
             // Except: indices, group indexes, subgeo, and instance attributes
@@ -145,14 +155,6 @@ namespace Vim.G3d
             var others = gs.Skip(1).ToEnumerable();
             var attributeList = attributes.Select(
                 attr => attr.Merge(others.Select(g => g.GetAttributeOrDefault(attr.Name)))).ToList();
-
-            // Compute the vertex offsets for each sub-geometry
-            var vertexOffsets = gs.Select(m => m.NumVertices).CountsToOffsets().ToSubGeoVertexOffsetAttribute();
-            attributeList.Add(vertexOffsets);
-
-            // Compute the index offsets for each sub-geometry
-            var indexOffsets = gs.Select(m => m.NumCorners).CountsToOffsets().ToSubGeoIndexOffsetAttribute();
-            attributeList.Add(indexOffsets);
 
             // Add the renumbered index attribute
             if (first.GetAttributeIndex() != null)
@@ -217,7 +219,7 @@ namespace Vim.G3d
         /// <summary>
         /// Leaves the vertex buffer intact and creates a new geometry that remaps all of the group, corner, and face data.
         /// The newFaces array is a list of indices into the old face array.
-        /// Note: sub-geometries are lost.
+        /// Note: meshes are lost.
         /// </summary>
         public static IGeometryAttributes RemapFaces(this IGeometryAttributes g, IArray<int> faceRemap)
             => g.RemapFacesAndCorners(faceRemap, g.FaceIndicesToCornerIndices(faceRemap));
@@ -232,7 +234,7 @@ namespace Vim.G3d
         /// <summary>
         /// Low-level remap function. Maps faces and corners at the same time.
         /// In some cases, this is important (e.g. triangulating quads).
-        /// Note: sub-geometries are lost.
+        /// Note: meshes are lost.
         /// </summary>
         public static IGeometryAttributes RemapFacesAndCorners(this IGeometryAttributes g, IArray<int> faceRemap, IArray<int> cornerRemap, int numCornersPerFace = -1)
             => g.VertexAttributes()
@@ -284,9 +286,6 @@ namespace Vim.G3d
 
         public static IGeometryAttributes CopyFaces(this IGeometryAttributes g, int from, int count)
             => g.CopyFaces(i => i >= from && i < from + count);
-
-        public static IArray<IGeometryAttributes> CopyFaceGroups<T>(this IGeometryAttributes g, int size)
-            => g.NumFaces.DivideRoundUp(size).Select(i => CopyFaces(g, i * size, size));
 
         /// <summary>
         /// Updates the vertex buffer (e.g. after identifying unwanted faces) and the index
@@ -426,5 +425,23 @@ namespace Vim.G3d
 
         public static IGeometryAttributes DoubleSided(this IGeometryAttributes g)
             => g.Merge(g.FlipWindingOrder());
+
+        public static IArray<int> DefaultMaterials(this IGeometryAttributes self)
+            => (-1).Repeat(self.NumFaces);
+
+        public static IArray<Vector4> DefaultColors(this IGeometryAttributes self)
+            => Vector4.Zero.Repeat(self.NumVertices);
+
+        public static IArray<Vector2> DefaultUvs(this IGeometryAttributes self)
+            => Vector2.Zero.Repeat(self.NumVertices);
+
+        public static IGeometryAttributes Replace(this IGeometryAttributes self, Func<AttributeDescriptor, bool> selector, GeometryAttribute attribute)
+            => self.Attributes.Where(a => !selector(a.Descriptor)).Append(attribute).ToGeometryAttributes();
+
+        public static IGeometryAttributes Remove(this IGeometryAttributes self, Func<AttributeDescriptor, bool> selector)
+            => self.Attributes.Where(a => !selector(a.Descriptor)).ToGeometryAttributes();
+
+        public static G3D ToG3d(this IGeometryAttributes self)
+            => G3D.Create(self.Attributes.ToArray());
     }
 }

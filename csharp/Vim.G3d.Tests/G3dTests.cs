@@ -55,7 +55,7 @@ namespace Vim.G3d.Tests
             ValidateSame(g1.NumCorners, g2.NumCorners, "NumCorners");
             ValidateSame(g1.NumVertices, g2.NumVertices, "NumVertices");
             ValidateSame(g1.NumInstances, g2.NumInstances, "NumInstances");
-            ValidateSame(g1.NumSubgeometries, g2.NumSubgeometries, "NumSubgeometries");
+            ValidateSame(g1.NumMeshes, g2.NumMeshes, "NumMeshes");
             ValidateSame(g1.Attributes.Count, g2.Attributes.Count, "NumAttributes");
             for (var i = 0; i < g1.Attributes.Count; ++i)
             {
@@ -207,14 +207,12 @@ namespace Vim.G3d.Tests
             };
 
             var indices = new[] { 0, 1, 2 };
-            var materialIds = new[] { 5 };
-            var faceGroupIds = new[] { 3 };
+            var materialIndices = new[] { 5 };
 
             var g3d = new G3DBuilder()
                 .AddVertices(vertices.ToIArray())
                 .AddIndices(indices.ToIArray())
-                .Add(faceGroupIds.ToIArray().ToFaceGroupAttribute())
-                .Add(materialIds.ToIArray().ToFaceMaterialIdAttribute())
+                .Add(materialIndices.ToIArray().ToFaceMaterialAttribute())
                 .ToG3D();
 
             var bytes = g3d.WriteToBytes();
@@ -226,13 +224,12 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(3, g.NumCorners);
             Assert.AreEqual(1, g.NumFaces);
             Assert.AreEqual(3, g.NumCornersPerFace);
-            Assert.AreEqual(0, g.NumSubgeometries);
+            Assert.AreEqual(0, g.NumMeshes);
             Assert.AreEqual(0, g.NumInstances);
 
             Assert.AreEqual(vertices, g.Vertices.ToArray());
             Assert.AreEqual(indices, g.Indices.ToArray());
-            Assert.AreEqual(materialIds, g.FaceMaterialIds.ToArray());
-            Assert.AreEqual(faceGroupIds, g.FaceGroups.ToArray());
+            Assert.AreEqual(materialIndices, g.FaceMaterials.ToArray());
         }
 
         [Test]
@@ -248,14 +245,12 @@ namespace Vim.G3d.Tests
             };
 
             var indices = new[] { 0, 1, 2, 3 };
-            var materialIds = new[] { 5 };
-            var faceGroupIds = new[] { 3 };
+            var materialIndices = new[] { 5 };
 
             var g3d = new G3DBuilder()
                 .AddVertices(vertices.ToIArray())
                 .AddIndices(indices.ToIArray())
-                .Add(faceGroupIds.ToIArray().ToFaceGroupAttribute())
-                .Add(materialIds.ToIArray().ToFaceMaterialIdAttribute())
+                .Add(materialIndices.ToIArray().ToFaceMaterialAttribute())
                 .ToG3D();
 
             var bytes = g3d.WriteToBytes();
@@ -267,13 +262,12 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(4, g.NumVertices);
             Assert.AreEqual(4, g.NumCorners);
             Assert.AreEqual(1, g.NumFaces);
-            Assert.AreEqual(0, g.NumSubgeometries);
+            Assert.AreEqual(0, g.NumMeshes);
             Assert.AreEqual(0, g.NumInstances);
 
             Assert.AreEqual(vertices, g.Vertices.ToArray());
             Assert.AreEqual(indices, g.Indices.ToArray());
-            Assert.AreEqual(materialIds, g.FaceMaterialIds.ToArray());
-            Assert.AreEqual(faceGroupIds, g.FaceGroups.ToArray());
+            Assert.AreEqual(materialIndices, g.FaceMaterials.ToArray());
 
             var g2 = g.TriangulateQuadMesh();
 
@@ -281,13 +275,12 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(4, g2.NumVertices);
             Assert.AreEqual(6, g2.NumCorners);
             Assert.AreEqual(2, g2.NumFaces);
-            Assert.AreEqual(0, g2.NumSubgeometries);
+            Assert.AreEqual(0, g2.NumMeshes);
             Assert.AreEqual(0, g2.NumInstances);
 
             Assert.AreEqual(vertices, g2.GetAttributeDataPosition().ToArray());
             Assert.AreEqual(new[] { 0, 1, 2, 0, 2, 3 }, g2.GetAttributeDataIndex().ToArray());
-            Assert.AreEqual(new[] { 5, 5 }, g2.GetAttributeDataFaceMaterialId().ToArray());
-            Assert.AreEqual(new[] { 3, 3 }, g2.GetAttributeDataFaceGroup().ToArray());
+            Assert.AreEqual(new[] { 5, 5 }, g2.GetAttributeDataFaceMaterial().ToArray());
 
             g2 = g2.CopyFaces(1, 1);
 
@@ -298,8 +291,7 @@ namespace Vim.G3d.Tests
 
             Assert.AreEqual(vertices, g2.GetAttributeDataPosition().ToArray());
             Assert.AreEqual(new[] { 0, 2, 3 }, g2.GetAttributeDataIndex().ToArray());
-            Assert.AreEqual(new[] { 5 }, g2.GetAttributeDataFaceMaterialId().ToArray());
-            Assert.AreEqual(new[] { 3 }, g2.GetAttributeDataFaceGroup().ToArray());
+            Assert.AreEqual(new[] { 5 }, g2.GetAttributeDataFaceMaterial().ToArray());
         }
 
         public static G3D LoadAssimpFile(string filePath)
@@ -330,7 +322,7 @@ namespace Vim.G3d.Tests
         [Test]
         public static void TestWriters()
         {
-            var fileName = Path.Combine(TestInputFolder, "PLY", "Wuson.ply");
+            var fileName = Path.Combine(TestInputFolder, "PLY", "wuson.ply");
 
             var outputFileName = @"test";
             outputFileName = Path.Combine(TestOutputFolder, outputFileName);
@@ -353,7 +345,7 @@ namespace Vim.G3d.Tests
                 Assert.AreEqual(g1.NumCorners, g2.NumCorners);
                 Assert.AreEqual(g1.NumVertices, g2.NumVertices);
                 Assert.AreEqual(g1.NumInstances, g2.NumInstances);
-                Assert.AreEqual(g1.NumSubgeometries, g2.NumSubgeometries);
+                Assert.AreEqual(g1.NumMeshes, g2.NumMeshes);
             }
 
             // BUG: Assimp ignores the OBJ index buffer. God knows why. 

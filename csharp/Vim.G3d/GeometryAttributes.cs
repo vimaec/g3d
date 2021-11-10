@@ -22,8 +22,13 @@ namespace Vim.G3d
         public int NumVertices { get; } = -1;
         public int NumFaces { get; } = -1;
         public int NumCorners { get; } = -1;
-        public int NumSubgeometries { get; } = -1;
+        public int NumMeshes { get; } = -1;
         public int NumInstances { get; } = -1;
+        public int NumMaterials { get; } = -1;
+        public int NumSubmeshes { get; } = -1;
+
+        public int NumShapeVertices { get; } = -1;
+        public int NumShapes { get; } = -1;
 
         public IArray<GeometryAttribute> Attributes { get; }
 
@@ -69,8 +74,20 @@ namespace Vim.G3d
                     case Association.assoc_instance:
                         NumInstances = ValidateAttribute(attr, NumInstances);
                         break;
-                    case Association.assoc_subgeometry:
-                        NumSubgeometries = ValidateAttribute(attr, NumSubgeometries);
+                    case Association.assoc_submesh:
+                        NumSubmeshes = ValidateAttribute(attr, NumSubmeshes);
+                        break;
+                    case Association.assoc_material:
+                        NumMaterials = ValidateAttribute(attr, NumMaterials);
+                        break;
+                    case Association.assoc_mesh:
+                        NumMeshes = ValidateAttribute(attr, NumMeshes);
+                        break;
+                    case Association.assoc_shapevertex:
+                        NumShapeVertices = ValidateAttribute(attr, NumShapeVertices);
+                        break;
+                    case Association.assoc_shape:
+                        NumShapes = ValidateAttribute(attr, NumShapes);
                         break;
                 }
 
@@ -134,8 +151,11 @@ namespace Vim.G3d
 
             if (NumCorners < 0) NumCorners = NumVertices;
             if (NumInstances < 0) NumInstances = 0;
-            if (NumSubgeometries < 0) NumSubgeometries = 0;
+            if (NumMeshes < 0) NumMeshes = 0;
             if (NumFaces < 0) NumFaces = NumCorners / NumCornersPerFace;
+
+            if (NumShapeVertices < 0) NumShapeVertices = 0;
+            if (NumShapes < 0) NumShapes = 0;
         }
 
         public static GeometryAttributes Empty
