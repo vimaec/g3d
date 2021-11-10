@@ -322,7 +322,7 @@ namespace Vim.G3d.Tests
         [Test]
         public static void TestWriters()
         {
-            var fileName = Path.Combine(TestInputFolder, "PLY", "wuson.ply");
+            var fileName = Path.Combine(TestInputFolder, "PLY", "Wuson.ply");
 
             var outputFileName = @"test";
             outputFileName = Path.Combine(TestOutputFolder, outputFileName);
