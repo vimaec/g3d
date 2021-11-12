@@ -16,7 +16,7 @@
 
 namespace g3d
 {
-    #define G3D_VERSION = { 2, 0, 1, "2019.12.04" };
+    #define G3D_VERSION = { 2, 1, 0, "2021.08.10" };
 
     using namespace std;
 
@@ -41,7 +41,13 @@ namespace g3d
         assoc_face,
         assoc_corner,
         assoc_edge,
-        assoc_group,
+        assoc_subgeometry,
+        assoc_instance,
+        assoc_shapevertex,
+        assoc_shape,
+        assoc_material,
+        assoc_mesh,
+        assoc_submesh,
         assoc_all,
         assoc_none,
     };
@@ -121,7 +127,13 @@ namespace g3d
                 { assoc_face,       "face" },
                 { assoc_corner,     "corner" },
                 { assoc_edge,       "edge" },
-                { assoc_group,      "group" },
+                { assoc_subgeometry,"subgeometry" },
+                { assoc_instance,   "instance" },
+                { assoc_shapevertex,"shapevertex" },
+                { assoc_shape,      "shape" },
+                { assoc_material,   "material" },
+                { assoc_mesh,       "mesh" },
+                { assoc_submesh,    "submesh" },
                 { assoc_all,        "all" },
                 { assoc_none,       "none" },
             };
@@ -300,20 +312,36 @@ namespace g3d
         static constexpr const char* VertexTangent4 = "g3d:vertex:tangent:0:float32:4";
         static constexpr const char* VertexSelectionWeight = "g3d:vertex:weight:0:float32:1";
 
-        static constexpr const char* FaceMaterialId = "g3d:face:materialid:0:int32:1";
-        static constexpr const char* FaceObjectId = "g3d:face:objectid:0:int32:1";
-        static constexpr const char* FaceGroupId = "g3d:face:groupid:0:int32:1";
-        static constexpr const char* FaceNormal = "g3d:vertex:normal:0:float32:3";
+        static constexpr const char* FaceMaterial = "g3d:face:material:0:int32:1";
+        static constexpr const char* FaceNormal = "g3d:face:normal:0:float32:3";
         static constexpr const char* FaceSize = "g3d:face:facesize:0:int32:1";
         static constexpr const char* FaceIndexOffset = "g3d:face:indexoffset:0:int32:1";
         static constexpr const char* FaceSelectionWeight = "g3d:face:weight:0:float32:1";
 
-        static constexpr const char* GroupMaterialId = "g3d:group:materialid:0:int32:1";
-        static constexpr const char* GroupObjectId = "g3d:group:objectid:0:int32:1";
-        static constexpr const char* GroupIndexOffset = "g3d:group:indexoffset:0:int32:1";
-        static constexpr const char* GroupVertexOffset = "g3d:group:vertexoffset:0:int32:1";
-        static constexpr const char* GroupNormal = "g3d:vertex:normal:0:float32:3";
-        static constexpr const char* GroupFaceSize = "g3d:group:facesize:0:int32:1";
+        //VIM 1.0
+        
+        // Meshes
+        static constexpr const char* MeshSubmeshOffset = "g3d:mesh:submeshoffset:0:int32:1";
+
+        // Instances
+        static constexpr const char* InstanceTransform = "g3d:instance:transform:0:float32:16";
+        static constexpr const char* InstanceParent = "g3d:instance:parent:0:int32:1";
+        static constexpr const char* InstanceMesh = "g3d:instance:mesh:0:int32:1";
+
+        // Shapes
+        static constexpr const char* ShapeVertex = "g3d:shapevertex:position:0:float32:3";
+        static constexpr const char* ShapeVertexOffset = "g3d:shape:vertexoffset:0:int32:1";
+        static constexpr const char* ShapeColor = "g3d:shape:color:0:float32:4";
+        static constexpr const char* ShapeWidth = "g3d:shape:width:0:float32:1";
+
+        // Materials
+        static constexpr const char* MaterialColor = "g3d:material:color:0:float32:4";
+        static constexpr const char* MaterialGlossiness = "g3d:material:glossiness:0:float32:1";
+        static constexpr const char* MaterialSmoothness = "g3d:material:smoothness:0:float32:1";
+
+        // Submeshes
+        static constexpr const char* SubmeshIndexOffset = "g3d:submesh:indexoffset:0:int32:1";
+        static constexpr const char* SubmeshMaterial = "g3d:submesh:material:0:int32:1";
 
         // https://docs.thinkboxsoftware.com/products/krakatoa/2.6/1_Documentation/manual/formats/particle_channels.html
         static constexpr const char* PointVelocity = "g3d:vertex:velocity:0:float32:3";

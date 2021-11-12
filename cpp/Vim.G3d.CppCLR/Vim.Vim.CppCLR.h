@@ -48,22 +48,22 @@ namespace Vim
 
         int GetNodeCount()
         {
-            return (int)VimScene->mNodes.size();
+            return -1;
         }
 
         int GetNodeParentIndex(int index)
         {
-            return (int)VimScene->mNodes[index].mParent;
+            return -1;
         }
 
         int GetNodeInstanceIndex(int index)
         {
-            return (int)VimScene->mNodes[index].mInstance;
+            return -1;
         }
 
         int GetNodeGeometryIndex(int index)
         {
-            return (int)VimScene->mNodes[index].mGeometry;
+            return -1;
         }
     };
 }

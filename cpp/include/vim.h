@@ -17,50 +17,6 @@
 
 namespace Vim
 {
-    class SceneNode
-    {
-    public:
-        int mParent = -1;
-        int mGeometry = -1;
-        int mInstance = -1;
-        float mTransform[16] = {0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f, 0.0f};
-
-    public:
-        SceneNode() = default;
-
-        SceneNode(const SceneNode& Other)
-        {
-            mParent = Other.mParent;
-            mGeometry = Other.mGeometry;
-            mInstance = Other.mInstance;
-            memcpy(mTransform, Other.mTransform, sizeof(mTransform));
-        }
-
-        SceneNode(SceneNode&& Other) noexcept
-        {
-            mParent = Other.mParent;
-            mGeometry = Other.mGeometry;
-            mInstance = Other.mInstance;
-            memcpy(mTransform, Other.mTransform, sizeof(mTransform));
-        }
-
-        void operator =(SceneNode&& Other) noexcept
-        {
-            mParent = Other.mParent;
-            mGeometry = Other.mGeometry;
-            mInstance = Other.mInstance;
-            memcpy(mTransform, Other.mTransform, sizeof(mTransform));
-        }
-
-        void operator =(const SceneNode& Other)
-        {
-            mParent = Other.mParent;
-            mGeometry = Other.mGeometry;
-            mInstance = Other.mInstance;
-            memcpy(mTransform, Other.mTransform, sizeof(mTransform));
-        }
-    };
-
     class SerializableProperty
     {
     public:
@@ -129,12 +85,10 @@ namespace Vim
     class Scene
     {
     public:
-        static const uint32_t mVimHeaderFourCC = '1MIV'; // VIM1 encoded as uint32
         bfast::Bfast mBfast;
         bfast::Bfast mGeometryBFast;
         bfast::Bfast mAssetsBFast;
         bfast::Bfast mEntitiesBFast;
-        std::vector<SceneNode> mNodes;
         std::vector<const bfast::byte*> mStrings;
         g3d::G3d mGeometry;
         std::unordered_map<std::string, EntityTable> mEntityTables;
@@ -162,85 +116,33 @@ namespace Vim
                 if (b.name == "header")
                 {
                     std::vector<std::string> versionParts;
-                    uint32_t fourCC = *(uint32_t*)b.data.begin();
 
-                    // New header version uses FourCC
-                    if (fourCC == mVimHeaderFourCC)
+                    std::string header = (const char*)(b.data.begin());
+                    std::vector<std::string> tokens = split(header, "\n");
+
+                    for (size_t i = 0; i < tokens.size(); i ++)
                     {
-                        std::string header = (const char*)(b.data.begin() + 4);
-                        std::vector<std::string> tokens = split(header, "\n");
+                        std::vector<std::string> keyValue = split(tokens[i], "=");
 
-                        for (size_t i = 0; i < tokens.size(); i += 2)
+                        if (keyValue.size() == 2)
                         {
-                            std::vector<std::string> keyValue = split(tokens[i], "=");
+                            mHeader[keyValue[0]] = keyValue[1];
+                        }
+                    }
 
-                            if (keyValue.size() == 2)
-                            {
-                                mHeader[keyValue[0]] = keyValue[1];
-                            }
-                        }
-
-                        if (mHeader.end() != mHeader.find("vim"))
-                        {
-                            versionParts = split(mHeader["vim"], ".");
-                        }
-                        else
-                        {
-                            // No vim version found
-                            return VimErrorCodes::NoVersionInfo;
-                        }
+                    if (mHeader.end() != mHeader.find("vim"))
+                    {
+                        versionParts = split(mHeader["vim"], ".");
                     }
                     else
                     {
-                        // Old header versions don't use a fourCC
-                        // Old header version is 0.vim[0].obj[0]obj[1]obj[2]
-                        versionParts.push_back("0");
-
-                        std::string header = (const char*)b.data.begin();
-                        std::vector<std::string> tokens = split(header, ":");
-
-                        for (size_t i = 0; i < tokens.size(); i += 2)
-                        {
-                            mHeader[tokens[i]] = tokens[i + 1];
-                        }
-
-                        if (mHeader.end() != mHeader.find("vim"))
-                        {
-                            std::vector<std::string> versionTokens = split(mHeader["vim"], ".");
-                            versionParts.push_back(versionTokens.size() > 0 ? versionTokens[0] : "0");
-                        }
-                        else
-                        {
-                            return VimErrorCodes::NoVersionInfo;
-                        }
-
-                        if (mHeader.end() != mHeader.find("objectmodel"))
-                        {
-                            std::vector<std::string> parts = split(mHeader["objectmodel"], ".");
-                            while (parts.size() < 3) parts.push_back("0");
-
-                            uint32_t objectVersion = 0;
-                            for (auto& part : parts)
-                            {
-                                objectVersion = objectVersion * 10 + std::stoi(part);
-                            }
-
-                            assert(versionParts.size() == 2);
-                            versionParts.push_back(std::to_string(objectVersion));
-                        }
-                        else
-                        {
-                            return VimErrorCodes::NoVersionInfo;
-                        }
+                        // No vim version found
+                        return VimErrorCodes::NoVersionInfo;
                     }
 
                     if (versionParts.size() > 0) mVersionMajor = std::stoi(versionParts[0]);
                     if (versionParts.size() > 1) mVersionMinor = std::stoi(versionParts[1]);
                     if (versionParts.size() > 2) mVersionPatch = std::stoi(versionParts[2]);
-                }
-                else if (b.name == "nodes")
-                {
-                    mNodes = std::move(std::vector<SceneNode>((SceneNode*)b.data.begin(), (SceneNode*)b.data.end()));
                 }
                 else if (b.name == "geometry")
                 {
@@ -251,7 +153,6 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
-                        e;
                         return Vim::VimErrorCodes::GeometryLoadingException;
                     }
                 }
@@ -263,7 +164,6 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
-                        e;
                         return Vim::VimErrorCodes::AssetLoadingException;
                     }
                 }
@@ -331,7 +231,6 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
-                        e;
                         return Vim::VimErrorCodes::EntityLoadingException;
                     }
                 }

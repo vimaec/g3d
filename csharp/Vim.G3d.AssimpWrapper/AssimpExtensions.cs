@@ -39,11 +39,11 @@ namespace Vim.G3d.AssimpWrapper
 
             var mergedAttributes = meshes.Merge().Attributes.ToList();
 
-            var subGeoTransforms = nodes.Select(n => n.Transform.ToMath3D()).ToInstanceTransformsAttribute();
+            var subGeoTransforms = nodes.Select(n => n.Transform.ToMath3D()).ToInstanceTransformAttribute();
             mergedAttributes.Add(subGeoTransforms);
 
-            var subGeoIndices = nodes.Select(n => n.MeshIndex).ToInstanceGeometriesAttribute();
-            mergedAttributes.Add(subGeoIndices);
+            var meshIndices = nodes.Select(n => n.MeshIndex).ToInstanceMeshAttribute();
+            mergedAttributes.Add(meshIndices);
 
             return mergedAttributes.ToG3d();
         }

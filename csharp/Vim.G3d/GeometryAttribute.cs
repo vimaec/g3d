@@ -28,7 +28,7 @@ namespace Vim.G3d
         public AttributeDescriptor Descriptor { get; }
 
         /// <summary>
-        /// A "name" is a string encodiung of the attribute descriptor. 
+        /// A "name" is a string encoding of the attribute descriptor. 
         /// </summary>
         public string Name
             => Descriptor.Name;
@@ -176,7 +176,7 @@ namespace Vim.G3d
                 return this;
 
             // Sub-geometry attributes can't be merged 
-            if (Descriptor.Association == Association.assoc_subgeometry)
+            if (Descriptor.Association == Association.assoc_mesh)
                 throw new Exception("Can't merge sub-geometry attributes");
 
             // Instance attributes can't be merged 
