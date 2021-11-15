@@ -9,7 +9,7 @@ It can be easily and efficiently deserialized and rendered in different language
     <PackageProjectUrl>https://github.com/vimaec/g3d</PackageProjectUrl>
     <RepositoryUrl>https://github.com/vimaec/g3d</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <Version>1.1.0</Version>
+    <Version>1.1.1</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -21,6 +21,10 @@ It can be easily and efficiently deserialized and rendered in different language
       <Pack>True</Pack>
       <PackagePath></PackagePath>
     </None>
+    <Content Include="..\..\cpp\include\vim.h">
+      <IncludeInPackage>true</IncludeInPackage>
+      <PackagePath>content</PackagePath>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
