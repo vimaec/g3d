@@ -25,6 +25,10 @@ It can be easily and efficiently deserialized and rendered in different language
       <IncludeInPackage>true</IncludeInPackage>
       <PackagePath>content</PackagePath>
     </Content>
+    <Content Include="..\..\cpp\include\g3d.h">
+      <IncludeInPackage>true</IncludeInPackage>
+      <PackagePath>content</PackagePath>
+    </Content>
   </ItemGroup>
 
   <ItemGroup>
