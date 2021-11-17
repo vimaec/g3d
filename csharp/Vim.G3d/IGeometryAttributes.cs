@@ -12,7 +12,9 @@ namespace Vim.G3d
         int NumCorners { get; }
         int NumFaces { get; }
         int NumInstances { get; }
-        int NumSubgeometries { get; }
+        int NumMeshes { get; }
+        int NumShapeVertices { get; }
+        int NumShapes { get; }
 
         IArray<GeometryAttribute> Attributes { get; }
         GeometryAttribute GetAttribute(string name);

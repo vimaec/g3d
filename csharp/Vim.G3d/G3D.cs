@@ -43,23 +43,43 @@ namespace Vim.G3d
         public IArray<Vector3> VertexNormals { get; }
         public IArray<Vector4> VertexTangents { get; }
 
-        // Face associated data.
-        public IArray<int> FaceGroups { get; } // The group that is associated with the face.
-        public IArray<int> FaceMaterialIds { get; } // Material id per face, 
+        // Faces
+        public IArray<int> FaceMaterials { get; } // Material indices per face, 
         public IArray<Vector3> FaceNormals { get; } // If not provided, are computed dynamically as the average of all vertex normals,
 
-        // A sub-mesh is a section of the vertex and index buffer. Some of these are computed.
-        // QUESTION: I might want object ids here in the future.
-        public IArray<int> SubGeometryIndexOffsets { get; } // Offset into the index buffer for each SubGeometry
-        public IArray<int> SubGeometryVertexOffsets { get; } // Offset into the vertex buffer for each SubGeometry
-        public IArray<int> SubGeometryIndexCounts { get; } // Number of indices for each SubGeometry: always computed 
-        public IArray<int> SubGeometryVertexCounts { get; } // Number of vertices for each SubGeometry: always computed 
-        public IArray<G3dSubGeometry> SubGeometries { get; }
+        // Meshes
+        public IArray<int> MeshIndexOffsets { get; } // Offset into the index buffer for each Mesh
+        public IArray<int> MeshVertexOffsets { get; } // Offset into the vertex buffer for each Mesh
+        public IArray<int> MeshIndexCounts { get; } // Computed
+        public IArray<int> MeshVertexCounts { get; } // Computed
+        public IArray<int> MeshSubmeshOffset { get; }
+        public IArray<int> MeshSubmeshCount { get; } // Computed
+        public IArray<G3dMesh> Meshes { get; }
 
-        // Instance data. This is used with sub-meshes. None of these are computed. 
+        // Instances
         public IArray<int> InstanceParents { get; } // Index of the parent transform 
         public IArray<Matrix4x4> InstanceTransforms { get; } // A 4x4 matrix in row-column order defining the transormed
-        public IArray<int> InstanceSubGeometries { get; } // The SubGeometry associated with the index
+        public IArray<int> InstanceMeshes { get; } // The SubGeometry associated with the index
+
+        // Shapes
+        public IArray<Vector3> ShapeVertices { get; }
+        public IArray<int> ShapeVertexOffsets { get; }
+        public IArray<Vector4> ShapeColors { get; }
+        public IArray<float> ShapeWidths { get; }
+        public IArray<int> ShapeVertexCounts { get; } // Computed
+        public IArray<G3dShape> Shapes { get; } // Computed
+
+        // Materials
+        public IArray<Vector4> MaterialColors { get; } // RGBA with transparency.
+        public IArray<float> MaterialGlossiness { get; }
+        public IArray<float> MaterialSmoothness { get; }
+        public IArray<G3dMaterial> Materials { get; }
+
+
+        // Submeshes
+        public IArray<int> SubmeshIndexOffsets { get; }
+        public IArray<int> SubmeshIndexCount { get; }
+        public IArray<int> SubmeshMaterials { get; }
 
         public G3D(IEnumerable<GeometryAttribute> attributes, G3dHeader? header = null, int numCornersPerFaceOverride = -1)
             : base(attributes, numCornersPerFaceOverride)
@@ -82,7 +102,9 @@ namespace Vim.G3d
                         if (attr.IsTypeAndAssociation<Vector3>(Association.assoc_vertex))
                             Vertices = Vertices ?? attr.AsType<Vector3>().Data;
                         if (attr.IsTypeAndAssociation<Vector3>(Association.assoc_corner))
-                            Vertices = Vertices ?? attr.AsType<Vector3>().Data;
+                            Vertices = Vertices ?? attr.AsType<Vector3>().Data; // TODO: is this used?
+                        if (attr.IsTypeAndAssociation<Vector3>(Association.assoc_shapevertex))
+                            ShapeVertices = ShapeVertices ?? attr.AsType<Vector3>().Data;
                         break;
 
                     case Semantic.Tangent:
@@ -102,16 +124,24 @@ namespace Vim.G3d
                     case Semantic.Color:
                         if (desc.Association == Association.assoc_vertex)
                             AllVertexColors.Add(attr.AttributeToColors());
+                        if (desc.Association == Association.assoc_shape)
+                            ShapeColors = ShapeColors ?? attr.AttributeToColors();
+                        if (desc.Association == Association.assoc_material)
+                            MaterialColors = MaterialColors ?? attr.AttributeToColors();
                         break;
 
                     case Semantic.VertexOffset:
-                        if (attr.IsTypeAndAssociation<int>(Association.assoc_subgeometry))
-                            SubGeometryVertexOffsets = SubGeometryVertexOffsets ?? attr.AsType<int>().Data;
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_mesh))
+                            MeshVertexOffsets = MeshVertexOffsets ?? attr.AsType<int>().Data;
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_shape))
+                            ShapeVertexOffsets = ShapeVertexOffsets ?? attr.AsType<int>().Data;
                         break;
 
                     case Semantic.IndexOffset:
-                        if (attr.IsTypeAndAssociation<int>(Association.assoc_subgeometry))
-                            SubGeometryIndexOffsets = SubGeometryIndexOffsets ?? attr.AsType<int>().Data;
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_mesh))
+                            MeshIndexOffsets = MeshIndexOffsets ?? attr.AsType<int>().Data;
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_submesh))
+                            SubmeshIndexOffsets = SubmeshIndexOffsets ?? attr.AsType<int>().Data;
                         break;
 
                     case Semantic.Normal:
@@ -121,16 +151,11 @@ namespace Vim.G3d
                             VertexNormals = VertexNormals ?? attr.AsType<Vector3>().Data;
                         break;
 
-                    case Semantic.MaterialId:
+                    case Semantic.Material:
                         if (attr.IsTypeAndAssociation<int>(Association.assoc_face))
-                            FaceMaterialIds = FaceMaterialIds ?? attr.AsType<int>().Data;
-                        break;
-
-                    // NOTE: some VIMs have Group and others have GroupId
-                    case Semantic.Group:
-                    case Semantic.GroupId:
-                        if (attr.IsTypeAndAssociation<int>(Association.assoc_face))
-                            FaceGroups = FaceGroups ?? attr.AsType<int>().Data;
+                            FaceMaterials = FaceMaterials ?? attr.AsType<int>().Data;
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_submesh))
+                            SubmeshMaterials = SubmeshMaterials ?? attr.AsType<int>().Data;
                         break;
 
                     case Semantic.Parent:
@@ -138,14 +163,34 @@ namespace Vim.G3d
                             InstanceParents = InstanceParents ?? attr.AsType<int>().Data;
                         break;
 
-                    case Semantic.SubGeometry:
+                    case Semantic.Mesh:
                         if (attr.IsTypeAndAssociation<int>(Association.assoc_instance))
-                            InstanceSubGeometries = InstanceSubGeometries ?? attr.AsType<int>().Data;
+                            InstanceMeshes = InstanceMeshes ?? attr.AsType<int>().Data;
                         break;
 
                     case Semantic.Transform:
                         if (attr.IsTypeAndAssociation<Matrix4x4>(Association.assoc_instance))
                             InstanceTransforms = InstanceTransforms ?? attr.AsType<Matrix4x4>().Data;
+                        break;
+
+                    case Semantic.Width:
+                        if (attr.IsTypeAndAssociation<float>(Association.assoc_shape))
+                            ShapeWidths = ShapeWidths ?? attr.AsType<float>().Data;
+                        break;
+
+                    case Semantic.Glossiness:
+                        if (attr.IsTypeAndAssociation<float>(Association.assoc_material))
+                            MaterialGlossiness = attr.AsType<float>().Data;
+                        break;
+
+                    case Semantic.Smoothness:
+                        if (attr.IsTypeAndAssociation<float>(Association.assoc_material))
+                            MaterialSmoothness = attr.AsType<float>().Data;
+                        break;
+
+                    case Semantic.SubMeshOffset:
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_mesh))
+                            MeshSubmeshOffset = attr.AsType<int>().Data;
                         break;
                 }
             }
@@ -162,54 +207,67 @@ namespace Vim.G3d
             if (FaceNormals == null && VertexNormals != null)
                 FaceNormals = NumFaces.Select(ComputeFaceNormal);
 
-            if (NumSubgeometries > 0)
+            if (NumMeshes > 0)
             {
-                if (Indices == null)
-                    Debug.WriteLine($"If the number of Subgeometries is greater than zero then the number of index buffer should be present");
-                if (Vertices == null)
-                    Debug.WriteLine($"If the number of Subgeometries is greater than zero then the vertex buffer is expected");
-                if (SubGeometryIndexOffsets == null)
-                    Debug.WriteLine($"If the number of Subgeometries is greater than zero then the Subgeometries index buffer is expected ");
-                if (SubGeometryVertexOffsets == null)
-                    Debug.WriteLine($"If the number of Subgeometries is greater than zero then the Subgeometries vertex buffer is expected ");
-
-                if (SubGeometryIndexCounts == null)
+                // Mesh offset is the same as the offset of its first submesh.
+                if(MeshSubmeshOffset != null)
                 {
-                    if (NumSubgeometries != SubGeometryIndexOffsets.Count)
-                        throw new Exception($"Internal error: SubGeometry index offsets count {SubGeometryIndexOffsets.Count} is different than number of Subgeometries {NumSubgeometries}");
-                    SubGeometryIndexCounts = NumSubgeometries.Select(i => i < (NumSubgeometries - 1) ? SubGeometryIndexOffsets[i + 1] - SubGeometryIndexOffsets[i] : Indices.Count - SubGeometryIndexOffsets[i]);
-                }
-                for (var i = 0; i < SubGeometryIndexCounts.Count; ++i)
-                {
-                    var n = SubGeometryIndexCounts[i];
-                    if (n < 0)
-                        throw new Exception($"SubGeometry {i} has negative number of indices {n}");
-
-                    if (NumCornersPerFace > 0 && (n % NumCornersPerFace) != 0)
-                        throw new Exception($"SubGeometry {i} does not have an index buffer count {n} that is divisible by {NumCornersPerFace}");
+                    MeshIndexOffsets = MeshSubmeshOffset.Select(submesh => SubmeshIndexOffsets[submesh]);
+                    MeshSubmeshCount = GetSubArrayCounts(MeshSubmeshOffset.Count, MeshSubmeshOffset, NumSubmeshes).Evaluate();
                 }
 
-                if (SubGeometryVertexCounts == null)
+                if(MeshIndexOffsets != null)
                 {
-                    if (NumSubgeometries != SubGeometryVertexOffsets.Count)
-                        throw new Exception($"Internal error: SubGeometry index offsets count {SubGeometryVertexOffsets.Count} is different than number of Subgeometries {NumSubgeometries}");
-
-                    SubGeometryVertexCounts = NumSubgeometries.Select(i =>
-                        i < (NumSubgeometries - 1)
-                            ? SubGeometryVertexOffsets[i + 1] - SubGeometryVertexOffsets[i]
-                            : Vertices.Count - SubGeometryVertexOffsets[i]
-                    );
+                    MeshIndexCounts = GetSubArrayCounts(NumMeshes, MeshIndexOffsets, NumCorners);
+                    MeshVertexOffsets = MeshIndexOffsets
+                        .Zip(MeshIndexCounts, (start, count) => (start, count))
+                        .Select(range => Indices.SubArray(range.start, range.count).Min());
                 }
-                for (var i = 0; i < SubGeometryVertexCounts.Count; ++i)
-                {
-                    var n = SubGeometryVertexCounts[i];
-                    if (n < 0)
-                        throw new Exception($"SubGeometry {i} has negative number of indices {n}");
-                }
+        
+                if (MeshVertexOffsets != null)
+                    MeshVertexCounts = GetSubArrayCounts(NumMeshes, MeshVertexOffsets, NumVertices);
             }
 
-            // Compute all of the sub-geometries
-            SubGeometries = NumSubgeometries.Select(i => new G3dSubGeometry(this, i));
+            if (SubmeshIndexOffsets != null)
+                SubmeshIndexCount = GetSubArrayCounts(SubmeshIndexOffsets.Count, SubmeshIndexOffsets, NumCorners).Evaluate();
+
+            // Compute all meshes
+            Meshes = NumMeshes.Select(i => new G3dMesh(this, i));
+
+            if(MaterialColors != null)
+                Materials = MaterialColors.Count.Select(i => new G3dMaterial(this, i));
+
+            // Process the shape data
+            if (ShapeVertices == null)
+                ShapeVertices = Vector3.Zero.Repeat(0);
+
+            if (ShapeVertexOffsets == null)
+                ShapeVertexOffsets = Array.Empty<int>().ToIArray();
+
+            if (ShapeColors == null)
+                ShapeColors = Vector4.Zero.Repeat(0);
+             
+            if (ShapeWidths == null)
+                ShapeWidths = Array.Empty<float>().ToIArray();
+
+            ShapeVertexCounts = GetSubArrayCounts(NumShapes, ShapeVertexOffsets, ShapeVertices.Count);
+            ValidateSubArrayCounts(ShapeVertexCounts, nameof(ShapeVertexCounts));
+
+            Shapes = NumShapes.Select(i => new G3dShape(this, i));
+        }
+
+        private static IArray<int> GetSubArrayCounts(int numItems, IArray<int> offsets, int totalCount)
+            => numItems.Select(i => i < (numItems - 1)
+                ? offsets[i + 1] - offsets[i]
+                : totalCount - offsets[i]);
+
+        private static void ValidateSubArrayCounts(IArray<int> subArrayCounts, string memberName)
+        {
+            for (var i = 0; i < subArrayCounts.Count; ++i)
+            {
+                if (subArrayCounts[i] < 0)
+                    throw new Exception($"{memberName}[{i}] is a negative sub array count.");
+            }
         }
 
         public static Vector3 Average(IArray<Vector3> xs)

@@ -39,14 +39,15 @@ namespace Vim.G3d
             }
         }
 
-        public static G3D ReadG3d(this Stream stream)
+        public static G3D ReadG3d(this Stream stream, Func<string, string> renameFunc = null)
         {
             var header = G3dHeader.Default;
 
             GeometryAttribute ReadAttribute(Stream s2, string name, long size)
             {
+                var rename = renameFunc?.Invoke(name) ?? name;
                 // Check for the G3dHeader 
-                if (name == "meta")
+                if (rename == "meta")
                 {
                     if (size == 8)
                     {
@@ -63,7 +64,7 @@ namespace Vim.G3d
                 else
                 {
                     // Figure out the correct type and then read it in 
-                    var desc = AttributeDescriptor.Parse(name);
+                    var desc = AttributeDescriptor.Parse(rename);
                     var dflt = desc.ToDefaultAttribute(0);
                     return dflt.Read(stream, size);
                 }

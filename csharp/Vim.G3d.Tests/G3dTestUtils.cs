@@ -57,7 +57,7 @@ $@"    #animations = {scene.AnimationCount}
             Console.WriteLine($"# corners per faces {g.NumCornersPerFace} ");
             Console.WriteLine($"# vertices = {g.NumVertices}");
             Console.WriteLine($"# faces = {g.NumFaces}");
-            Console.WriteLine($"# subgeos = {g.NumSubgeometries}");
+            Console.WriteLine($"# subgeos = {g.NumMeshes}");
             Console.WriteLine($"# indices (corners/edges0 = {g.NumCorners}");
             Console.WriteLine($"# instances = {g.NumInstances}");
             Console.WriteLine($"Number of attributes = {g.Attributes.Count}");
@@ -73,7 +73,7 @@ $@"    #animations = {scene.AnimationCount}
             Assert.AreEqual(g1.NumCorners, g2.NumCorners);
             Assert.AreEqual(g1.NumVertices, g2.NumVertices);
             Assert.AreEqual(g1.NumInstances, g2.NumInstances);
-            Assert.AreEqual(g1.NumSubgeometries, g2.NumSubgeometries);
+            Assert.AreEqual(g1.NumMeshes, g2.NumMeshes);
             Assert.AreEqual(g1.Attributes.Count, g2.Attributes.Count);
             for (var i = 0; i < g1.Attributes.Count; ++i)
             {

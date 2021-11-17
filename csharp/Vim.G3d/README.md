@@ -55,7 +55,7 @@ There are a number of predefined semantic values with reserved names, but applic
 * normal,        // computed normal information (per face, group, corner, or vertex)
 * binormal,      // computed binormal information 
 * tangent,       // computed tangent information 
-* materialid,    // material id
+* material,      // material index
 * visibility,    // visibility data (e.g. 
 * size,          // number of indices per face or group
 * uv,            // UV (sometimes more than 1, e.g. Unity supports up to 8)

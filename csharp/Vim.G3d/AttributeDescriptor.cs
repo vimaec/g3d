@@ -99,14 +99,18 @@ namespace Vim.G3d
                     return Association.assoc_face;
                 case "instance":
                     return Association.assoc_instance;
-                case "subgeometry":
-                    return Association.assoc_subgeometry;
                 case "vertex":
                     return Association.assoc_vertex;
-
-                // Legacy G3D format called "subgeo" groups
-                case "group":
-                    return Association.assoc_subgeometry;
+                case "shapevertex":
+                    return Association.assoc_shapevertex;
+                case "shape":
+                    return Association.assoc_shape;
+                case "material":
+                    return Association.assoc_material;
+                case "mesh":
+                    return Association.assoc_mesh;
+                case "submesh":
+                    return Association.assoc_submesh;
 
                 // Anything else we just treat as unknown 
                 default:
