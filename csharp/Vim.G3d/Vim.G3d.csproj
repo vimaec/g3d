@@ -9,7 +9,7 @@ It can be easily and efficiently deserialized and rendered in different language
     <PackageProjectUrl>https://github.com/vimaec/g3d</PackageProjectUrl>
     <RepositoryUrl>https://github.com/vimaec/g3d</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <Version>1.2.1</Version>
+    <Version>1.3.0</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">

@@ -6,7 +6,7 @@
     </PropertyGroup>
 
     <ItemGroup>
-        <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
+        <ProjectReference Include="../Vim.G3d/Vim.G3d.csproj" />
     </ItemGroup>
 
     <ItemGroup>
