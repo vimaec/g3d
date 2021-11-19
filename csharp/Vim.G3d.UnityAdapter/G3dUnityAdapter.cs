@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using UnityEngine;
 using UnityEngine.Rendering;
+using Vim.LinqArray;
 
 namespace Vim.G3d
 {
@@ -33,17 +34,17 @@ namespace Vim.G3d
             }
         }
 
-        public static Vector2[] ToUnityUV(this Attribute<float> attr)
-            => attr?.CheckArityAndAssociation(2, Association.assoc_vertex)?.CastData<Vector2>().ToArray();
+        public static Vector3[] ToUnityVector3Array(this IArray<Math3d.Vector3> vectors)
+            => vectors.Select(v => new Vector3(v.X, v.Y, v.Z)).ToArray();
 
-        public static Color[] ToUnityVertexColor(this Attribute<float> attr)
-            => attr?.CheckArityAndAssociation(4, Association.assoc_vertex)?.CastData<Color>().ToArray();
+        public static Vector2[] ToUnityVector2Array(this IArray<Math3d.Vector2> vectors)
+            => vectors.Select(v => new Vector2(v.X, v.Y)).ToArray();
 
-        public static Vector3[] ToUnityNormal(this Attribute<float> attr)
-            => attr?.CheckArityAndAssociation(3, Association.assoc_vertex)?.CastData<Vector3>().ToArray();
+        public static Vector4[] ToUnityVector4Array(this IArray<Math3d.Vector4> vectors)
+            => vectors.Select(v => new Vector4(v.X, v.Y, v.Z, v.W)).ToArray();
 
-        public static Vector4[] ToUnityTangent(this Attribute<float> attr)
-            => attr?.CheckArityAndAssociation(4, Association.assoc_vertex)?.CastData<Vector4>().ToArray();
+        public static Color[] ToUnityColorArray(this IArray<Math3d.Vector4> vectors)
+            => vectors.Select(v => new Color(v.X, v.Y, v.Z, v.W)).ToArray();
 
         public static Mesh ToMesh(this G3D g3d)
             => g3d.CopyTo(new Mesh());
@@ -53,57 +54,85 @@ namespace Vim.G3d
 
         public static Mesh CopyTo(this G3D g3d, Mesh mesh)
         {
-            mesh.vertices = g3d.Vertices.CastData<Vector3>().ToArray();
+            mesh.vertices = g3d.Vertices.ToUnityVector3Array();
 
-            mesh.uv = g3d.UV.ElementAtOrDefault(0).ToUnityUV();
-            mesh.uv2 = g3d.UV.ElementAtOrDefault(1).ToUnityUV();
-            mesh.uv3 = g3d.UV.ElementAtOrDefault(2).ToUnityUV();
-            mesh.uv4 = g3d.UV.ElementAtOrDefault(3).ToUnityUV();
-            mesh.uv5 = g3d.UV.ElementAtOrDefault(4).ToUnityUV();
-            mesh.uv6 = g3d.UV.ElementAtOrDefault(5).ToUnityUV();
-            mesh.uv7 = g3d.UV.ElementAtOrDefault(6).ToUnityUV();
-            mesh.uv8 = g3d.UV.ElementAtOrDefault(7).ToUnityUV();
+            mesh.uv = g3d.AllVertexUvs.ElementAtOrDefault(0).ToUnityVector2Array();
+            mesh.uv2 = g3d.AllVertexUvs.ElementAtOrDefault(1).ToUnityVector2Array();
+            mesh.uv3 = g3d.AllVertexUvs.ElementAtOrDefault(2).ToUnityVector2Array();
+            mesh.uv4 = g3d.AllVertexUvs.ElementAtOrDefault(3).ToUnityVector2Array();
+            mesh.uv5 = g3d.AllVertexUvs.ElementAtOrDefault(4).ToUnityVector2Array();
+            mesh.uv6 = g3d.AllVertexUvs.ElementAtOrDefault(5).ToUnityVector2Array();
+            mesh.uv7 = g3d.AllVertexUvs.ElementAtOrDefault(6).ToUnityVector2Array();
+            mesh.uv8 = g3d.AllVertexUvs.ElementAtOrDefault(7).ToUnityVector2Array();
 
-            mesh.colors = g3d.VertexColor.ElementAtOrDefault(0)?.ToUnityVertexColor();
-            mesh.normals = g3d.VertexNormal.ToUnityNormal();
+            mesh.colors = g3d.AllVertexColors.ElementAtOrDefault(0)?.ToUnityColorArray();
+            mesh.normals = g3d.VertexNormals.ToUnityVector3Array();
 
-            mesh.tangents = g3d.Tangents.ToUnityTangent();
+            mesh.tangents = g3d.VertexTangents.ToUnityVector4Array();
             mesh.indexFormat = IndexFormat.UInt32;
 
-            if (g3d.NumGroups > 0)
-            {
-                foreach (var grp in g3d.Groups)
-                {
-                    var topo = TopologyFromPointsPerFace(grp.CornersPerFace);
-                    mesh.SetIndices(grp.Indices.ToArray(), topo, grp.Id);
-                }
-            }
-            else
-            {
-                var topo = TopologyFromPointsPerFace(g3d.CornersPerFace);
-                mesh.SetIndices(g3d.Indices.Data.ToArray(), topo, 0);
-            }
-
+            mesh.SetIndices(g3d.Indices.ToArray(), TopologyFromPointsPerFace(g3d.NumCornersPerFace), 0);
+            
             if (mesh.normals == null || mesh.normals.Length == 0)
                 mesh.RecalculateNormals();
 
             return mesh;
         }
 
-        public static G3DBuilder AddUnityUV(this G3DBuilder gb, Vector2[] vectors)
-            => vectors?.Length == 0 ? gb : gb.AddAttribute(vectors.ToBinaryAttribute(CommonAttributes.VertexUv));
+        public static G3DBuilder AddUnityUV(this G3DBuilder gb, Vector2[] vectors, int index)
+        {
+            if (vectors?.Length == 0)
+                return gb;
+            
+            var data = vectors.Select(v => new Math3d.Vector2(v.x, v.y)).ToIArray();
+            var attrDescr = AttributeDescriptor.Parse(CommonAttributes.VertexUv).SetIndex(index);
+
+            return gb.Add(new GeometryAttribute<Math3d.Vector2>(data, attrDescr));
+        }
 
         public static G3DBuilder AddUnityVertices(this G3DBuilder gb, Vector3[] vectors)
-            => vectors?.Length == 0 ? gb : gb.AddAttribute(vectors.ToBinaryAttribute(CommonAttributes.Position));
+        {
+            if (vectors?.Length == 0)
+                return gb;
+
+            var data = vectors.Select(v => new Math3d.Vector3(v.x, v.y, v.z)).ToIArray();
+            var attrDescr = AttributeDescriptor.Parse(CommonAttributes.Position);
+
+            return gb.Add(new GeometryAttribute<Math3d.Vector3>(data, attrDescr));
+        }
 
         public static G3DBuilder AddUnityColors(this G3DBuilder gb, Color[] colors)
-            => colors?.Length == 0 ? gb : gb.AddAttribute(colors.ToBinaryAttribute(CommonAttributes.VertexColorWithAlpha));
+        {
+            if (colors?.Length == 0)
+                return gb;
+
+            var data = colors.Select(c => new Math3d.Vector4(c.r, c.g, c.b, c.a)).ToIArray();
+            var attrDescr = AttributeDescriptor.Parse(CommonAttributes.VertexColor);
+
+            return gb.Add(new GeometryAttribute<Math3d.Vector4>(data, attrDescr));
+        }
 
         public static G3DBuilder AddUnityNormals(this G3DBuilder gb, Vector3[] normals)
-            => normals?.Length == 0 ? gb : gb.AddAttribute(normals.ToBinaryAttribute(CommonAttributes.VertexNormal));
+        {
+            if (normals?.Length == 0)
+                return gb;
+
+            var data = normals.Select(v => new Math3d.Vector3(v.x, v.y, v.z)).ToIArray();
+            var attrDescr = AttributeDescriptor.Parse(CommonAttributes.VertexNormal);
+
+            return gb.Add(new GeometryAttribute<Math3d.Vector3>(data, attrDescr));
+        }
 
         public static G3DBuilder AddUnityTangent(this G3DBuilder gb, Vector4[] tangents)
-            => tangents?.Length == 0 ? gb : gb.AddAttribute(tangents.ToBinaryAttribute(CommonAttributes.VertexTangent4));
+        {
+            if (tangents?.Length == 0)
+                return gb;
+
+            var data = tangents.Select(v => new Math3d.Vector4(v.x, v.y, v.z, v.w)).ToIArray();
+            var attrDescr = AttributeDescriptor.Parse(CommonAttributes.VertexTangent);
+
+            return gb.Add(new GeometryAttribute<Math3d.Vector4>(data, attrDescr));
+        }
 
         public static G3D ToG3D(this Mesh mesh)
         {
@@ -111,14 +140,15 @@ namespace Vim.G3d
 
             // NOTE: if the any of the UV channels are null, followed by a non-null channel, then the UV channels will get reindexed 
             // during reimport of the G3D. This would be quite rare. 
-            g.AddUnityUV(mesh.uv);
-            g.AddUnityUV(mesh.uv2);
-            g.AddUnityUV(mesh.uv3);
-            g.AddUnityUV(mesh.uv4);
-            g.AddUnityUV(mesh.uv5);
-            g.AddUnityUV(mesh.uv6);
-            g.AddUnityUV(mesh.uv7);
-            g.AddUnityUV(mesh.uv8);
+            var uvIndex = 0;
+            g.AddUnityUV(mesh.uv, uvIndex++);
+            g.AddUnityUV(mesh.uv2, uvIndex++);
+            g.AddUnityUV(mesh.uv3, uvIndex++);
+            g.AddUnityUV(mesh.uv4, uvIndex++);
+            g.AddUnityUV(mesh.uv5, uvIndex++);
+            g.AddUnityUV(mesh.uv6, uvIndex++);
+            g.AddUnityUV(mesh.uv7, uvIndex++);
+            g.AddUnityUV(mesh.uv8, uvIndex++);
 
             g.AddUnityVertices(mesh.vertices);
             g.AddUnityNormals(mesh.normals);
@@ -136,7 +166,6 @@ namespace Vim.G3d
                 offset += subIndices.Length;
             }
 
-            g.AddGroupIndexOffsets(offsets.ToArray());
             g.AddIndices(indices.ToArray());
 
             return g.ToG3D();
@@ -149,7 +178,8 @@ namespace Vim.G3d
             => mesh.ToG3D().Write(stream);
 
         public static G3D ToG3D(this TextAsset asset)
-            => asset.bytes.ToG3D();
+            => throw new NotImplementedException(); // TODO: Restore this
+            //=> asset.bytes.ToG3D();
 
         public static G3D LoadG3DAsset(string assetName)
             => Resources.Load<TextAsset>(assetName).ToG3D();
