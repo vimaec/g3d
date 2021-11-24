@@ -1,7 +1,7 @@
 <Project>
     <PropertyGroup Label="NuGetDependenciesVersions">
         <Math3DVersion>1.4.0</Math3DVersion>
-        <BFastVersion>1.4.0</BFastVersion>
+        <BFastVersion>1.4.1</BFastVersion>
         <LinqArrayVersion>1.1.0</LinqArrayVersion>
     </PropertyGroup>
 </Project>
