@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "Vim.G3d.CppCLR.Tests": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}
