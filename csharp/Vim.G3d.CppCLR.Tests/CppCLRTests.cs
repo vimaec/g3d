@@ -6,16 +6,11 @@ namespace Vim.G3d.CppCLR.Tests
 {
     public static class CppCLRTests
     {
-        public static string BaseInputDataPath => Path.Combine(TestContext.CurrentContext.TestDirectory,
-            "..", "..", "..", "..", "data"); // 4, not 5, 4
-
-        public static string InputDataPath => Path.Combine(BaseInputDataPath, "assimp", "test");
-
-        public static string TestOutputFolder => Path.Combine(InputDataPath, "..", "..", "g3d");
-
-        public static string[] GeneratedG3ds => Directory.GetFiles(TestOutputFolder, "*.g3d");
-
+        public static readonly string ProjectFolder = new DirectoryInfo(Properties.Resources.ProjDir.Trim()).FullName;
+        public static string RootFolder = Path.Combine(ProjectFolder, "..", "..");
+        public static string TestOutputFolder = Path.Combine(RootFolder, "test-data", "output");
         public static string TestOutputFolderCpp => Path.Combine(TestOutputFolder, "cpp");
+        public static string[] GeneratedG3ds => Directory.GetFiles(TestOutputFolder, "*.g3d");
 
         public static void OutputStats(ManagedG3d x)
         {
