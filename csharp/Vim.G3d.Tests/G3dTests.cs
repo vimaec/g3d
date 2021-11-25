@@ -226,6 +226,8 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(3, g.NumCornersPerFace);
             Assert.AreEqual(0, g.NumMeshes);
             Assert.AreEqual(0, g.NumInstances);
+            Assert.AreEqual(0, g.NumShapes);
+            Assert.AreEqual(1, g.NumScenes);
 
             Assert.AreEqual(vertices, g.Vertices.ToArray());
             Assert.AreEqual(indices, g.Indices.ToArray());
@@ -264,6 +266,8 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(1, g.NumFaces);
             Assert.AreEqual(0, g.NumMeshes);
             Assert.AreEqual(0, g.NumInstances);
+            Assert.AreEqual(0, g.NumShapes);
+            Assert.AreEqual(1, g.NumScenes);
 
             Assert.AreEqual(vertices, g.Vertices.ToArray());
             Assert.AreEqual(indices, g.Indices.ToArray());
@@ -277,6 +281,8 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(2, g2.NumFaces);
             Assert.AreEqual(0, g2.NumMeshes);
             Assert.AreEqual(0, g2.NumInstances);
+            Assert.AreEqual(0, g2.NumShapes);
+            Assert.AreEqual(1, g2.NumScenes);
 
             Assert.AreEqual(vertices, g2.GetAttributeDataPosition().ToArray());
             Assert.AreEqual(new[] { 0, 1, 2, 0, 2, 3 }, g2.GetAttributeDataIndex().ToArray());
@@ -288,6 +294,8 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(4, g2.NumVertices);
             Assert.AreEqual(3, g2.NumCorners);
             Assert.AreEqual(1, g2.NumFaces);
+            Assert.AreEqual(0, g2.NumShapes);
+            Assert.AreEqual(1, g2.NumScenes);
 
             Assert.AreEqual(vertices, g2.GetAttributeDataPosition().ToArray());
             Assert.AreEqual(new[] { 0, 2, 3 }, g2.GetAttributeDataIndex().ToArray());
@@ -346,6 +354,8 @@ namespace Vim.G3d.Tests
                 Assert.AreEqual(g1.NumVertices, g2.NumVertices);
                 Assert.AreEqual(g1.NumInstances, g2.NumInstances);
                 Assert.AreEqual(g1.NumMeshes, g2.NumMeshes);
+                Assert.AreEqual(g1.NumShapes, g2.NumShapes);
+                Assert.AreEqual(g1.NumScenes, g2.NumScenes);
             }
 
             // BUG: Assimp ignores the OBJ index buffer. God knows why. 

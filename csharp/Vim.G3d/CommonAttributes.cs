@@ -40,6 +40,9 @@ namespace Vim.G3d
         public const string MaterialSmoothness = "g3d:material:smoothness:0:float32:1";
         public const string SubmeshIndexOffset = "g3d:submesh:indexoffset:0:int32:1";
         public const string SubmeshMaterial = "g3d:submesh:material:0:int32:1";
+        public const string SceneInstanceIndices = "g3d:sceneinstance:index:0:int32:1";
+        public const string SceneShapeIndices = "g3d:sceneshape:index:0:int32:1";
+        public const string SceneIndexOffsets = "g3d:scene:indexoffset:0:int32:2";
     }
 
     public static class CommonAttributeExtensions
@@ -219,6 +222,24 @@ namespace Vim.G3d
         public static GeometryAttribute<int> ToSubmeshMaterialAttribute(this int[] xs) => xs.ToIArray().ToSubmeshMaterialAttribute();
         public static GeometryAttribute<int> GetAttributeSubmeshMaterial(this IGeometryAttributes self) => self.GetAttribute<int>(CommonAttributes.SubmeshMaterial);
         public static IArray<int> GetAttributeDataSubmeshMaterial(this IGeometryAttributes self) => self.GetAttributeSubmeshMaterial()?.Data;
+        public static GeometryAttribute<int> ToSceneInstanceIndicesAttribute(this IArray<int> xs, int index) => xs.ToAttribute(CommonAttributes.SceneInstanceIndices, index);
+        public static GeometryAttribute<int> ToSceneInstanceIndicesAttribute(this IArray<int> xs) => xs.ToAttribute(CommonAttributes.SceneInstanceIndices);
+        public static GeometryAttribute<int> ToSceneInstanceIndicesAttribute(this int[] xs, int index) => xs.ToIArray().ToSceneInstanceIndicesAttribute(index);
+        public static GeometryAttribute<int> ToSceneInstanceIndicesAttribute(this int[] xs) => xs.ToIArray().ToSceneInstanceIndicesAttribute();
+        public static GeometryAttribute<int> GetAttributeSceneInstanceIndices(this IGeometryAttributes self) => self.GetAttribute<int>(CommonAttributes.SceneInstanceIndices);
+        public static IArray<int> GetAttributeDataSceneInstanceIndices(this IGeometryAttributes self) => self.GetAttributeSceneInstanceIndices()?.Data;
+        public static GeometryAttribute<int> ToSceneShapeIndicesAttribute(this IArray<int> xs, int index) => xs.ToAttribute(CommonAttributes.SceneShapeIndices, index);
+        public static GeometryAttribute<int> ToSceneShapeIndicesAttribute(this IArray<int> xs) => xs.ToAttribute(CommonAttributes.SceneShapeIndices);
+        public static GeometryAttribute<int> ToSceneShapeIndicesAttribute(this int[] xs, int index) => xs.ToIArray().ToSceneShapeIndicesAttribute(index);
+        public static GeometryAttribute<int> ToSceneShapeIndicesAttribute(this int[] xs) => xs.ToIArray().ToSceneShapeIndicesAttribute();
+        public static GeometryAttribute<int> GetAttributeSceneShapeIndices(this IGeometryAttributes self) => self.GetAttribute<int>(CommonAttributes.SceneShapeIndices);
+        public static IArray<int> GetAttributeDataSceneShapeIndices(this IGeometryAttributes self) => self.GetAttributeSceneShapeIndices()?.Data;
+        public static GeometryAttribute<Int2> ToSceneIndexOffsetsAttribute(this IArray<Int2> xs, int index) => xs.ToAttribute(CommonAttributes.SceneIndexOffsets, index);
+        public static GeometryAttribute<Int2> ToSceneIndexOffsetsAttribute(this IArray<Int2> xs) => xs.ToAttribute(CommonAttributes.SceneIndexOffsets);
+        public static GeometryAttribute<Int2> ToSceneIndexOffsetsAttribute(this Int2[] xs, int index) => xs.ToIArray().ToSceneIndexOffsetsAttribute(index);
+        public static GeometryAttribute<Int2> ToSceneIndexOffsetsAttribute(this Int2[] xs) => xs.ToIArray().ToSceneIndexOffsetsAttribute();
+        public static GeometryAttribute<Int2> GetAttributeSceneIndexOffsets(this IGeometryAttributes self) => self.GetAttribute<Int2>(CommonAttributes.SceneIndexOffsets);
+        public static IArray<Int2> GetAttributeDataSceneIndexOffsets(this IGeometryAttributes self) => self.GetAttributeSceneIndexOffsets()?.Data;
 
     }
 }

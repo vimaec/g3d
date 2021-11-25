@@ -29,6 +29,7 @@ namespace Vim.G3d
 
         public int NumShapeVertices { get; } = -1;
         public int NumShapes { get; } = -1;
+        public int NumScenes { get; } = -1;
 
         public IArray<GeometryAttribute> Attributes { get; }
 
@@ -88,6 +89,9 @@ namespace Vim.G3d
                         break;
                     case Association.assoc_shape:
                         NumShapes = ValidateAttribute(attr, NumShapes);
+                        break;
+                    case Association.assoc_scene:
+                        NumScenes = ValidateAttribute(attr, NumScenes);
                         break;
                 }
 
@@ -156,6 +160,7 @@ namespace Vim.G3d
 
             if (NumShapeVertices < 0) NumShapeVertices = 0;
             if (NumShapes < 0) NumShapes = 0;
+            if (NumScenes < 0) NumScenes = 1; // NOTE: There is always a minimum of one scene to implicitly contain the instances and shapes if none are defined.
         }
 
         public static GeometryAttributes Empty

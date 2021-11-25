@@ -27,12 +27,15 @@ namespace Vim.G3d
         assoc_face,     // face associated data
         assoc_corner,   // corner (aka face-vertex) data. A corner is associated with one vertex, but a vertex may be shared between multiple corners  
         assoc_edge,     // half-edge data. Each face consists of n half-edges, one per corner. A half-edge, is a directed edge
-        assoc_instance, // instance information 
+        assoc_instance, // instance
         assoc_shapevertex, // flattened shape vertex collection.
-        assoc_shape,    // shape instance
+        assoc_shape,    // shape
         assoc_material, // material properties
-        assoc_mesh, 
-        assoc_submesh
+        assoc_mesh,
+        assoc_submesh,
+        assoc_scene,
+        assoc_sceneinstance,
+        assoc_sceneshape,
     };
 
     /// <summary>
@@ -73,6 +76,5 @@ namespace Vim.G3d
         public const string TangentOut = "tangentout";
 
         public const string SubMeshOffset = "submeshoffset";
-
     }
 }

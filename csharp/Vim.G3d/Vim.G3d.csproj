@@ -9,7 +9,7 @@ It can be easily and efficiently deserialized and rendered in different language
     <PackageProjectUrl>https://github.com/vimaec/g3d</PackageProjectUrl>
     <RepositoryUrl>https://github.com/vimaec/g3d</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <Version>1.3.1</Version>
+    <Version>1.4.0-experimental</Version>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
@@ -36,9 +36,9 @@ It can be easily and efficiently deserialized and rendered in different language
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)"/>
-    <PackageReference Include="Vim.BFast" Version="$(BFastVersion)"/>
-    <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)"/>
+    <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)" />
+    <PackageReference Include="Vim.BFast" Version="$(BFastVersion)" />
+    <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)" />
   </ItemGroup>
 
   <ItemGroup>

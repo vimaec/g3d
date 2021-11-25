@@ -16,7 +16,7 @@
 
 namespace g3d
 {
-    #define G3D_VERSION = { 2, 1, 0, "2021.08.10" };
+    #define G3D_VERSION = { 2, 2, 0, "2021.11.24" };
 
     using namespace std;
 
@@ -48,6 +48,9 @@ namespace g3d
         assoc_material,
         assoc_mesh,
         assoc_submesh,
+        assoc_scene,
+        assoc_sceneinstance,
+        assoc_sceneshape,
         assoc_all,
         assoc_none,
     };
@@ -123,19 +126,22 @@ namespace g3d
 
         static const map<Association, string>& associations_to_strings() {
             static map<Association, string> names = {
-                { assoc_vertex,     "vertex" },
-                { assoc_face,       "face" },
-                { assoc_corner,     "corner" },
-                { assoc_edge,       "edge" },
-                { assoc_subgeometry,"subgeometry" },
-                { assoc_instance,   "instance" },
-                { assoc_shapevertex,"shapevertex" },
-                { assoc_shape,      "shape" },
-                { assoc_material,   "material" },
-                { assoc_mesh,       "mesh" },
-                { assoc_submesh,    "submesh" },
-                { assoc_all,        "all" },
-                { assoc_none,       "none" },
+                { assoc_vertex,        "vertex" },
+                { assoc_face,          "face" },
+                { assoc_corner,        "corner" },
+                { assoc_edge,          "edge" },
+                { assoc_subgeometry,   "subgeometry" },
+                { assoc_instance,      "instance" },
+                { assoc_shapevertex,   "shapevertex" },
+                { assoc_shape,         "shape" },
+                { assoc_material,      "material" },
+                { assoc_mesh,          "mesh" },
+                { assoc_submesh,       "submesh" },
+                { assoc_scene,         "scene" },
+                { assoc_sceneinstance, "sceneinstance"},
+                { assoc_sceneshape,    "sceneshape"},
+                { assoc_all,           "all" },
+                { assoc_none,          "none" },
             };
             return names;
         }
@@ -230,7 +236,7 @@ namespace g3d
     };
 
     // A G3d data structure, is a set of attributes. It is stored internally as a BFast 
-    struct G3d    
+    struct G3d
     {
         string meta;
         bfast::Bfast bfast;
@@ -318,7 +324,7 @@ namespace g3d
         static constexpr const char* FaceIndexOffset = "g3d:face:indexoffset:0:int32:1";
         static constexpr const char* FaceSelectionWeight = "g3d:face:weight:0:float32:1";
 
-        //VIM 1.0
+        // VIM 1.0
         
         // Meshes
         static constexpr const char* MeshSubmeshOffset = "g3d:mesh:submeshoffset:0:int32:1";
@@ -342,6 +348,11 @@ namespace g3d
         // Submeshes
         static constexpr const char* SubmeshIndexOffset = "g3d:submesh:indexoffset:0:int32:1";
         static constexpr const char* SubmeshMaterial = "g3d:submesh:material:0:int32:1";
+
+        // Scenes (VIM 1.1)
+        static constexpr const char* SceneInstanceIndices = "g3d:sceneinstance:index:0:int32:1";
+        static constexpr const char* SceneShapeIndices = "g3d:sceneshape:index:0:int32:1";
+        static constexpr const char* SceneIndexOffsets = "g3d:scene:indexoffset:0:int32:2";
 
         // https://docs.thinkboxsoftware.com/products/krakatoa/2.6/1_Documentation/manual/formats/particle_channels.html
         static constexpr const char* PointVelocity = "g3d:vertex:velocity:0:float32:3";

@@ -111,6 +111,12 @@ namespace Vim.G3d
                     return Association.assoc_mesh;
                 case "submesh":
                     return Association.assoc_submesh;
+                case "scene":
+                    return Association.assoc_scene;
+                case "sceneinstance":
+                    return Association.assoc_sceneinstance;
+                case "sceneshape":
+                    return Association.assoc_sceneshape;
 
                 // Anything else we just treat as unknown 
                 default:

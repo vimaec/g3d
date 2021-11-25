@@ -54,12 +54,13 @@ namespace Vim.G3d
         public IArray<int> MeshVertexCounts { get; } // Computed
         public IArray<int> MeshSubmeshOffset { get; }
         public IArray<int> MeshSubmeshCount { get; } // Computed
-        public IArray<G3dMesh> Meshes { get; }
+        public IArray<G3dMesh> Meshes { get; } // Computed
 
         // Instances
         public IArray<int> InstanceParents { get; } // Index of the parent transform 
         public IArray<Matrix4x4> InstanceTransforms { get; } // A 4x4 matrix in row-column order defining the transormed
         public IArray<int> InstanceMeshes { get; } // The SubGeometry associated with the index
+        public IArray<G3dInstance> Instances { get; } // Computed
 
         // Shapes
         public IArray<Vector3> ShapeVertices { get; }
@@ -81,6 +82,14 @@ namespace Vim.G3d
         public IArray<int> SubmeshIndexCount { get; }
         public IArray<int> SubmeshMaterials { get; }
 
+        // Scenes
+        public IArray<int> SceneInstanceIndices { get; }
+        public IArray<int> SceneInstanceCounts { get; } // Computed
+        public IArray<int> SceneShapeIndices { get; }
+        public IArray<int> SceneShapeCounts { get; } // Computed
+        public IArray<Int2> SceneIndexOffsets { get; }
+        public IArray<G3dScene> Scenes { get; } // Computed
+
         public G3D(IEnumerable<GeometryAttribute> attributes, G3dHeader? header = null, int numCornersPerFaceOverride = -1)
             : base(attributes, numCornersPerFaceOverride)
         {
@@ -96,6 +105,10 @@ namespace Vim.G3d
                             Indices = Indices ?? attr.AsType<int>().Data;
                         if (attr.IsTypeAndAssociation<short>(Association.assoc_corner))
                             Indices = Indices ?? attr.AsType<short>().Data.Select(x => (int)x);
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_sceneinstance))
+                            SceneInstanceIndices = SceneInstanceIndices ?? attr.AsType<int>().Data;
+                        if (attr.IsTypeAndAssociation<int>(Association.assoc_sceneshape))
+                            SceneShapeIndices = SceneShapeIndices ?? attr.AsType<int>().Data;
                         break;
 
                     case Semantic.Position:
@@ -142,6 +155,8 @@ namespace Vim.G3d
                             MeshIndexOffsets = MeshIndexOffsets ?? attr.AsType<int>().Data;
                         if (attr.IsTypeAndAssociation<int>(Association.assoc_submesh))
                             SubmeshIndexOffsets = SubmeshIndexOffsets ?? attr.AsType<int>().Data;
+                        if (attr.IsTypeAndAssociation<Int2>(Association.assoc_scene))
+                            SceneIndexOffsets = SceneIndexOffsets ?? attr.AsType<Int2>().Data;
                         break;
 
                     case Semantic.Normal:
@@ -196,12 +211,10 @@ namespace Vim.G3d
             }
 
             // If no vertices are provided, we are going to generate a list of zero vertices.
-            if (Vertices == null)
-                Vertices = Vector3.Zero.Repeat(0);
+            Vertices = Vertices ?? Vector3.Zero.Repeat(0);
 
             // If no indices are provided then we are going to have to treat the index buffer as indices
-            if (Indices == null)
-                Indices = Vertices.Indices();
+            Indices = Indices ?? Vertices.Indices();
 
             // Compute face normals if possible
             if (FaceNormals == null && VertexNormals != null)
@@ -234,26 +247,31 @@ namespace Vim.G3d
             // Compute all meshes
             Meshes = NumMeshes.Select(i => new G3dMesh(this, i));
 
-            if(MaterialColors != null)
+            if (MaterialColors != null)
                 Materials = MaterialColors.Count.Select(i => new G3dMaterial(this, i));
 
+            // Compute all instances
+            Instances = NumInstances.Select(i => new G3dInstance(this, i));
+
             // Process the shape data
-            if (ShapeVertices == null)
-                ShapeVertices = Vector3.Zero.Repeat(0);
-
-            if (ShapeVertexOffsets == null)
-                ShapeVertexOffsets = Array.Empty<int>().ToIArray();
-
-            if (ShapeColors == null)
-                ShapeColors = Vector4.Zero.Repeat(0);
-             
-            if (ShapeWidths == null)
-                ShapeWidths = Array.Empty<float>().ToIArray();
-
+            ShapeVertices = ShapeVertices ?? Vector3.Zero.Repeat(0);
+            ShapeVertexOffsets = ShapeVertexOffsets ?? Array.Empty<int>().ToIArray();
+            ShapeColors = ShapeColors ?? Vector4.Zero.Repeat(0);
+            ShapeWidths = ShapeWidths ?? Array.Empty<float>().ToIArray();
             ShapeVertexCounts = GetSubArrayCounts(NumShapes, ShapeVertexOffsets, ShapeVertices.Count);
             ValidateSubArrayCounts(ShapeVertexCounts, nameof(ShapeVertexCounts));
-
             Shapes = NumShapes.Select(i => new G3dShape(this, i));
+
+            // Process the scene data
+            // NOTE: If there are no scene index offsets, we default to only one scene in which all instances and shapes are referenced.
+            SceneIndexOffsets = SceneIndexOffsets ?? Int2.Zero.Repeat(1);
+            SceneInstanceIndices = SceneInstanceIndices ?? NumInstances.Select(i => i);
+            SceneShapeIndices = SceneShapeIndices ?? NumShapes.Select(i => i);
+            SceneInstanceCounts = GetSubArrayCounts(NumScenes, SceneIndexOffsets.Select(v => v.X), SceneInstanceIndices.Count);
+            ValidateSubArrayCounts(SceneInstanceCounts, nameof(SceneInstanceCounts));
+            SceneShapeCounts = GetSubArrayCounts(NumScenes, SceneIndexOffsets.Select(v => v.Y), SceneShapeIndices.Count);
+            ValidateSubArrayCounts(SceneShapeCounts, nameof(SceneShapeCounts));
+            Scenes = NumScenes.Select(i => new G3dScene(this, i));
         }
 
         private static IArray<int> GetSubArrayCounts(int numItems, IArray<int> offsets, int totalCount)

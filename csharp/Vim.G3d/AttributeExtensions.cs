@@ -58,7 +58,7 @@ namespace Vim.G3d
                 if (desc.DataArity == 1)
                     return attr.AsType<byte>().Data.Select(b => new Vector4(b / 255f, b / 255f, b / 255f, 1f));
             }
-            Debug.WriteLine($"Failed to recongize color format {attr.Descriptor}");
+            Debug.WriteLine($"Failed to recognize color format {attr.Descriptor}");
             return null;
         }
 
