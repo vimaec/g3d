@@ -49,14 +49,18 @@ It can be easily and efficiently deserialized and rendered in different language
 
   <Choose>
     <When Condition="'$(Configuration)' == 'LocalSrc_Debug' OR '$(Configuration)' == 'LocalSrc_Release'">
-      <ProjectReference Include="../../../Math3D/src/Vim.Math3D.csproj" />
-      <ProjectReference Include="../../../bfast/csharp/Vim.BFast/Vim.BFast.csproj" />
-      <ProjectReference Include="../../../LinqArray/LinqArray/Vim.LinqArray.csproj" />
+      <ItemGroup>
+        <ProjectReference Include="../../../Math3D/src/Vim.Math3D.csproj" />
+        <ProjectReference Include="../../../bfast/csharp/Vim.BFast/Vim.BFast.csproj" />
+        <ProjectReference Include="../../../LinqArray/LinqArray/Vim.LinqArray.csproj" />
+      </ItemGroup>
     </When>
     <Otherwise>
-      <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)" />
-      <PackageReference Include="Vim.BFast" Version="$(BFastVersion)" />
-      <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)" />
+      <ItemGroup>
+        <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)" />
+        <PackageReference Include="Vim.BFast" Version="$(BFastVersion)" />
+        <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)" />
+      </ItemGroup>
     </Otherwise>
   </Choose>
 
