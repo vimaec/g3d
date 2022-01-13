@@ -16,6 +16,12 @@ It can be easily and efficiently deserialized and rendered in different language
     <SymbolPackageFormat>snupkg</SymbolPackageFormat>
   </PropertyGroup>
 
+  <PropertyGroup Label="NuGetDependenciesVersions">
+    <Math3DVersion>1.5.0</Math3DVersion>
+    <BFastVersion>1.4.1</BFastVersion>
+    <LinqArrayVersion>1.1.0</LinqArrayVersion>
+  </PropertyGroup>
+
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU' OR '$(Configuration)|$(Platform)'=='LocalSrc_Release|AnyCPU'">
     <Optimize>true</Optimize>
   </PropertyGroup>
@@ -44,21 +50,43 @@ It can be easily and efficiently deserialized and rendered in different language
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All"/>
+    <PackageReference Include="Microsoft.SourceLink.GitHub" Version="1.1.1" PrivateAssets="All" />
   </ItemGroup>
 
   <Choose>
-    <When Condition="'$(Configuration)' == 'LocalSrc_Debug' OR '$(Configuration)' == 'LocalSrc_Release'">
+    <When Condition="!$([System.String]::IsNullOrWhitespace($(Math3DPath)))">
       <ItemGroup>
-        <ProjectReference Include="../../../Math3D/src/Vim.Math3D.csproj" />
-        <ProjectReference Include="../../../bfast/csharp/Vim.BFast/Vim.BFast.csproj" />
-        <ProjectReference Include="../../../LinqArray/LinqArray/Vim.LinqArray.csproj" />
+        <ProjectReference Include="$(Math3DPath)" />
       </ItemGroup>
     </When>
     <Otherwise>
       <ItemGroup>
         <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+  <Choose>
+    <When Condition="!$([System.String]::IsNullOrWhitespace($(BFastPath)))">
+      <ItemGroup>
+        <ProjectReference Include="$(BFastPath)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
         <PackageReference Include="Vim.BFast" Version="$(BFastVersion)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+  <Choose>
+    <When Condition="!$([System.String]::IsNullOrWhitespace($(LinqArrayPath)))">
+      <ItemGroup>
+        <ProjectReference Include="$(LinqArrayPath)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
         <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)" />
       </ItemGroup>
     </Otherwise>
