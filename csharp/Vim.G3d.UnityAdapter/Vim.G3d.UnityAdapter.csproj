@@ -13,12 +13,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)" />
-    <PackageReference Include="Vim.BFast" Version="$(BFastVersion)" />
-    <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)" />
-  </ItemGroup>
-
-  <ItemGroup>
     <ProjectReference Include="../Vim.G3d/Vim.G3d.csproj" />
   </ItemGroup>
 </Project>

@@ -9,9 +9,6 @@
         <PackageReference Include="NUnit" Version="3.13.2" />
         <PackageReference Include="NUnit3TestAdapter" Version="4.0.0" />
         <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.9.4" />
-        <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)"/>
-        <PackageReference Include="Vim.BFast" Version="$(BFastVersion)"/>
-        <PackageReference Include="Vim.LinqArray" Version="$(LinqArrayVersion)"/>
     </ItemGroup>
 
     <ItemGroup>
