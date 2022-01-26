@@ -56,6 +56,7 @@ G3D is organized as a collection of attribute buffers. Each attributes describe 
 * edge      // per half-edge data 
 * mesh     // A continuous group of submeshes
 * submesh  // polygonal group - assumes a contiguous sequence of indices in the index buffer
+* instance // objects which may have a related mesh, matrix and more.
 * all		// whole object data - for example face-size of 4 with whole object indicates a quad mesh
 
 ### Semantic
