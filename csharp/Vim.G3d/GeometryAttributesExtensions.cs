@@ -72,6 +72,9 @@ namespace Vim.G3d
         public static IEnumerable<GeometryAttribute> MeshAttributes(this IGeometryAttributes g)
             => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_mesh);
 
+        public static IEnumerable<GeometryAttribute> SubMeshAttributes(this IGeometryAttributes g)
+            => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_submesh);
+
         public static IEnumerable<GeometryAttribute> WholeGeometryAttributes(this IGeometryAttributes g)
             => g.Attributes.Where(a => a.Descriptor.Association == Association.assoc_all);
 
@@ -127,17 +130,17 @@ namespace Vim.G3d
         public static IGeometryAttributes Merge(this IGeometryAttributes self, params IGeometryAttributes[] gs)
             => gs.ToIArray().Prepend(self).Merge();
 
-        public static IGeometryAttributes Merge(this IArray<IGeometryAttributes> gs)
+        public static IGeometryAttributes Merge(this IArray<IGeometryAttributes> geometryAttributesArray)
         {
-            if (gs.Count == 0)
+            if (geometryAttributesArray.Count == 0)
                 return GeometryAttributes.Empty;
 
-            var first = gs[0];
+            var first = geometryAttributesArray[0];
 
-            if (gs.Count == 1)
+            if (geometryAttributesArray.Count == 1)
                 return first;
             var corners = first.NumCornersPerFace;
-            if (!gs.All(g => g.NumCornersPerFace == corners))
+            if (!geometryAttributesArray.All(g => g.NumCornersPerFace == corners))
                 throw new Exception("Cannot merge meshes with different numbers of corners per faces");
 
             // Merge all of the attributes of the different geometries
@@ -147,37 +150,107 @@ namespace Vim.G3d
                 .Concat(first.EdgeAttributes())
                 .Concat(first.NoneAttributes())
                 .Concat(first.FaceAttributes())
+                .Append(first.GetAttributeSubmeshMaterial())
                 // Skip the index semantic because things get re-ordered
-                .Where(attr => attr.Descriptor.Semantic != Semantic.Index)
+                .Where(attr => attr != null && attr.Descriptor.Semantic != Semantic.Index)
                 .ToArray();
 
-            // Merge the attributes
-            var others = gs.Skip(1).ToEnumerable();
+            // Merge the non-indexed attributes
+            var others = geometryAttributesArray.Skip(1).ToEnumerable();
             var attributeList = attributes.Select(
                 attr => attr.Merge(others.Select(g => g.GetAttributeOrDefault(attr.Name)))).ToList();
 
-            // Add the renumbered index attribute
-            if (first.GetAttributeIndex() != null)
-            {
-                var vertexOffset = 0;
-                var cornerOffset = 0;
-                var indices = new int[gs.Sum(ga => ga.NumCorners)];
-                for (var i = 0; i < gs.Count; i++)
-                {
-                    var ga = gs[i];
-                    var localIndices = ga.GetAttributeIndex().Data;
+            // Merge the index attribute
+            // numVertices:               [X],       [Y],             [Z],                   ...
+            // valueOffsets:              [0],       [X],             [X+Y],                 ...
+            // indices:                   [A, B, C], [D,     E,   F], [G,         H,     I], ...
+            // mergedIndices:             [A, B, C], [X+D, X+E, X+F], [X+Y+G, X+Y+H, X+Y+I], ...
+            var mergedIndexAttribute = geometryAttributesArray.MergeIndexedAttribute(
+                ga => ga.GetAttributeIndex(),
+                ga => ga.NumVertices)
+                ?.ToIndexAttribute();
 
-                    for (var j = 0; j < localIndices.Count; j++)
-                        indices[cornerOffset + j] = localIndices[j] + vertexOffset;
+            if (mergedIndexAttribute != null)
+                attributeList.Add(mergedIndexAttribute);
 
-                    vertexOffset += ga.NumVertices;
-                    cornerOffset += ga.NumCorners;
-                }
-                attributeList.Add(indices.ToIArray().ToIndexAttribute());
-            }
+            // Merge the submesh index offset attribute
+            // numCorners:                [X],       [Y],           [Z],                 ...
+            // valueOffsets:              [0]        [X],           [X+Y],               ...
+            // submeshIndexOffsets:       [0, A, B], [0,   C,   D], [0,       E,     F], ...
+            // mergedSubmeshIndexOffsets: [0, A, B], [X, X+C, X+D], [X+Y, X+Y+E, X+Y+F], ...
+            var mergedSubmeshIndexOffsetAttribute = geometryAttributesArray.MergeIndexedAttribute(
+                    ga => ga.GetAttributeSubmeshIndexOffset(),
+                    ga => ga.NumCorners)
+                ?.ToSubmeshIndexOffsetAttribute();
+
+            if (mergedSubmeshIndexOffsetAttribute != null)
+                attributeList.Add(mergedSubmeshIndexOffsetAttribute);
+
             return attributeList.ToGeometryAttributes();
         }
-        
+
+        /// <summary>
+        /// Merges the indexed attributes based on the given transformations and returns an array of integers
+        /// representing the merged and offset values.
+        /// </summary>
+        public static int[] MergeIndexedAttribute(
+            this IArray<IGeometryAttributes> geometryAttributesArray,
+            Func<IGeometryAttributes, GeometryAttribute<int>> getIndexedAttributeFunc,
+            Func<IGeometryAttributes, int> getValueOffsetFunc,
+            int initialValueOffset = 0)
+        {
+            var first = geometryAttributesArray.FirstOrDefault();
+            if (first == null)
+                return null;
+
+            var firstAttribute = getIndexedAttributeFunc(first);
+            if (firstAttribute == null)
+                return null;
+
+            return geometryAttributesArray.MergeAttributes(
+                getIndexedAttributeFunc,
+                tuples =>
+                {
+                    var valueOffset = initialValueOffset;
+                    var mergedCount = 0;
+
+                    var merged = new int[tuples.Sum(t => t.Attribute.Data.Count)];
+
+                    foreach (var (parent, attr) in tuples)
+                    {
+                        var attrData = attr.Data;
+                        var attrDataCount = attr.Data.Count;
+
+                        for (var i = 0; i < attrDataCount; ++i)
+                            merged[mergedCount + i] = attrData[i] + valueOffset;
+
+                        mergedCount += attrDataCount;
+                        valueOffset += getValueOffsetFunc(parent);
+                    }
+
+                    return merged;
+                });
+        }
+
+        /// <summary>
+        /// Merges the attributes based on the given transformations and returns an array of merged values.
+        /// </summary>
+        public static T[] MergeAttributes<T>(
+            this IArray<IGeometryAttributes> geometryAttributesArray,
+            Func<IGeometryAttributes, GeometryAttribute<T>> getAttributeFunc,
+            Func<(IGeometryAttributes Parent, GeometryAttribute<T> Attribute)[], T[]> mergeFunc) where T : unmanaged
+        {
+            var tuples = geometryAttributesArray
+                .Select(ga => (Parent: ga, GeometryAttribute: getAttributeFunc(ga)))
+                .Where(tuple => tuple.GeometryAttribute != null)
+                .ToArray();
+
+            if (tuples.Length != geometryAttributesArray.Count)
+                throw new Exception("The geometry attributes array do not all contain the same attribute");
+
+            return mergeFunc(tuples);
+        }
+
         /// <summary>
         /// Applies a transformation function to position attributes and another to normal attributes. When deforming, we may want to
         /// apply a similar deformation to the normals. For example a matrix can change the position, rotation, and scale of a geometry,
