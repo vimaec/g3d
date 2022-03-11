@@ -50,11 +50,13 @@ This attribute descriptor string is the name of the buffer.
 
 G3D is organized as a collection of attribute buffers. Each attributes describe what part of the incoming geometry they are associated with:
 
-* point     // vertex data
+* vertex     // vertex data
 * corner    // face-vertex data
 * face      // per polygon data
 * edge      // per half-edge data 
-* group     // polygonal group - assumes a contiguous sequence of indices in the index buffer 
+* mesh     // A continuous group of submeshes
+* submesh  // polygonal group - assumes a contiguous sequence of indices in the index buffer
+* instance // objects which may have a related mesh, matrix and more.
 * all		// whole object data - for example face-size of 4 with whole object indicates a quad mesh
 
 ### Semantic
