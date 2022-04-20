@@ -153,6 +153,7 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
+                        e;
                         return Vim::VimErrorCodes::GeometryLoadingException;
                     }
                 }
@@ -164,6 +165,7 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
+                        e;
                         return Vim::VimErrorCodes::AssetLoadingException;
                     }
                 }
@@ -231,6 +233,7 @@ namespace Vim
                     }
                     catch (std::exception& e)
                     {
+                        e;
                         return Vim::VimErrorCodes::EntityLoadingException;
                     }
                 }

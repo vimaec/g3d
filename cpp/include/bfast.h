@@ -348,6 +348,16 @@ namespace bfast
             return r;
         }
 
+#ifdef __ANDROID__
+		bool fopen_s(FILE** f, const char* name, const char* mode) 
+        {
+			assert(f);
+			*f = fopen(name, mode);
+            if (!*f) return false;
+			return true;
+		}
+#endif
+
         void write_file(string file) {
             auto data = pack();
             FILE* f = nullptr;
