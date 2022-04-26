@@ -37,10 +37,5 @@ namespace Vim.G3d.CppCLR.Tests
                 OutputStats(x);
             }
         }
-
-        public static void Main(string[] args)
-        {
-            CppTest();
-        }
     }
 }
