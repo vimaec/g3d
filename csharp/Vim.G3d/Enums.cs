@@ -68,6 +68,7 @@ namespace Vim.G3d
         public const string Mesh = "mesh";
         public const string Parent = "parent";
         public const string Transform = "transform";
+        public const string Options = "options";
 
         public const string TangentInt = "tangentin";
         public const string TangentOut = "tangentout";

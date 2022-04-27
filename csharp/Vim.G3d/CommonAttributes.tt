@@ -30,6 +30,7 @@ string[] namesDescriptorAndTypes = {
     "InstanceTransform",       "g3d:instance:transform:0:float32:16", "Matrix4x4",
     "InstanceParent",          "g3d:instance:parent:0:int32:1", "int",
     "InstanceMesh",            "g3d:instance:mesh:0:int32:1", "int",
+    "InstanceOptions",         "g3d:instance:options:0:int8:1", "byte",
 
     "LineTangentIn",           "g3d:vertex:tangent:0:float32:3","Vector3",
     "LineTangentOut",          "g3d:vertex:tangent:1:float32:3","Vector3",

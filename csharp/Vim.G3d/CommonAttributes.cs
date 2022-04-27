@@ -29,6 +29,7 @@ namespace Vim.G3d
         public const string InstanceTransform = "g3d:instance:transform:0:float32:16";
         public const string InstanceParent = "g3d:instance:parent:0:int32:1";
         public const string InstanceMesh = "g3d:instance:mesh:0:int32:1";
+        public const string InstanceOptions = "g3d:instance:options:0:int8:1";
         public const string LineTangentIn = "g3d:vertex:tangent:0:float32:3";
         public const string LineTangentOut = "g3d:vertex:tangent:1:float32:3";
         public const string ShapeVertex = "g3d:shapevertex:position:0:float32:3";
@@ -153,6 +154,12 @@ namespace Vim.G3d
         public static GeometryAttribute<int> ToInstanceMeshAttribute(this int[] xs) => xs.ToIArray().ToInstanceMeshAttribute();
         public static GeometryAttribute<int> GetAttributeInstanceMesh(this IGeometryAttributes self) => self.GetAttribute<int>(CommonAttributes.InstanceMesh);
         public static IArray<int> GetAttributeDataInstanceMesh(this IGeometryAttributes self) => self.GetAttributeInstanceMesh()?.Data;
+        public static GeometryAttribute<byte> ToInstanceOptionsAttribute(this IArray<byte> xs, int index) => xs.ToAttribute(CommonAttributes.InstanceOptions, index);
+        public static GeometryAttribute<byte> ToInstanceOptionsAttribute(this IArray<byte> xs) => xs.ToAttribute(CommonAttributes.InstanceOptions);
+        public static GeometryAttribute<byte> ToInstanceOptionsAttribute(this byte[] xs, int index) => xs.ToIArray().ToInstanceOptionsAttribute(index);
+        public static GeometryAttribute<byte> ToInstanceOptionsAttribute(this byte[] xs) => xs.ToIArray().ToInstanceOptionsAttribute();
+        public static GeometryAttribute<byte> GetAttributeInstanceOptions(this IGeometryAttributes self) => self.GetAttribute<byte>(CommonAttributes.InstanceOptions);
+        public static IArray<byte> GetAttributeDataInstanceOptions(this IGeometryAttributes self) => self.GetAttributeInstanceOptions()?.Data;
         public static GeometryAttribute<Vector3> ToLineTangentInAttribute(this IArray<Vector3> xs, int index) => xs.ToAttribute(CommonAttributes.LineTangentIn, index);
         public static GeometryAttribute<Vector3> ToLineTangentInAttribute(this IArray<Vector3> xs) => xs.ToAttribute(CommonAttributes.LineTangentIn);
         public static GeometryAttribute<Vector3> ToLineTangentInAttribute(this Vector3[] xs, int index) => xs.ToIArray().ToLineTangentInAttribute(index);

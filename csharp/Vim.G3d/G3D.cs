@@ -60,6 +60,7 @@ namespace Vim.G3d
         public IArray<int> InstanceParents { get; } // Index of the parent transform 
         public IArray<Matrix4x4> InstanceTransforms { get; } // A 4x4 matrix in row-column order defining the transormed
         public IArray<int> InstanceMeshes { get; } // The SubGeometry associated with the index
+        public IArray<byte> InstanceOptions { get; } // The instance options associated with the index.
 
         // Shapes
         public IArray<Vector3> ShapeVertices { get; }
@@ -192,6 +193,11 @@ namespace Vim.G3d
                         if (attr.IsTypeAndAssociation<int>(Association.assoc_mesh))
                             MeshSubmeshOffset = attr.AsType<int>().Data;
                         break;
+
+                    case Semantic.Options:
+                        if (attr.IsTypeAndAssociation<byte>(Association.assoc_instance))
+                            InstanceOptions = attr.AsType<byte>().Data;
+                        break;
                 }
             }
 
@@ -234,7 +240,7 @@ namespace Vim.G3d
             // Compute all meshes
             Meshes = NumMeshes.Select(i => new G3dMesh(this, i));
 
-            if(MaterialColors != null)
+            if (MaterialColors != null)
                 Materials = MaterialColors.Count.Select(i => new G3dMaterial(this, i));
 
             // Process the shape data
@@ -249,6 +255,10 @@ namespace Vim.G3d
              
             if (ShapeWidths == null)
                 ShapeWidths = Array.Empty<float>().ToIArray();
+
+            // Update the instance options
+            if (InstanceOptions == null)
+                InstanceOptions = ((byte) 0).Repeat(NumInstances);
 
             ShapeVertexCounts = GetSubArrayCounts(NumShapes, ShapeVertexOffsets, ShapeVertices.Count);
             ValidateSubArrayCounts(ShapeVertexCounts, nameof(ShapeVertexCounts));
