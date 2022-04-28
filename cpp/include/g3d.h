@@ -52,6 +52,12 @@ namespace g3d
         assoc_none,
     };
 
+    enum InstanceOptions
+    {
+	    None = 0,
+        Hidden = 1,
+    };
+
     // Contains all the information necessary to parse an attribute data channel and associate it with some part of the geometry 
     struct AttributeDescriptor
     {
@@ -327,6 +333,7 @@ namespace g3d
         static constexpr const char* InstanceTransform = "g3d:instance:transform:0:float32:16";
         static constexpr const char* InstanceParent = "g3d:instance:parent:0:int32:1";
         static constexpr const char* InstanceMesh = "g3d:instance:mesh:0:int32:1";
+        static constexpr const char* InstanceOptions = "g3d:instance:options:0:int8:1";
 
         // Shapes
         static constexpr const char* ShapeVertex = "g3d:shapevertex:position:0:float32:3";
