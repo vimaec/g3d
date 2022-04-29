@@ -54,7 +54,7 @@ namespace g3d
 
     enum InstanceOptions
     {
-	    None = 0,
+        None = 0,
         Hidden = 1,
     };
 
