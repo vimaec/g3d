@@ -58,17 +58,34 @@ namespace Vim.G3d
         {
             geometryAttribute = null;
 
-            if (AttributeDescriptor.TryParse(name, out var attributeDescriptor))
+            bool ReadFailure()
             {
-                geometryAttribute = attributeDescriptor.ToDefaultAttribute(0).Read(stream, size);
-                return true;
-            }
-            else
-            {
-                // Skip unknown attribute descriptors but update the seek head.
+                // Update the seek head to consume the stream and return false.
                 stream.Seek((int)size, SeekOrigin.Current);
                 return false;
             }
+
+            if (!AttributeDescriptor.TryParse(name, out var attributeDescriptor))
+            {
+                // Skip unknown attribute descriptors.
+                return ReadFailure();
+            }
+
+            // Populate a default attribute with the parsed attribute descriptor.
+            GeometryAttribute defaultAttribute;
+            try
+            {
+                defaultAttribute = attributeDescriptor.ToDefaultAttribute(0);
+            }
+            catch
+            {
+                // Eat the exception and return.
+                return ReadFailure();
+            }
+
+            // Success; consume the stream.
+            geometryAttribute = defaultAttribute.Read(stream, size);
+            return true;
         }
 
         public static G3D ReadG3d(this Stream stream, Func<string, string> renameFunc = null)
