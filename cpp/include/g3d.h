@@ -319,7 +319,12 @@ namespace g3d
         }
 
         void add_attribute(const string& name, const void* begin, const void* end) {
-            attributes.push_back(Attribute(name, begin, end));
+            try
+            {
+                attributes.push_back(Attribute(name, begin, end));
+            } catch (std::exception& _) {
+                // do nothing; the attribute was not recognized.
+            }
         }
 
         void add_attribute(const string& name, void* begin, size_t size) {
