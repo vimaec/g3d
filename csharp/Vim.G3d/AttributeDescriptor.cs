@@ -39,6 +39,24 @@ namespace Vim.G3d
             => Name;
 
         /// <summary>
+        /// Returns true if the attribute descriptor has been successfully parsed.
+        /// </summary>
+        public static bool TryParse(string urn, out AttributeDescriptor attributeDescriptor)
+        {
+            attributeDescriptor = null;
+            try
+            {
+                attributeDescriptor = Parse(urn);
+            }
+            catch
+            {
+                // do nothing.
+            }
+
+            return attributeDescriptor != null;
+        }
+
+        /// <summary>
         /// Parses a URN representation of the attribute descriptor to generate an actual attribute descriptor 
         /// </summary>
         public static AttributeDescriptor Parse(string urn)
