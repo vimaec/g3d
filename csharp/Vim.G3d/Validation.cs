@@ -61,6 +61,7 @@ namespace Vim.G3d
             Validate(g3d.NumInstances == g3d.InstanceParents.Count, G3dErrors.InstancesCountMismatch);
             Validate(g3d.NumInstances == g3d.InstanceMeshes.Count, G3dErrors.InstancesCountMismatch);
             Validate(g3d.NumInstances == g3d.InstanceTransforms.Count, G3dErrors.InstancesCountMismatch);
+            Validate(g3d.NumInstances == g3d.InstanceFlags.Count, G3dErrors.InstancesCountMismatch);
             Validate(g3d.InstanceParents.All(i => i < g3d.NumInstances), G3dErrors.InstancesParentOutOfRange);
             Validate(g3d.InstanceMeshes.All(i => i < g3d.NumMeshes), G3dErrors.InstancesMeshOutOfRange);
 

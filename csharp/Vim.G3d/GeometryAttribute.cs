@@ -106,9 +106,10 @@ namespace Vim.G3d
             Data = data;
             int arity;
             DataType dataType;
-            if (typeof(T) == typeof(sbyte))
-                (arity, dataType) = (1, DataType.dt_int8);
-            else if (typeof(T) == typeof(byte))
+            // TODO: TECH DEBT - Support unsigned tuples in Math3d
+            if (typeof(T) == typeof(byte))
+                (arity, dataType) = (1, DataType.dt_uint8);
+            else if (typeof(T) == typeof(sbyte))
                 (arity, dataType) = (1, DataType.dt_int8);
             else if (typeof(T) == typeof(Byte2))
                 (arity, dataType) = (2, DataType.dt_int8);
@@ -116,8 +117,12 @@ namespace Vim.G3d
                 (arity, dataType) = (3, DataType.dt_int8);
             else if (typeof(T) == typeof(Byte4))
                 (arity, dataType) = (4, DataType.dt_int8);
+            else if (typeof(T) == typeof(ushort))
+                (arity, dataType) = (1, DataType.dt_uint16);
             else if (typeof(T) == typeof(short))
                 (arity, dataType) = (1, DataType.dt_int16);
+            else if (typeof(T) == typeof(uint))
+                (arity, dataType) = (1, DataType.dt_uint32);
             else if (typeof(T) == typeof(int))
                 (arity, dataType) = (1, DataType.dt_int32);
             else if (typeof(T) == typeof(Int2))
@@ -126,6 +131,8 @@ namespace Vim.G3d
                 (arity, dataType) = (3, DataType.dt_int32);
             else if (typeof(T) == typeof(Int4))
                 (arity, dataType) = (4, DataType.dt_int32);
+            else if (typeof(T) == typeof(ulong))
+                (arity, dataType) = (1, DataType.dt_uint64);
             else if (typeof(T) == typeof(long))
                 (arity, dataType) = (1, DataType.dt_int64);
             else if (typeof(T) == typeof(float))
