@@ -91,19 +91,19 @@ namespace g3d
             switch (dt) {
                 case dt_uint8:
                 case dt_int8:
-            		return 1;
-				case dt_uint16:
+                    return 1;
+                case dt_uint16:
                 case dt_int16:
-            		return 2;
-				case dt_uint32:
+                    return 2;
+                case dt_uint32:
                 case dt_int32:
-            		return 4;
-				case dt_uint64:
+                    return 4;
+                case dt_uint64:
                 case dt_int64:
-            		return 8;
-				case dt_uint128:
+                    return 8;
+                case dt_uint128:
                 case dt_int128:
-            		return 16;
+                    return 16;
                 case dt_float16:
                     return 2;
                 case dt_float32:
