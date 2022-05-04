@@ -9,7 +9,7 @@ It can be easily and efficiently deserialized and rendered in different language
     <PackageProjectUrl>https://github.com/vimaec/g3d</PackageProjectUrl>
     <RepositoryUrl>https://github.com/vimaec/g3d</RepositoryUrl>
     <RepositoryType>GitHub</RepositoryType>
-    <Version>1.4.0</Version>
+    <Version>1.5.0</Version>
     <PublishRepositoryUrl>true</PublishRepositoryUrl>
     <EmbedUntrackedSources>true</EmbedUntrackedSources>
     <IncludeSymbols>true</IncludeSymbols>
@@ -17,7 +17,7 @@ It can be easily and efficiently deserialized and rendered in different language
   </PropertyGroup>
 
   <PropertyGroup Label="NuGetDependenciesVersions">
-    <Math3DVersion>1.5.0</Math3DVersion>
+    <Math3DVersion>1.6.0</Math3DVersion>
     <BFastVersion>1.4.1</BFastVersion>
     <LinqArrayVersion>1.1.0</LinqArrayVersion>
   </PropertyGroup>

@@ -39,6 +39,24 @@ namespace Vim.G3d
             => Name;
 
         /// <summary>
+        /// Returns true if the attribute descriptor has been successfully parsed.
+        /// </summary>
+        public static bool TryParse(string urn, out AttributeDescriptor attributeDescriptor)
+        {
+            attributeDescriptor = null;
+            try
+            {
+                attributeDescriptor = Parse(urn);
+            }
+            catch
+            {
+                // do nothing.
+            }
+
+            return attributeDescriptor != null;
+        }
+
+        /// <summary>
         /// Parses a URN representation of the attribute descriptor to generate an actual attribute descriptor 
         /// </summary>
         public static AttributeDescriptor Parse(string urn)
@@ -71,12 +89,22 @@ namespace Vim.G3d
         {
             switch (dt)
             {
-                case DataType.dt_int8: return 1;
-                case DataType.dt_int16: return 2;
-                case DataType.dt_int32: return 4;
-                case DataType.dt_int64: return 8;
-                case DataType.dt_float32: return 4;
-                case DataType.dt_float64: return 8;
+                case DataType.dt_uint8:
+                case DataType.dt_int8:
+                    return 1;
+                case DataType.dt_uint16:
+                case DataType.dt_int16:
+                    return 2;
+                case DataType.dt_uint32:
+                case DataType.dt_int32:
+                    return 4;
+                case DataType.dt_uint64:
+                case DataType.dt_int64:
+                    return 8;
+                case DataType.dt_float32:
+                    return 4;
+                case DataType.dt_float64:
+                    return 8;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(dt), dt, null);
             }

@@ -294,6 +294,27 @@ namespace Vim.G3d.Tests
             Assert.AreEqual(new[] { 5 }, g2.GetAttributeDataFaceMaterial().ToArray());
         }
 
+        [Test]
+        public static void UnexpectedAttributeTest()
+        {
+            // This test validates that unrecognized g3d attributes are simply ignored in the deserialization process.
+            //
+            // "unexpected.g3d" was generated using the following code snippet. Note that the code was temporarily modified such
+            // that UNKNOWN mapped to a ulong data type value (8 bits):
+            //
+            // var g3d = new G3DBuilder()
+            //    .Add(new GeometryAttribute<int>(new int[] { 5 }.ToIArray(), AttributeDescriptor.Parse("g3d:instance:potato:0:int32:1")))
+            //    .Add(new GeometryAttribute<ulong>(new ulong[] { 42 }.ToIArray(), AttributeDescriptor.Parse("g3d:instance:beep:0:UNKNOWN:1")))
+            //    .ToG3D();
+
+            var g = G3D.Read(Path.Combine(TestInputFolder, "unexpected.g3d"));
+
+            var parsedInstanceAttrs = g.Attributes.Where(ga => ga.Descriptor.Association == Association.assoc_instance).ToArray();
+            Assert.AreEqual(1, parsedInstanceAttrs.Length); // NOTE: we only expect one attribute (the one with the "potato" semantic) because UNKNOWN is currently ignored as a datatype.
+            var parsedPotatoAttr = parsedInstanceAttrs.Single(ga => ga.Descriptor.Semantic == "potato");
+            Assert.AreEqual(new [] { 5 }, parsedPotatoAttr.AsType<int>().Data.ToArray());
+        }
+
         public static G3D LoadAssimpFile(string filePath)
         {
             using (var context = new AssimpContext())

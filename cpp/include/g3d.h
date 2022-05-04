@@ -16,17 +16,22 @@
 
 namespace g3d
 {
-    #define G3D_VERSION = { 2, 1, 0, "2021.08.10" };
+    #define G3D_VERSION = { 2, 2, 0, "2022.05.02" };
 
     using namespace std;
 
     /// The different types of data types that can be used as elements. 
     enum DataType 
     {
+        dt_uint8,
         dt_int8,
+        dt_uint16,
         dt_int16,
+        dt_uint32,
         dt_int32,
+        dt_uint64,
         dt_int64,
+        dt_uint128,
         dt_int128,
         dt_float16,
         dt_float32,
@@ -50,6 +55,12 @@ namespace g3d
         assoc_submesh,
         assoc_all,
         assoc_none,
+    };
+
+    enum InstanceFlags
+    {
+        None = 0,
+        Hidden = 1,
     };
 
     // Contains all the information necessary to parse an attribute data channel and associate it with some part of the geometry 
@@ -78,16 +89,31 @@ namespace g3d
         /// Retrieves the size of individual data types
         static int32_t data_type_size(DataType dt) {
             switch (dt) {
-                case dt_int8:       return 1;
-                case dt_int16:      return 2;
-                case dt_int32:      return 4;
-                case dt_int64:      return 8;
-                case dt_int128:     return 16;
-                case dt_float16:    return 2;
-                case dt_float32:    return 4;
-                case dt_float64:    return 8;
-                case dt_float128:   return 16;
-                default:            throw runtime_error("invalid data type");
+                case dt_uint8:
+                case dt_int8:
+                    return 1;
+                case dt_uint16:
+                case dt_int16:
+                    return 2;
+                case dt_uint32:
+                case dt_int32:
+                    return 4;
+                case dt_uint64:
+                case dt_int64:
+                    return 8;
+                case dt_uint128:
+                case dt_int128:
+                    return 16;
+                case dt_float16:
+                    return 2;
+                case dt_float32:
+                    return 4;
+                case dt_float64:
+                    return 8;
+                case dt_float128:
+                    return 16;
+                default:
+                    throw runtime_error("invalid data type");
             }
         }
 
@@ -103,10 +129,15 @@ namespace g3d
         /// Returns a lookup table of data-type enumerations to strings 
         static const map<DataType, string>& data_types_to_strings() {
             static map<DataType, string> names = {
+                { dt_uint8,     "uint8" },
                 { dt_int8,      "int8" },
+                { dt_uint16,    "uint16" },
                 { dt_int16,     "int16" },
+                { dt_uint32,    "uint32" },
                 { dt_int32,     "int32" },
+                { dt_uint64,    "uint64" },
                 { dt_int64,     "int64" },
+                { dt_uint128,   "uint128" },
                 { dt_int128,    "int128" },
                 { dt_float16,   "float16" },
                 { dt_float32,   "float32" },
@@ -288,7 +319,12 @@ namespace g3d
         }
 
         void add_attribute(const string& name, const void* begin, const void* end) {
-            attributes.push_back(Attribute(name, begin, end));
+            try
+            {
+                attributes.push_back(Attribute(name, begin, end));
+            } catch (std::exception& _) {
+                // do nothing; the attribute was not recognized.
+            }
         }
 
         void add_attribute(const string& name, void* begin, size_t size) {
@@ -327,6 +363,7 @@ namespace g3d
         static constexpr const char* InstanceTransform = "g3d:instance:transform:0:float32:16";
         static constexpr const char* InstanceParent = "g3d:instance:parent:0:int32:1";
         static constexpr const char* InstanceMesh = "g3d:instance:mesh:0:int32:1";
+        static constexpr const char* InstanceFlags = "g3d:instance:flags:0:uint16:1";
 
         // Shapes
         static constexpr const char* ShapeVertex = "g3d:shapevertex:position:0:float32:3";

@@ -66,6 +66,11 @@ namespace Vim.G3d
         {
             switch (desc.DataType)
             {
+                // TODO: TECH DEBT - Add unsigned tuple objects to Math3d
+                case DataType.dt_uint8:
+                    if (desc.DataArity == 1)
+                        return default(byte).Repeat(count).ToAttribute(desc);
+                    break;
                 case DataType.dt_int8:
                     if (desc.DataArity == 1)
                         return default(byte).Repeat(count).ToAttribute(desc);
@@ -76,9 +81,17 @@ namespace Vim.G3d
                     if (desc.DataArity == 4)
                         return default(Byte4).Repeat(count).ToAttribute(desc);
                     break;
+                case DataType.dt_uint16:
+                    if (desc.DataArity == 1)
+                        return default(ushort).Repeat(count).ToAttribute(desc);
+                    break;
                 case DataType.dt_int16:
                     if (desc.DataArity == 1)
                         return default(short).Repeat(count).ToAttribute(desc);
+                    break;
+                case DataType.dt_uint32:
+                    if (desc.DataArity == 1)
+                        return default(uint).Repeat(count).ToAttribute(desc);
                     break;
                 case DataType.dt_int32:
                     if (desc.DataArity == 1)
@@ -89,6 +102,10 @@ namespace Vim.G3d
                         return default(Int3).Repeat(count).ToAttribute(desc);
                     if (desc.DataArity == 4)
                         return default(Int4).Repeat(count).ToAttribute(desc);
+                    break;
+                case DataType.dt_uint64:
+                    if (desc.DataArity == 1)
+                        return default(ulong).Repeat(count).ToAttribute(desc);
                     break;
                 case DataType.dt_int64:
                     if (desc.DataArity == 1)

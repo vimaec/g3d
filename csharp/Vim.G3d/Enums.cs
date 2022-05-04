@@ -7,9 +7,13 @@ namespace Vim.G3d
     /// </summary> 
     public enum DataType
     {
+        dt_uint8,
         dt_int8,
+        dt_uint16,
         dt_int16,
+        dt_uint32,
         dt_int32,
+        dt_uint64,
         dt_int64,
         dt_float32,
         dt_float64,
@@ -33,7 +37,22 @@ namespace Vim.G3d
         assoc_material, // material properties
         assoc_mesh, 
         assoc_submesh
-    };
+    }
+
+    [Flags]
+    public enum InstanceFlags
+    {
+        /// <summary>
+        /// Default - no instance options defined.
+        /// </summary>
+        None = 0,
+
+        /// <summary>
+        /// When enabled, indicates that the renderer (or the consuming application) should hide
+        /// the instance by default.
+        /// </summary>
+        Hidden = 1,
+    }
 
     /// <summary>
     /// Common semantic names.
@@ -68,6 +87,7 @@ namespace Vim.G3d
         public const string Mesh = "mesh";
         public const string Parent = "parent";
         public const string Transform = "transform";
+        public const string Flags = "flags";
 
         public const string TangentInt = "tangentin";
         public const string TangentOut = "tangentout";
