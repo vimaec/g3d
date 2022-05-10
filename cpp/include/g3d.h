@@ -322,7 +322,8 @@ namespace g3d
             try
             {
                 attributes.push_back(Attribute(name, begin, end));
-            } catch (std::exception& _) {
+            } catch (std::exception& e) {
+                e;
                 // do nothing; the attribute was not recognized.
             }
         }
