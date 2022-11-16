@@ -233,6 +233,10 @@ namespace Vim.G3d
                 if (MeshVertexOffsets != null)
                     MeshVertexCounts = GetSubArrayCounts(NumMeshes, MeshVertexOffsets, NumVertices);
             }
+            else
+            {
+                MeshSubmeshCount = Array.Empty<int>().ToIArray();
+            }
 
             if (SubmeshIndexOffsets != null)
                 SubmeshIndexCount = GetSubArrayCounts(SubmeshIndexOffsets.Count, SubmeshIndexOffsets, NumCorners).Evaluate();
