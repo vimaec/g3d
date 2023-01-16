@@ -78,6 +78,7 @@ namespace Vim.G3d.Tests
         }
 
         [Test]
+        [Platform(Exclude = "Linux,Unix", Reason = "AssimpNet is failing to load its dependency on 'libdl.so'.")]
         public static void OpenAndConvertAssimpFiles()
         {
             var files = GetInputFiles()
@@ -341,6 +342,7 @@ namespace Vim.G3d.Tests
         }
 
         [Test]
+        [Platform(Exclude = "Linux,Unix", Reason = "AssimpNet is failing to load its dependency on 'libdl.so'.")]
         public static void TestWriters()
         {
             var fileName = Path.Combine(TestInputFolder, "PLY", "Wuson.ply");
