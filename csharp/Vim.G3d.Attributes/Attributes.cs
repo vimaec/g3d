@@ -17,6 +17,9 @@ namespace Vim.G3d.Attributes
     [AttributeDescriptor("g3d:instance:parent:0:int32:1", AttributeType.Index, IndexInto = typeof(InstanceTransformAttribute))]
     public partial class InstanceParentAttribute { }
 
+    [AttributeDescriptor("g3d:instance:flags:0:uint16:1", AttributeType.Data)]
+    public partial class InstanceFlagsAttribute { }
+
     [AttributeDescriptor("g3d:instance:mesh:0:int32:1", AttributeType.Index, IndexInto = typeof(MeshSubmeshOffsetAttribute))]
     public partial class InstanceMeshAttribute { }
 
@@ -57,6 +60,7 @@ namespace Vim.G3d.Attributes
         typeof(IndexAttribute),
         typeof(InstanceTransformAttribute),
         typeof(InstanceParentAttribute),
+        typeof(InstanceFlagsAttribute),
         typeof(InstanceMeshAttribute),
         typeof(MeshSubmeshOffsetAttribute),
         typeof(SubmeshIndexOffsetAttribute),
