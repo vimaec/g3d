@@ -3,11 +3,14 @@
     <Import Project="..\G3d.Build.props" />
 
     <PropertyGroup>
-        <TargetFramework>net6.0</TargetFramework>
-        <ApplicationIcon />
-        <OutputType>Exe</OutputType>
-        <StartupObject>Vim.G3d.CodeGen.Program</StartupObject>
-        <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+      <TargetFrameworks>netstandard2.0;net6.0</TargetFrameworks>
+      <RunPostBuildEvent>OnOutputUpdated</RunPostBuildEvent>
+    </PropertyGroup>
+
+    <PropertyGroup Condition="'$(TargetFramework)' != 'netstandard2.0'">
+      <OutputType>Exe</OutputType>
+      <ApplicationIcon />
+      <StartupObject>Vim.G3d.CodeGen.Program</StartupObject>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,8 +21,8 @@
       <ProjectReference Include="..\Vim.G3d\Vim.G3d.csproj" />
     </ItemGroup>
 
-    <Target Name="PostBuild" AfterTargets="PostBuildEvent">
-        <Exec Command="dotnet &quot;$(OutDir)Vim.G3d.CodeGen.dll&quot; &quot;../Vim.G3d.Attributes/Attributes.g.cs&quot;" />
+    <Target Name="PostBuild" AfterTargets="PostBuildEvent" Condition="'$(TargetFramework)' != 'netstandard2.0'">
+      <Exec Command="dotnet &quot;$(OutDir)Vim.G3d.CodeGen.dll&quot; &quot;../Vim.G3d.Attributes/Attributes.g.cs&quot;" />
     </Target>
 
 </Project>

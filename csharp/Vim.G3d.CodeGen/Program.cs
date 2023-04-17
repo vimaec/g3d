@@ -1,11 +1,13 @@
-﻿
-namespace Vim.G3d.CodeGen;
-
-public static class Program
+﻿#if !NETSTANDARD
+namespace Vim.G3d.CodeGen
 {
-    public static void Main(string[] args)
+    public static class Program
     {
-        var file = args[0];
-        G3dAttributeCollectionGenerator.WriteDocument(file);
+        public static void Main(string[] args)
+        {
+            var file = args[0];
+            G3dAttributeCollectionGenerator.WriteDocument(file);
+        }
     }
 }
+#endif

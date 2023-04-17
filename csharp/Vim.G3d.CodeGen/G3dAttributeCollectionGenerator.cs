@@ -4,84 +4,85 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 
-namespace Vim.G3d.CodeGen;
-
-public static class G3dAttributeCollectionGenerator
+namespace Vim.G3d.CodeGen
 {
-    public static void WriteDocument(string filePath)
+    
+    public static class G3dAttributeCollectionGenerator
     {
-        try
+        public static void WriteDocument(string filePath)
         {
-            var cb = new CodeBuilder();
+            try
+            {
+                var cb = new CodeBuilder();
 
-            cb.AppendLine("// AUTO-GENERATED FILE, DO NOT MODIFY.");
-            cb.AppendLine("// ReSharper disable All");
-            cb.AppendLine("using System;");
-            cb.AppendLine("using System.IO;");
-            cb.AppendLine("using System.Collections.Generic;");
-            cb.AppendLine("using System.Linq;");
-            cb.AppendLine("using Vim.BFast;");
-            cb.AppendLine();
-            cb.AppendLine("namespace Vim.G3d.Attributes");
-            cb.AppendLine("{");
-            WriteVimG3dAttributes(cb);
-            WriteVimG3dAttributeCollections(cb);
-            cb.AppendLine("}");
-            var content = cb.ToString();
-            File.WriteAllText(filePath, content);
+                cb.AppendLine("// AUTO-GENERATED FILE, DO NOT MODIFY.");
+                cb.AppendLine("// ReSharper disable All");
+                cb.AppendLine("using System;");
+                cb.AppendLine("using System.IO;");
+                cb.AppendLine("using System.Collections.Generic;");
+                cb.AppendLine("using System.Linq;");
+                cb.AppendLine("using Vim.BFast;");
+                cb.AppendLine();
+                cb.AppendLine("namespace Vim.G3d.Attributes");
+                cb.AppendLine("{");
+                WriteVimG3dAttributes(cb);
+                WriteVimG3dAttributeCollections(cb);
+                cb.AppendLine("}");
+                var content = cb.ToString();
+                File.WriteAllText(filePath, content);
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine(e);
+                throw;
+            }
         }
-        catch (Exception e)
+
+        public static IEnumerable<Type> GetAllClassesWithAttribute<T>() where T: Attribute
         {
-            Console.WriteLine(e);
-            throw;
+            // Load the assembly containing the classes you want to examine
+            var assembly = Assembly.GetExecutingAssembly();
+
+            // Find all the types in the assembly that have the MyAttribute attribute
+            return assembly.GetTypes()
+                .Where(type => type.GetCustomAttributes<T>(false).Any());
+        } 
+
+        public static void WriteVimG3dAttributes(CodeBuilder cb)
+        {
+            var adClasses = GetAllClassesWithAttribute<AttributeDescriptorAttribute>();
+
+            foreach (var adClass in adClasses)
+                WriteVimG3dAttribute(cb, adClass);
         }
-    }
 
-    public static IEnumerable<Type> GetAllClassesWithAttribute<T>() where T: Attribute
-    {
-        // Load the assembly containing the classes you want to examine
-        var assembly = Assembly.GetExecutingAssembly();
+        public static string GetTypedDataType(this AttributeDescriptorAttribute ada)
+        {
+            if (ada.ArrayType != null)
+                return ada.ArrayType.ToString();
 
-        // Find all the types in the assembly that have the MyAttribute attribute
-        return assembly.GetTypes()
-            .Where(type => type.GetCustomAttributes<T>(false).Any());
-    } 
+            if (!AttributeDescriptor.TryParse(ada.Name, out var ad))
+                throw new Exception($"Could not parse attribute name {ada.Name}");
 
-    public static void WriteVimG3dAttributes(CodeBuilder cb)
-    {
-        var adClasses = GetAllClassesWithAttribute<AttributeDescriptorAttribute>();
+            return ad.DataType.GetManagedType().ToString();
+        }
 
-        foreach (var adClass in adClasses)
-            WriteVimG3dAttribute(cb, adClass);
-    }
+        public static void WriteVimG3dAttribute(CodeBuilder cb, Type adClass)
+        {
+            var className = adClass.Name;
+            var ada = adClass.GetCustomAttribute<AttributeDescriptorAttribute>();
+            if (ada == null)
+                throw new Exception($"No attribute of type {nameof(AttributeDescriptorAttribute)} found on {className}");
 
-    public static string GetTypedDataType(this AttributeDescriptorAttribute ada)
-    {
-        if (ada.ArrayType != null)
-            return ada.ArrayType.ToString();
+            var attributeName = ada.Name;
+            if (!AttributeDescriptor.TryParse(attributeName, out var ad))
+                throw new Exception($"Invalid attribute descriptor: {attributeName}");
 
-        if (!AttributeDescriptor.TryParse(ada.Name, out var ad))
-            throw new Exception($"Could not parse attribute name {ada.Name}");
-
-        return ad.DataType.GetManagedType().ToString();
-    }
-
-    public static void WriteVimG3dAttribute(CodeBuilder cb, Type adClass)
-    {
-        var className = adClass.Name;
-        var ada = adClass.GetCustomAttribute<AttributeDescriptorAttribute>();
-        if (ada == null)
-            throw new Exception($"No attribute of type {nameof(AttributeDescriptorAttribute)} found on {className}");
-
-        var attributeName = ada.Name;
-        if (!AttributeDescriptor.TryParse(attributeName, out var ad))
-            throw new Exception($"Invalid attribute descriptor: {attributeName}");
-
-        var typedDataType = ada.GetTypedDataType();
-        var attributeType = ada.AttributeType;
-        var indexInto = ada.IndexInto;
-            
-        cb.AppendLine($@"
+            var typedDataType = ada.GetTypedDataType();
+            var attributeType = ada.AttributeType;
+            var indexInto = ada.IndexInto;
+                
+            cb.AppendLine($@"
     public partial class {className} : {nameof(IAttribute)}<{typedDataType}>
     {{
         public const string AttributeName = ""{attributeName}"";
@@ -114,27 +115,27 @@ public static class G3dAttributeCollectionGenerator
             stream.Write(TypedData);
         }}
     }}");
-    }
+        }
 
-    public static void WriteVimG3dAttributeCollections(CodeBuilder cb)
-    {
-        var acClasses = GetAllClassesWithAttribute<AttributeCollectionAttribute>();
+        public static void WriteVimG3dAttributeCollections(CodeBuilder cb)
+        {
+            var acClasses = GetAllClassesWithAttribute<AttributeCollectionAttribute>();
 
-        foreach (var acClass in acClasses)
-            WriteVimG3dAttributeCollection(cb, acClass);
-    }
+            foreach (var acClass in acClasses)
+                WriteVimG3dAttributeCollection(cb, acClass);
+        }
 
-    public static void WriteVimG3dAttributeCollection(CodeBuilder cb, Type acClass)
-    {
-        var className = acClass.Name;
+        public static void WriteVimG3dAttributeCollection(CodeBuilder cb, Type acClass)
+        {
+            var className = acClass.Name;
 
-        var ac = acClass.GetCustomAttribute<AttributeCollectionAttribute>();
-        if (ac == null)
-            throw new Exception($"No attribute of type {(nameof(AttributeCollectionAttribute))} found on {className}");
+            var ac = acClass.GetCustomAttribute<AttributeCollectionAttribute>();
+            if (ac == null)
+                throw new Exception($"No attribute of type {(nameof(AttributeCollectionAttribute))} found on {className}");
 
-        var attributeClasses = ac.AttributeClasses;
+            var attributeClasses = ac.AttributeClasses;
 
-        cb.AppendLine($@"    public partial class {className} : IAttributeCollection
+            cb.AppendLine($@"    public partial class {className} : IAttributeCollection
     {{
         public IEnumerable<string> AttributeNames
             => Attributes.Keys;
@@ -244,5 +245,6 @@ public static class G3dAttributeCollectionGenerator
 }).Where(s => !string.IsNullOrEmpty(s)))}
         }}
     }}");
+        }
     }
 }
