@@ -1,0 +1,32 @@
+<Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Label="NuGetDependenciesVersions">
+    <Math3DVersion>1.6.1</Math3DVersion>
+    <BFastVersion>1.5.0</BFastVersion>
+  </PropertyGroup>
+
+  <Choose>
+    <When Condition="!$([System.String]::IsNullOrWhitespace($(Math3DPath)))">
+      <ItemGroup>
+        <ProjectReference Include="$(Math3DPath)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <PackageReference Include="Vim.Math3D" Version="$(Math3DVersion)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+
+  <Choose>
+    <When Condition="!$([System.String]::IsNullOrWhitespace($(BFastPath)))">
+      <ItemGroup>
+        <ProjectReference Include="$(BFastPath)" />
+      </ItemGroup>
+    </When>
+    <Otherwise>
+      <ItemGroup>
+        <PackageReference Include="Vim.BFast" Version="$(BFastVersion)" />
+      </ItemGroup>
+    </Otherwise>
+  </Choose>
+</Project>

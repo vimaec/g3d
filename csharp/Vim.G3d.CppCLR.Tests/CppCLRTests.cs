@@ -8,10 +8,10 @@ namespace Vim.G3d.CppCLR.Tests
     {
         public static readonly string ProjectFolder = new DirectoryInfo(Properties.Resources.ProjDir.Trim()).FullName;
         public static string RootFolder = Path.Combine(ProjectFolder, "..", "..");
-        public static string TestModelFolder = Path.Combine(RootFolder, "test-data", "models");
-        public static string TestOutputFolder = Path.Combine(RootFolder, "test-data", "output");
+        public static string TestModelFolder = Path.Combine(RootFolder, "data", "models");
+        public static string TestOutputFolder = Path.Combine(RootFolder, "out");
         public static string TestOutputFolderCpp => Path.Combine(TestOutputFolder, "cpp");
-        public static string[] GeneratedG3ds => Directory.GetFiles(TestOutputFolder, "*.g3d");
+        public static string[] GeneratedG3ds => Directory.GetFiles(Path.Combine(TestOutputFolder, "OpenAndConvertAssimpFiles"), "*.g3d");
 
         public static void OutputStats(ManagedG3d x)
         {
@@ -50,7 +50,7 @@ namespace Vim.G3d.CppCLR.Tests
 
             var managedG3d = new ManagedG3d();
 
-            managedG3d.Load(Path.Combine(TestModelFolder, "unexpected.g3d"));
+            managedG3d.Load(Path.Combine(TestModelFolder, "G3D", "unexpected.g3d"));
 
             Assert.AreEqual(2, managedG3d.Count());
             Assert.AreEqual("g3d:corner:index:0:int32:1", managedG3d.AttributeName(0)); // Automatically generated.

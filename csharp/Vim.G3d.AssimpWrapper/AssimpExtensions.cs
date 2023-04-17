@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Linq;
 using Assimp;
-using Vim.LinqArray;
+using Vim.G3d.Attributes;
 using Vim.Math3d;
+
+using VimG3d = Vim.G3d.G3d<Vim.G3d.Attributes.VimAttributeCollection>;
 
 namespace Vim.G3d.AssimpWrapper
 {
@@ -30,31 +32,36 @@ namespace Vim.G3d.AssimpWrapper
         public static bool IsTriangular(this Mesh mesh)
             => mesh.Faces.All(f => f.IndexCount == 3);
 
-        public static G3D ToG3d(this Scene scene)
+        public static VimG3d EmptyG3d
+            => VimG3d.Empty<VimAttributeCollection>();
+
+        public static VimG3d ToG3d(this Scene scene)
         {
-            var meshes = scene.Meshes.Select(m => m.ToG3D()).ToIArray();
-            var nodes = scene.GetNodes().ToIArray();
-            if (nodes.Count == 0 || nodes.Count == 1)
-                return meshes.Count > 0 ? meshes[0] : G3D.Empty;
+            var g3ds = scene.Meshes.Select(m => m.ToVimG3d()).ToArray();
+            var nodes = scene.GetNodes().ToArray();
+            if (nodes.Length == 0 || nodes.Length == 1)
+                return g3ds.Length > 0 ? g3ds[0] : EmptyG3d;
 
-            var mergedAttributes = meshes.Merge().Attributes.ToList();
+            return g3ds.Merge();
+            //var mergedAttributes = g3ds.Merge().Attributes.ToList();
 
-            var subGeoTransforms = nodes.Select(n => n.Transform.ToMath3D()).ToInstanceTransformAttribute();
-            mergedAttributes.Add(subGeoTransforms);
+            //var subGeoTransforms = nodes.Select(n => n.Transform.ToMath3D()).ToInstanceTransformAttribute();
+            //mergedAttributes.Add(subGeoTransforms);
 
-            var meshIndices = nodes.Select(n => n.MeshIndex).ToInstanceMeshAttribute();
-            mergedAttributes.Add(meshIndices);
+            //var meshIndices = nodes.Select(n => n.MeshIndex).ToInstanceMeshAttribute();
+            //mergedAttributes.Add(meshIndices);
 
-            return mergedAttributes.ToG3d();
+            //return mergedAttributes.ToG3d();
         }
 
-        public static G3D ToG3D(this Mesh mesh)
+        public static VimG3d ToVimG3d(this Mesh mesh)
         {
-            // The Assimp mesh must be triangulated
-            if (mesh.FaceCount == 0)
-                return G3D.Empty;
+            var g3d = new G3d<VimAttributeCollection>();
 
-            var bldr = new G3DBuilder();
+            if (mesh.FaceCount == 0)
+                return g3d;
+
+            var attributes = g3d.AttributeCollection;
 
             // Note: should be at most 3 for meses, but could 2 for lines, or 1 for point clouds
             var numCornersPerFace = mesh.Faces[0].IndexCount;
@@ -67,37 +74,37 @@ namespace Vim.G3d.AssimpWrapper
                 if (f.IndexCount != numCornersPerFace)
                     throw new Exception($"Each face of the assimp mesh must have {numCornersPerFace} corners, but found one with {f.IndexCount}");
             }
-            bldr.SetObjectFaceSize(numCornersPerFace);
+            attributes.CornersPerFaceAttribute.TypedData = new[] { numCornersPerFace };
 
             var indices = mesh.GetIndices();
             if (indices.Length % numCornersPerFace != 0)
                 throw new Exception($"The mesh index buffer length {indices.Length} is not divisible by {numCornersPerFace}");
 
-            bldr.AddVertices(mesh.Vertices.ToIArray().Select(ToMath3D));
-            bldr.AddIndices(indices);
+            attributes.IndexAttribute.TypedData = indices;
+            attributes.VertexAttribute.TypedData = mesh.Vertices.Select(ToMath3D).ToArray();
 
-            if (mesh.HasTangentBasis)
-                bldr.Add(mesh.BiTangents.ToIArray().Select(ToMath3D).ToVertexBitangentAttribute());
+            //if (mesh.HasTangentBasis)
+            //    bldr.Add(mesh.BiTangents.ToIArray().Select(ToMath3D).ToVertexBitangentAttribute());
 
-            if (mesh.HasTangentBasis)
-                bldr.Add(mesh.Tangents.ToIArray().Select(x => ToMath3D(x).ToVector4()).ToVertexTangentAttribute());
+            //if (mesh.HasTangentBasis)
+            //    bldr.Add(mesh.Tangents.ToIArray().Select(x => ToMath3D(x).ToVector4()).ToVertexTangentAttribute());
 
-            if (mesh.HasNormals)
-                bldr.Add(mesh.Normals.ToIArray().Select(ToMath3D).ToVertexNormalAttribute());
+            //if (mesh.HasNormals)
+            //    bldr.Add(mesh.Normals.ToIArray().Select(ToMath3D).ToVertexNormalAttribute());
 
-            for (var i = 0; i < mesh.TextureCoordinateChannelCount; ++i)
-            {
-                var uvChannel = mesh.TextureCoordinateChannels[i];
-                bldr.Add(uvChannel.ToIArray().Select(ToMath3D).ToVertexUvwAttribute(i));
-            }
+            //for (var i = 0; i < mesh.TextureCoordinateChannelCount; ++i)
+            //{
+            //    var uvChannel = mesh.TextureCoordinateChannels[i];
+            //    bldr.Add(uvChannel.ToIArray().Select(ToMath3D).ToVertexUvwAttribute(i));
+            //}
 
-            for (var i = 0; i < mesh.VertexColorChannelCount; ++i)
-            {
-                var vcChannel = mesh.VertexColorChannels[i];
-                bldr.Add(vcChannel.ToIArray().Select(ToMath3D).ToVertexColorAttribute(i));
-            }
+            //for (var i = 0; i < mesh.VertexColorChannelCount; ++i)
+            //{
+            //    var vcChannel = mesh.VertexColorChannels[i];
+            //    bldr.Add(vcChannel.ToIArray().Select(ToMath3D).ToVertexColorAttribute(i));
+            //}
 
-            return bldr.ToG3D();
+            return g3d;
         }
     }
 }

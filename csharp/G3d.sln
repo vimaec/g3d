@@ -1,10 +1,11 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29123.88
+# Visual Studio Version 17
+VisualStudioVersion = 17.5.33502.453
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{59ABFEF4-6FFE-49AD-B482-3FAE203513E7}"
 	ProjectSection(SolutionItems) = preProject
+		G3d.Build.props = G3d.Build.props
 		..\LICENSE.txt = ..\LICENSE.txt
 		..\README.md = ..\README.md
 	EndProjectSection
@@ -13,13 +14,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d", "Vim.G3d\Vim.G3d.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.Tests", "Vim.G3d.Tests\Vim.G3d.Tests.csproj", "{EDFF0E33-6F65-40AE-B6F8-D993DDE6BF18}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vim.G3d.UnityAdapter", "Vim.G3d.UnityAdapter\Vim.G3d.UnityAdapter.csproj", "{948F8F85-B599-487F-86D5-46DD94E4C5A8}"
-EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Vim.G3d.CppCLR", "..\cpp\Vim.G3d.CppCLR\Vim.G3d.CppCLR.vcxproj", "{02F067CF-AE2A-4184-8378-77E59CC88FEE}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Vim.G3d.CppCLR.Tests", "Vim.G3d.CppCLR.Tests\Vim.G3d.CppCLR.Tests.csproj", "{FE769360-9A7B-40CC-8169-32B639DA46FD}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.CppCLR.Tests", "Vim.G3d.CppCLR.Tests\Vim.G3d.CppCLR.Tests.csproj", "{FE769360-9A7B-40CC-8169-32B639DA46FD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.AssimpWrapper", "Vim.G3d.AssimpWrapper\Vim.G3d.AssimpWrapper.csproj", "{C38D5C5B-EE7C-43A2-9E69-87B5BCAC9694}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.CodeGen", "Vim.G3d.CodeGen\Vim.G3d.CodeGen.csproj", "{0CBD600E-01AF-4699-B086-950AAC7942E6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Vim.G3d.Attributes", "Vim.G3d.Attributes\Vim.G3d.Attributes.csproj", "{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -45,18 +48,12 @@ Global
 		{EDFF0E33-6F65-40AE-B6F8-D993DDE6BF18}.Release|Any CPU.Build.0 = Release|Any CPU
 		{EDFF0E33-6F65-40AE-B6F8-D993DDE6BF18}.Release|x64.ActiveCfg = Release|Any CPU
 		{EDFF0E33-6F65-40AE-B6F8-D993DDE6BF18}.Release|x64.Build.0 = Release|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Debug|x64.ActiveCfg = Debug|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Debug|x64.Build.0 = Debug|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Release|Any CPU.Build.0 = Release|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Release|x64.ActiveCfg = Release|Any CPU
-		{948F8F85-B599-487F-86D5-46DD94E4C5A8}.Release|x64.Build.0 = Release|Any CPU
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|Any CPU.Build.0 = Debug|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|x64.ActiveCfg = Debug|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Debug|x64.Build.0 = Debug|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|Any CPU.ActiveCfg = Release|x64
+		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|Any CPU.Build.0 = Release|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|x64.ActiveCfg = Release|x64
 		{02F067CF-AE2A-4184-8378-77E59CC88FEE}.Release|x64.Build.0 = Release|x64
 		{FE769360-9A7B-40CC-8169-32B639DA46FD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
@@ -75,6 +72,22 @@ Global
 		{C38D5C5B-EE7C-43A2-9E69-87B5BCAC9694}.Release|Any CPU.Build.0 = Release|Any CPU
 		{C38D5C5B-EE7C-43A2-9E69-87B5BCAC9694}.Release|x64.ActiveCfg = Release|Any CPU
 		{C38D5C5B-EE7C-43A2-9E69-87B5BCAC9694}.Release|x64.Build.0 = Release|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Debug|x64.Build.0 = Debug|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Release|x64.ActiveCfg = Release|Any CPU
+		{0CBD600E-01AF-4699-B086-950AAC7942E6}.Release|x64.Build.0 = Release|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Debug|x64.Build.0 = Debug|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Release|x64.ActiveCfg = Release|Any CPU
+		{DE766573-4FD1-44D3-BBBC-50D6D6EF47E9}.Release|x64.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

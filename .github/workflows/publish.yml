@@ -19,7 +19,7 @@ jobs:
         path: .github/
     - uses: ./.github/actions/publish-nuget
       with:
-        project_path: csharp/Vim.G3d/Vim.G3d.csproj
+        project_path: csharp/Vim.G3d.Attributes/Vim.G3d.Attributes.csproj
         test_project_path: csharp/Vim.G3d.Tests/Vim.G3d.Tests.csproj
         package_name: Vim.G3d
         api_key: ${{secrets.VIM_NUGET_PUSH}}
