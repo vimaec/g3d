@@ -174,6 +174,39 @@ namespace Vim.G3d.Attributes
         }
     }
     
+    public partial class InstanceFlagsAttribute : IAttribute<System.UInt16>
+    {
+        public const string AttributeName = "g3d:instance:flags:0:uint16:1";
+
+        public string Name
+            => AttributeName;
+
+        public static AttributeReader CreateAttributeReader()
+            => AttributeCollectionExtensions.CreateAttributeReader<InstanceFlagsAttribute, System.UInt16>();
+
+        public IAttributeDescriptor AttributeDescriptor { get; }
+            = new AttributeDescriptor(AttributeName);
+
+        public AttributeType AttributeType { get; }
+            = AttributeType.Data;
+
+        public Type IndexInto { get; }
+            = null;
+
+        public System.UInt16[] TypedData { get; set; }
+            = Array.Empty<System.UInt16>();
+
+        public Array Data
+            => TypedData;
+
+        public void Write(Stream stream)
+        {
+            if (TypedData == null || TypedData.Length == 0)
+                return;
+            stream.Write(TypedData);
+        }
+    }
+    
     public partial class InstanceMeshAttribute : IAttribute<System.Int32>
     {
         public const string AttributeName = "g3d:instance:mesh:0:int32:1";
@@ -549,6 +582,7 @@ namespace Vim.G3d.Attributes
                 [Vim.G3d.Attributes.IndexAttribute.AttributeName] = new Vim.G3d.Attributes.IndexAttribute(),
                 [Vim.G3d.Attributes.InstanceTransformAttribute.AttributeName] = new Vim.G3d.Attributes.InstanceTransformAttribute(),
                 [Vim.G3d.Attributes.InstanceParentAttribute.AttributeName] = new Vim.G3d.Attributes.InstanceParentAttribute(),
+                [Vim.G3d.Attributes.InstanceFlagsAttribute.AttributeName] = new Vim.G3d.Attributes.InstanceFlagsAttribute(),
                 [Vim.G3d.Attributes.InstanceMeshAttribute.AttributeName] = new Vim.G3d.Attributes.InstanceMeshAttribute(),
                 [Vim.G3d.Attributes.MeshSubmeshOffsetAttribute.AttributeName] = new Vim.G3d.Attributes.MeshSubmeshOffsetAttribute(),
                 [Vim.G3d.Attributes.SubmeshIndexOffsetAttribute.AttributeName] = new Vim.G3d.Attributes.SubmeshIndexOffsetAttribute(),
@@ -570,6 +604,7 @@ namespace Vim.G3d.Attributes
                 [Vim.G3d.Attributes.IndexAttribute.AttributeName] = Vim.G3d.Attributes.IndexAttribute.CreateAttributeReader(),
                 [Vim.G3d.Attributes.InstanceTransformAttribute.AttributeName] = Vim.G3d.Attributes.InstanceTransformAttribute.CreateAttributeReader(),
                 [Vim.G3d.Attributes.InstanceParentAttribute.AttributeName] = Vim.G3d.Attributes.InstanceParentAttribute.CreateAttributeReader(),
+                [Vim.G3d.Attributes.InstanceFlagsAttribute.AttributeName] = Vim.G3d.Attributes.InstanceFlagsAttribute.CreateAttributeReader(),
                 [Vim.G3d.Attributes.InstanceMeshAttribute.AttributeName] = Vim.G3d.Attributes.InstanceMeshAttribute.CreateAttributeReader(),
                 [Vim.G3d.Attributes.MeshSubmeshOffsetAttribute.AttributeName] = Vim.G3d.Attributes.MeshSubmeshOffsetAttribute.CreateAttributeReader(),
                 [Vim.G3d.Attributes.SubmeshIndexOffsetAttribute.AttributeName] = Vim.G3d.Attributes.SubmeshIndexOffsetAttribute.CreateAttributeReader(),
@@ -613,6 +648,12 @@ namespace Vim.G3d.Attributes
         {
             get => Attributes.TryGetValue(Vim.G3d.Attributes.InstanceParentAttribute.AttributeName, out var attr) ? attr as Vim.G3d.Attributes.InstanceParentAttribute : default;
             set => Attributes[Vim.G3d.Attributes.InstanceParentAttribute.AttributeName] = value as IAttribute;
+        }
+
+        public Vim.G3d.Attributes.InstanceFlagsAttribute InstanceFlagsAttribute
+        {
+            get => Attributes.TryGetValue(Vim.G3d.Attributes.InstanceFlagsAttribute.AttributeName, out var attr) ? attr as Vim.G3d.Attributes.InstanceFlagsAttribute : default;
+            set => Attributes[Vim.G3d.Attributes.InstanceFlagsAttribute.AttributeName] = value as IAttribute;
         }
 
         public Vim.G3d.Attributes.InstanceMeshAttribute InstanceMeshAttribute
@@ -700,6 +741,9 @@ namespace Vim.G3d.Attributes
             if (attributeType == typeof(Vim.G3d.Attributes.InstanceParentAttribute))
                 return InstanceParentAttribute;
 
+            if (attributeType == typeof(Vim.G3d.Attributes.InstanceFlagsAttribute))
+                return InstanceFlagsAttribute;
+
             if (attributeType == typeof(Vim.G3d.Attributes.InstanceMeshAttribute))
                 return InstanceMeshAttribute;
 
@@ -770,6 +814,12 @@ namespace Vim.G3d.Attributes
                 {
                     // Index Attribute
                     return collections.GetIndexedAttributesOfType<Vim.G3d.Attributes.InstanceParentAttribute>().MergeIndexAttributes();
+                }
+
+                case Vim.G3d.Attributes.InstanceFlagsAttribute.AttributeName:
+                {
+                    // Data Attribute
+                    return collections.GetAttributesOfType<Vim.G3d.Attributes.InstanceFlagsAttribute>().ToArray().MergeDataAttributes<Vim.G3d.Attributes.InstanceFlagsAttribute, System.UInt16>();
                 }
 
                 case Vim.G3d.Attributes.InstanceMeshAttribute.AttributeName:
