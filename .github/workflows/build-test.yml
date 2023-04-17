@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [ master ]
 
+env:
+  DOTNET_VERSION: 6.0.x
+
 jobs:
   build:
 
@@ -14,12 +17,19 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v2
+
     - name: Checkout shared scripts
       uses: actions/checkout@v2
       with:
         repository: vimaec/ci-cd-scripts
         ref: refs/heads/main
         path: .github/
+
+    - name: Setup DotNet ${{ env.DOTNET_VERSION }} Environment
+      uses: actions/setup-dotnet@v1
+      with:
+        dotnet-version: ${{ env.DOTNET_VERSION }}
+
     - uses: ./.github/actions/build-and-test
       with:
         project_path: csharp/Vim.G3d.Attributes/Vim.G3d.Attributes.csproj
