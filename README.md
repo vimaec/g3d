@@ -1,128 +1,136 @@
-# G3D
+# G3d
 
-[<img src="https://img.shields.io/nuget/v/Vim.G3d.svg">](https://www.nuget.org/packages/Vim.G3d) 
+[<img src="https://img.shields.io/nuget/v/Vim.G3d.svg">](https://www.nuget.org/packages/Vim.G3d)
 
-G3D is a simple, efficient, generic binary format for storing and transmitting geometry. The G3D format
+**G3d** is a simple, efficient, generic binary format for storing and transmitting geometry. The G3d format
 is designed to be used either as a serialization format or as an in-memory data structure.
 
-G3D can represent triangular meshes, quadrilateral meshes, polygonal meshes, point clouds, and line segments.  
-It can be easily and efficiently deserialized and rendered in different languages and on different platforms.
+G3d is maintained by [VIMaec LLC](https://vimaec.com) and is licensed under the terms of the [MIT License](LICENSE.txt).
 
-The G3D format can contain a superset of geometry attributes found in most common geometry formats, 
-including formats such as FBX, glTF, OBJ, PLY, and in memory data structures used in popular 3D APIs, like 
-Unity, Three.JS, Assimp, and 3dsMax.
-
-G3D is maintained by [VIMaec LLC](https://vimaec.com) and is licensed under the terms of the MIT License.
-
-# Repository Structure and Projects
-
-On this Github repository we have the following projects:
-
-* `csharp\Vim.G3d` - C# .NET Standard 2.0 Library for reading/writing G3D buffers 
-* `csharp\Vim.G3d.AssimpAdapter` - C# .NET Framework 4.7.1 library for converting from Assimp meshes to G3D data structures
-* `csharp\Vim.G3d.Test` - C# .NET Core 2.1 project with NUnit tests 
-* `csharp\Vim.G3d.UnityAdapter` - C# .NET Framework 4.7.1 library for converting to/from Unity types (tested with Unit 2019.1) 
-* `unity\Vim.G3d.Unity` - A Unity 2019.1.14 project for testing the Unity adapters  
-
-# Format 
+# G3d Format 
 
 ## BFAST Container
 
-The underlying binary layout of a G3D file conforms to the [BFAST serialization format](https://github.com/vimaec/bfast), which is a simple and efficient binary format for serializing collections of byte arrays. BFAST provides an interface that allows named arrays of binary data to be serialized and deserialized quickly and easily.
+The underlying binary layout of a G3d file conforms to the [BFAST serialization format](https://github.com/vimaec/bfast), which is a simple and efficient binary format for serializing collections of byte arrays. BFAST provides an interface that allows named arrays of binary data to be serialized and deserialized quickly and easily.
 
-The first named buffer in the BFAST container is reserved for meta-information about the file encoded in JSON format. It has the name "meta". Each subsequent buffer uses the attribute descriptor string as a name. 
+## Meta Header
 
-## Meta-Information
-
-The first buffer of a G3D file is a JSON object where each field value must be a string. There is no requirement for the names and the values of the fields. 
+The first bfast buffer of a G3d contains a struct called the [MetaHeader](csharp/Vim.G3d/MetaHeader.cs).
 
 ## Attributes
- 
-### Attribute Descriptor String
 
-Every attribute descriptor has a one to one mapping to a string representation similar to a URN: 
-    
-    `g3d:<association>:<semantic>:<index>:<data_type>:<data_arity>`
+A G3d contains a structured collection of attributes. Examples of attributes include mesh vertices, mesh indices, instance transforms, instanced meshes, mesh submeshes, materials, etc.
 
-This attribute descriptor string is the name of the buffer. 
+Every [Attribute](csharp/Vim.G3d/IAttribute.cs) in a G3d has an [AttributeDescriptor](csharp/Vim.G3d/IAttributeDescriptor.cs) which uniquely identifies it and describes it.
 
-### Association
+```
+g3d:<association>:<semantic>:<index>:<data_type>:<data_arity>
+```
 
-G3D is organized as a collection of attribute buffers. Each attributes describe what part of the incoming geometry they are associated with:
+- `<association>`: Designates the object to which the attribute is conceptually associated.
+- `<semantic>`: Designates the meaning of the data.
+- `<index>`: Designates the index in case the same `<association>:<semantic>` combination occurs more than once among the collection of attribute descriptors.
+- `<data_type>`: Designates the data type of the values contained in the buffer. Possible values are:
+    - `int8`
+    - `int16`
+    - `int32`
+    - `int64`
+    - `uint8`
+    - `uint16`
+    - `uint32`
+    - `uint64`
+    - `float32`
+    - `float64`
+- `<data_arity>`: Designates the number of values which compose one semantic element.
 
-* vertex     // vertex data
-* corner    // face-vertex data
-* face      // per polygon data
-* edge      // per half-edge data 
-* mesh     // A continuous group of submeshes
-* submesh  // polygonal group - assumes a contiguous sequence of indices in the index buffer
-* instance // objects which may have a related mesh, matrix and more.
-* all		// whole object data - for example face-size of 4 with whole object indicates a quad mesh
+## VIM File G3d Attributes
 
-### Semantic
+A [VIM file](https://github.com/vimaec/vim) contains a particular collection of G3d attributes which define its geometric scene:
 
-Attributes also have a "semantic" which is used to identify what role the attribute has when parsing. These map roughly to FBX layer elements, or Three.JS buffer attributes. There are a number of predefined semantic values with reserved names, but applications are free to define custom semantic values. The only required semantic in a G3D file is "position". Here is a list of some of the predefined semantics: 
+* `g3d:all:facesize:0:int32:1`
+  A single 32-bit integer value, usually "3", indicating that all mesh faces are triangles and are composed of 3 corners.
 
-* unknown,       // no known attribute type
-* position,      // vertex buffer 
-* index,         // index buffer
-* indexoffset,   // an offset into the index buffer (used with groups and with faces)
-* vertexoffset,  // the offset into the vertex buffer (used only with groups, and must have offset.)
-* normal,        // computed normal information (per face, group, corner, or vertex)
-* binormal,      // computed binormal information 
-* tangent,       // computed tangent information 
-* materialid,    // material id
-* visibility,    // visibility data
-* size,          // number of indices per face or group
-* uv,            // UV (sometimes more than 1, e.g. Unity supports up to 8)
-* color,         // usually vertex color, but could be edge color as well
-* smoothing,     // identifies smoothing groups (e.g. ala 3ds Max and OBJ files)
-* weight,        // in 3ds Max this is called selection 
-* mapchannel,    // 3ds Max map channel (assoc of none => map verts, assoc of corner => map faces)
-* id,            // used to identify what object each face part came from 
-* joint,         // used to identify what a joint a skin is associated with 
-* boxes,         // used to identify bounding boxes
-* spheres,       // used to identify bounding spheres
-* user,          // identifies user specific data (in 3ds Max this could be "per-vertex-data")
+* `g3d:vertex:position:0:float32:3`
+  An array of 32-bit single-precision floating point values, arranged in slices of 3 to represent the (X, Y, Z) vertices of all the meshes in the VIM. We refer to this as the "vertex buffer".
 
-### Index
+* `g3d:corner:index:0:int32:1`
+  An array of 32-bit integers representing the combined index buffer of all the meshes in the VIM. The values in this index buffer are relative to the beginning of the vertex buffer. Meshes in a VIM are composed of triangular faces, whose corners are defined by 3 indices.
 
-Attributes use indices to distinguish when multiple attributes share the same name (e.g. uv:0 ... uv:8)
+* `g3d:submesh:indexoffset:0:int32:1`
+  An array of 32-bit integers representing the index offset of the index buffer of a given submesh.
 
-### Data Type
+* `g3d:submesh:material:0:int32:1`
+  An array of 32-bit integers representing the index of the material associated with a given submesh.
 
-Attributes are stored in 512-byte aligned data-buffers arranged as arrays of scalars or fixed width vectors. The individual data values can be integers, or floating point values of various widths from 1 to 8 bytes. The data-types are:
+* `g3d:mesh:submeshoffset:0:int32:1`
+  An array of 32-bit integers representing the index offset of a submesh in a given mesh.
 
-* int8
-* int16
-* int32
-* int64
-* uint8
-* uint16
-* uint32
-* uint64
-* float32
-* float64
+* `g3d:material:color:0:float32:4`
+  An array of 32-bit single-precision floating point values in the domain [0.0f, 1.0f], arranged in slices of 4 to represent the (R, G, B, A) diffuse color of a given material.
 
-### Arity
+* `g3d:material:glossiness:0:float32:1`
+  An array of 32-bit single-precision floating point values in the domain [0.0f, 1.0f] representing the glossiness of a given material.
 
-The number of primitives per data element is called the "arity" and can be any integer value greater than zero. 
+* `g3d:material:smoothness:0:float32:1`
+  An array of 32-bit single-precision floating point values in the domain [0.0f, 1.0f] representing the smoothness of a given material.
 
-## Encoding Strings
+* `g3d:instance:transform:0:float32:16`
+  An array of 32-bit single-precision floating point values, arranged in slices of 16 to represent the 4x4 row-major transformation matrix associated with a given instance.
 
-While there is no explicit string type, one could encode string data by using a data-type uint8 with an arity of a fixed value (say 255) to store short strings. 
+* `g3d:instance:flags:0:uint16:1`
+  (Optional) An array of 16-bit unsigned integers representing the flags of a given instance. The first bit of each flag designates whether the instance should be initially hidden (1) or not (0) when rendered.
 
-# Recommended reading:
+* `g3d:instance:parent:0:int32:1`
+  An array of 32-bit integers representing the index of the parent instance associated with a given instance.
 
-* [VIM AEC blog post about using G3D with Unity](https://www.vimaec.com/the-g3d-geometry-exchange-format/)
-* [Hackernoon article about BFast](https://hackernoon.com/bfast-a-data-format-for-serializing-named-binary-buffers-243p130uw)
-* http://assimp.sourceforge.net/lib_html/structai_mesh.html
-* http://help.autodesk.com/view/FBX/2017/ENU/?guid=__files_GUID_5EDC0280_E000_4B0B_88DF_5D215A589D5E_htm
-* https://help.autodesk.com/cloudhelp/2017/ENU/Max-SDK/cpp_ref/class_mesh.html
-* https://help.autodesk.com/view/3DSMAX/2016/ENU/?guid=__files_GUID_CBBA20AD_F7D5_46BC_9F5E_5EDA109F9CF4_htm
-* http://paulbourke.net/dataformats/
-* http://paulbourke.net/dataformats/obj/
-* http://paulbourke.net/dataformats/ply/
-* http://paulbourke.net/dataformats/3ds/
-* https://github.com/KhronosGroup/gltf
-* http://help.autodesk.com/view/FBX/2017/ENU/?guid=__cpp_ref_class_fbx_layer_element_html
+* `g3d:instance:mesh:0:int32:1`
+  An array of 32-bit integers representing the index of a mesh associated with a given instance.
+
+* `g3d:shapevertex:position:0:float32:3`
+  (Optional) An array of 32-bit single-precision floating point values, arranged in slices of 3 to represent the (X, Y, Z) positions of all the world-space shapes in the VIM. We refer to this as the "shape vertex buffer"
+
+* `g3d:shape:vertexoffset:0:int32:1`
+  (Optional) An array of 32-bit integers representing the index offset of the vertices in a given shape.
+
+* `g3d:shape:color:0:float32:4`
+  (Optional) An array of 32-bit single-precision floating point values, arranged in slices of 4 to represent the (R, G, B, A) color of a given shape.
+
+* `g3d:shape:width:0:float32:1`
+  (Optional) An array of 32-bit single-precision floating-point values represents a given shape's width.
+
+Additional attributes are possible but are ignored and may or may not be written out by any tool that inputs and outputs VIM files.
+
+Conceptually, the geometric objects in a VIM file are related in the following manner:
+
+- **Instance**:
+  - Has a 4x4 row-major matrix representing its world-space transform.
+  - Has a set of **Flag**s.
+  - May have a parent **Instance**.
+  - May have a **Mesh**.
+- **Mesh**
+  - Is composed of 0 or more **Submesh**es.
+- **Submesh**
+  - Has a **Material**
+  - References a slice of values in the index buffer to define the geometry of its triangular faces in local space.
+- **Material**
+  - Has a glossiness value in the domain [0f, 1f].
+  - Has a smoothness value in the domain [0f, 1f].
+  - Has an RGBA diffuse color whose components are in the domain [0f, 1f].
+- **Shape**
+  - Has an RGBA color whose components are in the domain [0f, 1f].
+  - Has a width.
+  - References a slice of vertices in the shape vertex buffer to define the sequence of world-space vertices which compose its linear segments.
+
+
+## C# Project Structure
+
+- [G3d.sln](csharp/G3d.sln) - Visual Studio C# G3d solution
+- [Vim.G3d.csproj](csharp/Vim.G3d/Vim.G3d.csproj) - Basic building blocks to read and write G3d objects.
+- [Vim.G3d.Attributes.csproj](csharp/Vim.G3d.Attributes/Vim.G3d.Attributes.csproj) - Defines the structured attribute collection of G3ds found inside VIM files (see [Attributes.cs](csharp/Vim.G3d.Attributes/Attributes.cs) and the code-generated sibling file [Attributes.g.cs](csharp/Vim.G3d.Attributes/Attributes.g.cs))
+- [Vim.G3d.CodeGen](csharp/Vim.G3d.CodeGen/Vim.G3d.CodeGen.csproj) - The code-generator which emits [Attributes.g.cs](csharp/Vim.G3d.Attributes/Attributes.g.cs).
+- [Vim.G3d.Tests](csharp/Vim.G3d.Tests/Vim.G3d.Tests.csproj) - An NUnit project which validates the C# G3d implementation.
+- [Vim.G3d.CppCLR.Tests](csharp/Vim.G3d.CppCLR.Tests/Vim.G3d.CppCLR.Tests.csproj) - An NUnit project which validates the C++ G3d implementation. Must be executed after Vim.G3d.Tests is run; it uses g3d files generated from the C# unit tests.
+
+## C++ Project Structure
+
+The C++ implementation is still a work in progress.
